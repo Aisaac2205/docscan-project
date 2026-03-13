@@ -2,7 +2,7 @@
 
 Proyecto universitario de digitalización de documentos con OCR integrado.
 
-## 🚀 Tecnologías
+## Tecnologías
 
 - **Backend:** NestJS + TypeScript
 - **Frontend:** Next.js 15 + TypeScript + TailwindCSS
@@ -10,12 +10,12 @@ Proyecto universitario de digitalización de documentos con OCR integrado.
 - **Base de Datos:** PostgreSQL + Prisma
 - **Docker:** Orquestación completa
 
-## 📋 Requisitos Previos
+## Requisitos Previos
 
 - Node.js 18+
 - Docker y Docker Compose
 
-## 🛠️ Instalación
+## Instalación
 
 ### 1. Instalar dependencias
 
@@ -39,7 +39,7 @@ docker-compose up -d postgres
 cd backend && npx prisma db push
 ```
 
-## ▶️ Ejecución (Desarrollo)
+## Ejecución (Desarrollo)
 
 Se necesitan **dos terminales**:
 
@@ -57,7 +57,7 @@ cd frontend
 npm run dev
 ```
 
-## 🌐 URLs
+## URLs
 
 | Servicio | URL |
 |----------|-----|
@@ -65,7 +65,7 @@ npm run dev
 | Backend API | http://localhost:3001/api |
 | Health Check | http://localhost:3001/api/health |
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 docscan/
@@ -80,7 +80,7 @@ docscan/
 └── README.md
 ```
 
-## 📝 API Endpoints
+## API Endpoints
 
 ### Auth
 - `POST /api/auth/register` - Registro de usuario
@@ -102,7 +102,7 @@ docscan/
 ### Health
 - `GET /api/health` - Estado del servidor y base de datos
 
-## 🐳 Producción con Docker
+## Producción con Docker
 
 ```bash
 # Construir y levantar todos los servicios
@@ -115,17 +115,17 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🎯 Funcionalidades
+## Funcionalidades
 
-1. ✅ Integración TWAIN.js para scanner físico
-2. ✅ OCR con Tesseract.js (español)
-3. ✅ Upload de documentos (JPG, PNG, PDF)
-4. ✅ Almacenamiento PostgreSQL con Prisma
-5. ✅ API REST tipada con NestJS
-6. ✅ Frontend responsivo con Next.js 15
-7. ✅ Autenticación JWT
-8. ✅ Visualización y descarga de resultados OCR
+1. Integración TWAIN.js para scanner físico
+2. OCR con Tesseract.js (español)
+3. Upload de documentos (JPG, PNG, PDF)
+4. Almacenamiento PostgreSQL con Prisma
+5. API REST tipada con NestJS
+6. Frontend responsivo con Next.js 15
+7. Autenticación JWT
+8. Visualización y descarga de resultados OCR
 
-## 📄 Licencia
+## Licencia
 
 MIT
