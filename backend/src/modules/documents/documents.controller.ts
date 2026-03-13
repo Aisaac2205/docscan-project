@@ -1,0 +1,76 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { DocumentsService } from './documents.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { appConfig } from '../../config';
+
+@Controller('documents')
+@UseGuards(JwtAuthGuard)
+export class DocumentsController {
+  constructor(private readonly documentsService: DocumentsService) {}
+
+  @Get()
+  async getAll(@CurrentUser() user: { id: string }) {
+    return this.documentsService.getDocuments(user.id);
+  }
+
+  @Get(':id')
+  async getOne(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.documentsService.getDocument(id, user.id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: appConfig.upload.dir,
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: {
+        fileSize: appConfig.upload.maxFileSize,
+      },
+    }),
+  )
+  async upload(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.documentsService.createDocument(user.id, {
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      filePath: file.path,
+    });
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.documentsService.deleteDocument(id, user.id);
+  }
+}
