@@ -23,3 +23,7 @@ coverage/
 out/
 .turbo/
 *.tmp
+.agents/
+.claude/
+CLAUDE.md
+skills-lock.json

@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { OCRResult as OCRResultType } from '@/types/document.types';
+import { OCRResult as OCRResultType } from '@/features/documents/types/document.types';
 
 interface OCRResultProps {
   result: OCRResultType | null;
   onReset?: () => void;
 }
 
-export function OCRResult({ result, onReset }: OCRResultProps) {
+export default function OCRResult({ result, onReset }: OCRResultProps) {
   const [copied, setCopied] = useState(false);
 
   if (!result) return null;
