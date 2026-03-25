@@ -18,18 +18,34 @@ model User {
 }
 
 model Document {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  originalName String
-  mimeType     String
-  filePath     String
-  rawText      String?
-  confidence   Float?
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalName  String
+  mimeType      String
+  filePath      String
+  documentType  String          @default("document")
+  rawText       String?
+  extractedData Json?
+  confidence    Float?
+  status        String          @default("pending")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  queries       DocumentQuery[]
 
   @@index([userId])
   @@index([status])
+  @@index([documentType])
+  @@index([userId, documentType])
+}
+
+model DocumentQuery {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  question   String
+  answer     String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([documentId])
 }

@@ -1,5 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../config/database.config';
+import { Prisma } from '@prisma/client';
+
+export interface ExtractedData {
+  proveedor?: string;
+  fecha?: string;
+  total?: number;
+  nit?: string;
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class DocumentsRepository {
@@ -10,6 +19,7 @@ export class DocumentsRepository {
     originalName: string;
     mimeType: string;
     filePath: string;
+    documentType?: string;
   }) {
     return this.prisma.document.create({
       data,
@@ -29,10 +39,21 @@ export class DocumentsRepository {
     });
   }
 
+  async findByUserIdAndType(userId: string, documentType: string) {
+    return this.prisma.document.findMany({
+      where: { userId, documentType },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async update(id: string, data: {
     rawText?: string;
     confidence?: number;
     status?: string;
+    originalName?: string;
+    extractedData?: Prisma.InputJsonValue;
+    documentType?: string;
+    filePath?: string;
   }) {
     return this.prisma.document.update({
       where: { id },

@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { DocumentsService } from './documents.service';
+import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { appConfig } from '../../config';
@@ -23,7 +24,10 @@ import { appConfig } from '../../config';
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(
+    private readonly documentsService: DocumentsService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Get()
   async getAll(@CurrentUser() user: { id: string }) {
@@ -58,10 +62,15 @@ export class DocumentsController {
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: { id: string },
   ) {
+    // 1) Upload optimized image to Bunny via StorageService
+    const uploaded = await this.storageService.uploadFile(file);
+
+    // 2) Create DB record using CDN URL as filePath
+    // mimeType is always webp after Sharp optimization
     return this.documentsService.createDocument(user.id, {
       originalName: file.originalname,
-      mimeType: file.mimetype,
-      filePath: file.path,
+      mimeType: 'image/webp',
+      filePath: uploaded.url,
     });
   }
 

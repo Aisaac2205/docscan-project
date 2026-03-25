@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DocumentsRepository } from './repositories/documents.repository';
+import { DocumentsRepository, ExtractedData } from './repositories/documents.repository';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private repository: DocumentsRepository) {}
+  constructor(private repository: DocumentsRepository) { }
 
   async createDocument(userId: string, dto: CreateDocumentDto) {
     return this.repository.create({
@@ -12,11 +12,16 @@ export class DocumentsService {
       originalName: dto.originalName,
       mimeType: dto.mimeType,
       filePath: dto.filePath,
+      documentType: (dto as any).documentType || 'document',
     });
   }
 
   async getDocuments(userId: string) {
     return this.repository.findByUserId(userId);
+  }
+
+  async getDocumentsByType(userId: string, documentType: string) {
+    return this.repository.findByUserIdAndType(userId, documentType);
   }
 
   async getDocument(id: string, userId: string) {
@@ -32,7 +37,7 @@ export class DocumentsService {
     if (!document) {
       throw new NotFoundException('Documento no encontrado');
     }
-    return this.repository.update(id, dto);
+    return this.repository.update(id, dto as any);
   }
 
   async deleteDocument(id: string, userId: string) {
@@ -41,5 +46,9 @@ export class DocumentsService {
       throw new NotFoundException('Documento no encontrado');
     }
     return this.repository.delete(id);
+  }
+
+  async updateSystemData(id: string, updateData: { extractedData?: ExtractedData; status?: string }) {
+    return this.repository.update(id, updateData as any);
   }
 }
