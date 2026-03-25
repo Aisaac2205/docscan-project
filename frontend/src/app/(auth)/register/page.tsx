@@ -1,102 +1,174 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/shared/hooks/useAuth';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, loading, error } = useAuth();
+  const { register, loading, error, token } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  useEffect(() => {
+    if (token && !loading) router.replace('/');
+  }, [token, loading, router]);
+
+  if (token && !loading) return null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await register({ name, email, password });
-    if (result) {
-      router.push('/');
-    }
+    const result = await register(name, email, password);
+    if (result) router.push('/');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-600 mb-2">DocScan</h1>
-          <p className="text-gray-600">OCR Scanner de Documentos</p>
+    <div className="min-h-screen bg-[var(--bg)] flex">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-[480px] bg-stone-900 flex-col justify-between p-12 flex-shrink-0">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <DocScanIcon />
+            <span className="text-white font-semibold text-lg tracking-tight">DocScan</span>
+          </div>
         </div>
-
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Crear Cuenta
+        <div>
+          <h2 className="text-white text-2xl font-light leading-snug mb-6">
+            Comienza a digitalizar tus documentos<br />
+            <span className="text-stone-400">con inteligencia artificial.</span>
           </h2>
+          <div className="space-y-3">
+            {[
+              'Extracción automática de datos con Gemini AI',
+              'Soporte para imágenes y documentos PDF',
+              'Escaneo directo desde dispositivos físicos',
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-3">
+                <div className="mt-0.5 w-4 h-4 rounded-full bg-stone-700 flex items-center justify-center flex-shrink-0">
+                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                    <path d="M1 3L3 5L7 1" stroke="#A8A29E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="text-stone-400 text-sm leading-relaxed">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="text-stone-600 text-sm">
+          &copy; {new Date().getFullYear()} DocScan. Todos los derechos reservados.
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-[360px]">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-10 lg:hidden">
+            <DocScanIcon dark />
+            <span className="font-semibold text-lg tracking-tight">DocScan</span>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-stone-900 mb-1">Crear cuenta</h1>
+            <p className="text-stone-500 text-sm">Completa los datos para comenzar</p>
+          </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-5 px-4 py-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                Nombre completo
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Tu nombre"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
                 required
+                autoComplete="name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Correo Electrónico
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                Correo electrónico
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="nombre@empresa.com"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
                 required
+                autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">
                 Contraseña
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Mínimo 6 caracteres"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
                 minLength={6}
                 required
+                autoComplete="new-password"
               />
-              <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 disabled:bg-gray-400 transition-colors"
+              className="w-full h-10 mt-1 bg-stone-900 text-white text-sm font-medium rounded-md hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              {loading ? (
+                <>
+                  <SpinnerIcon />
+                  Creando cuenta...
+                </>
+              ) : 'Crear cuenta'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-stone-500 text-sm">
             ¿Ya tienes cuenta?{' '}
-            <a href="/login" className="text-primary-600 hover:underline font-medium">
-              Inicia Sesión
+            <a href="/login" className="text-accent-600 hover:text-accent-700 font-medium transition-colors">
+              Inicia sesión
             </a>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function DocScanIcon({ dark }: { dark?: boolean }) {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill={dark ? '#1C1917' : 'white'} />
+      <rect x="7" y="6" width="10" height="13" rx="1.5" fill={dark ? 'white' : '#1C1917'} />
+      <rect x="11" y="6" width="10" height="13" rx="1.5" fill={dark ? '#A8A29E' : '#78716C'} />
+      <rect x="9" y="20" width="14" height="2" rx="1" fill={dark ? '#78716C' : '#A8A29E'} />
+    </svg>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2" />
+      <path d="M7 1.5A5.5 5.5 0 0 1 12.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthWrapper } from '@/features/auth/components/AuthWrapper';
+import { ToastContainer } from '../shared/ui/toast/ToastContainer';
 
 export const metadata: Metadata = {
-  title: "DocScan - OCR Scanner",
-  description: "Digitalización de documentos con OCR",
+  title: "DocScan",
+  description: "Digitalización de documentos con OCR inteligente",
 };
 
 export default function RootLayout({
@@ -13,9 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-        {children}
+      <body>
+        <AuthWrapper>{children}</AuthWrapper>
+        <ToastContainer />
       </body>
     </html>
-  )
+  );
 }
