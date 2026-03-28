@@ -84,7 +84,7 @@ export function Sidebar() {
             Hardware
           </p>
           <div className="space-y-1">
-            {['Escáner', 'Cámara', 'Impresora'].map((label) => (
+            {['Escáner en red', 'Cámara', 'Impresora'].map((label) => (
               <div key={label} className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full flex-shrink-0 bg-stone-300" />
                 <span className="text-xs text-stone-400">{label}</span>

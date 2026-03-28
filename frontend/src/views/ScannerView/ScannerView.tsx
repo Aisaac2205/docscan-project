@@ -112,11 +112,11 @@ export function ScannerView() {
         />
         <SourceCard
           icon={<UsbIcon />}
-          title="Escáner USB"
-          subtitle="USB · Importar imagen"
-          description="Importa una imagen escaneada desde tu escáner USB. Selecciona el archivo generado por el software del escáner."
+          title="Importar archivo"
+          subtitle="USB · Imagen o PDF"
+          description="Importa una imagen o PDF desde tu dispositivo. Soporta archivos JPEG, PNG y PDF generados por cualquier escáner."
           action={{
-            label: <><UsbIcon size={14} />Seleccionar imagen USB</>,
+            label: <><UsbIcon size={14} />Seleccionar archivo</>,
             onClick: () => usb.fileInputRef.current?.click(),
             disabled: scanning,
           }}

@@ -29,9 +29,9 @@ export function DashboardView() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <HardwareCard
             icon={<ScannerDeviceIcon />}
-            title="Escáner físico"
-            subtitle="NAPS2 CLI"
-            description="Conecta un escáner USB o de red. Configura un perfil en NAPS2 y selecciónalo en la página de escaneo."
+            title="Escáner en red"
+            subtitle="AirScan / eSCL"
+            description="Conecta cualquier escáner multifunción en tu red local mediante el protocolo AirScan. Sin software adicional."
             status="available"
             statusLabel="Disponible"
           />

@@ -38,9 +38,9 @@ export default function LoginPage() {
           </blockquote>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Precisión OCR', value: '97%' },
+              { label: 'Modos OCR', value: '5' },
               { label: 'Formatos', value: 'PDF + Imagen' },
-              { label: 'Extracción', value: 'Gemini AI' },
+              { label: 'Motor IA', value: 'Gemini 2.5' },
             ].map((stat) => (
               <div key={stat.label} className="border border-stone-700 rounded-lg p-4">
                 <div className="text-white font-semibold text-lg">{stat.value}</div>

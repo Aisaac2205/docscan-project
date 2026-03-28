@@ -42,7 +42,7 @@ export default function RegisterPage() {
             {[
               'Extracción automática de datos con Gemini AI',
               'Soporte para imágenes y documentos PDF',
-              'Escaneo directo desde dispositivos físicos',
+              'Consulta en lenguaje natural sobre cualquier documento',
             ].map((item) => (
               <div key={item} className="flex items-start gap-3">
                 <div className="mt-0.5 w-4 h-4 rounded-full bg-stone-700 flex items-center justify-center flex-shrink-0">
