@@ -46,7 +46,7 @@ export class ScannerService {
 
     const created = await this.documentsService.createDocument(userId, {
       originalName: fileName,
-      mimeType: 'image/png',
+      mimeType: 'image/webp',
       filePath: uploaded.url,
     });
 
@@ -141,7 +141,7 @@ export class ScannerService {
 
     const created = await this.documentsService.createDocument(userId, {
       originalName: fileName,
-      mimeType: 'image/jpeg',
+      mimeType: 'image/webp',
       filePath: uploaded.url,
     });
 

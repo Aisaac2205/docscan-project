@@ -66,10 +66,11 @@ export class DocumentsController {
     const uploaded = await this.storageService.uploadFile(file);
 
     // 2) Create DB record using CDN URL as filePath
-    // mimeType is always webp after Sharp optimization
+    // mimeType: PDFs are stored as-is; images are always converted to webp by Sharp
+    const storedMimeType = file.mimetype === 'application/pdf' ? 'application/pdf' : 'image/webp';
     return this.documentsService.createDocument(user.id, {
       originalName: file.originalname,
-      mimeType: 'image/webp',
+      mimeType: storedMimeType,
       filePath: uploaded.url,
     });
   }

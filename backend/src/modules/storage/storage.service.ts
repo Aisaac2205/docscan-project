@@ -39,13 +39,34 @@ export class StorageService {
       throw new BadRequestException(`File size exceeds maximum of ${this.maxFileSize / 1024 / 1024}MB`);
     }
 
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff'];
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'application/pdf'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Allowed: JPEG, PNG, WebP, GIF, TIFF');
+      throw new BadRequestException('Invalid file type. Allowed: JPEG, PNG, WebP, GIF, TIFF, PDF');
     }
 
     const tempPath = file.path;
     const fileId = randomUUID();
+
+    if (file.mimetype === 'application/pdf') {
+      try {
+        const pdfBuffer = fs.readFileSync(tempPath);
+        const remotePath = `/${file.originalname.replace(/\.[^.]+$/, '')}_${fileId}.pdf`;
+        const uploadSuccess = await this.uploadToBunny(remotePath, pdfBuffer);
+        if (!uploadSuccess) {
+          throw new HttpException('Failed to upload to storage', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        fs.unlinkSync(tempPath);
+        return { url: `${this.cdnBaseUrl}${remotePath}`, size: pdfBuffer.length, width: 0, height: 0 };
+      } catch (error) {
+        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        if (error instanceof HttpException) throw error;
+        throw new HttpException(
+          `Failed to upload PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+
     const outputFileName = `${fileId}.webp`;
     const tempOutputPath = path.join(path.dirname(tempPath), outputFileName);
 
