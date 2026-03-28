@@ -32,7 +32,7 @@ export function DocumentCard({ doc }: DocumentCardProps) {
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-3 sm:p-4">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-md bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
-            {doc.filePath ? (
+            {doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf') ? (
               <img
                 src={doc.filePath}
                 alt=""

@@ -87,11 +87,19 @@ export function ResultPanel({
               imgExpanded ? 'h-[360px] sm:h-[560px]' : 'h-[260px] sm:h-[420px]'
             }`}
           >
-            <img
-              src={previewUrl}
-              alt="Documento capturado"
-              className="max-w-full max-h-full object-contain drop-shadow-md"
-            />
+            {previewUrl.toLowerCase().endsWith('.pdf') ? (
+              <iframe
+                src={previewUrl}
+                title="Documento PDF"
+                className="w-full h-full border-0"
+              />
+            ) : (
+              <img
+                src={previewUrl}
+                alt="Documento capturado"
+                className="max-w-full max-h-full object-contain drop-shadow-md"
+              />
+            )}
             <button
               onClick={() => setImgExpanded((v) => !v)}
               className="absolute bottom-2 right-2 h-6 px-2.5 text-[10px] font-semibold bg-black/40 text-white rounded-md hover:bg-black/60 transition-colors backdrop-blur-sm"
@@ -103,11 +111,15 @@ export function ResultPanel({
           {/* Image footer */}
           <div className="px-3 sm:px-4 py-2.5 bg-stone-50 border-t border-[var(--border)] flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Imagen</p>
+              <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                {previewUrl.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Imagen'}
+              </p>
               <p className="text-[11px] text-stone-600 mt-0.5 truncate">
                 {ocrResult
                   ? `Modo: ${ocrResult.extractionMode}`
-                  : 'Lista para procesar'}
+                  : previewUrl.toLowerCase().endsWith('.pdf')
+                  ? 'PDF · Listo para procesar'
+                  : 'Listo para procesar'}
               </p>
             </div>
             {analysisResult && (

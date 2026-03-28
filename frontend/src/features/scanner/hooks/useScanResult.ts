@@ -29,7 +29,7 @@ export function useScanResult() {
       id: res.documentId,
       originalName: res.originalName,
       filePath: res.url,
-      mimeType: 'image/png',
+      mimeType: res.url.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/webp',
       userId: '',
       rawText: null,
       confidence: null,

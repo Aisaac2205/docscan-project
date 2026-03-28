@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useScannerStore } from '../store';
+import { documentsClient } from '@/features/documents/client';
 import { toast } from '@/shared/ui/toast/store';
 import type { CaptureResult } from '../types/scanner.types';
 
@@ -11,6 +12,22 @@ export function useUsbImport(applyResult: (res: CaptureResult | null) => boolean
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
+
+    if (file.type === 'application/pdf') {
+      try {
+        const doc = await documentsClient.upload(file);
+        const result: CaptureResult = {
+          documentId: doc.id,
+          url: doc.filePath,
+          originalName: doc.originalName,
+        };
+        if (applyResult(result)) toast.success('PDF importado correctamente');
+      } catch (err: any) {
+        toast.error(err?.message || 'Error al importar el PDF');
+      }
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (event: ProgressEvent<FileReader>) => {
       const base64 = event.target?.result;
