@@ -11,12 +11,12 @@ export function DashboardView() {
 
   return (
     <div>
-      <div className="mb-7">
-        <h1 className="text-xl font-semibold text-stone-900">Bienvenido, {firstName}</h1>
+      <div className="mb-5 md:mb-7">
+        <h1 className="text-lg md:text-xl font-semibold text-stone-900">Bienvenido, {firstName}</h1>
         <p className="text-sm text-stone-400 mt-0.5">Panel de control · DocScan</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 md:mb-7">
         <StatCard label="Total documentos" value={loading ? '—' : String(stats.total)} icon={<DocsIcon />} />
         <StatCard label="Con OCR" value={loading ? '—' : String(stats.completed)} icon={<OcrIcon />} highlight={stats.completed > 0} />
         <StatCard label="Pendientes" value={loading ? '—' : String(stats.pending)} icon={<PendingIcon />} />

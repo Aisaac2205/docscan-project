@@ -16,9 +16,9 @@ export function HardwareCard({ icon, title, subtitle, description, status, statu
                               'bg-stone-100 text-stone-400';
 
   return (
-    <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[var(--shadow-card)]">
+    <div className="bg-white border border-[var(--border)] rounded-lg p-4">
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-9 h-9 rounded-lg bg-stone-100 border border-[var(--border)] flex items-center justify-center flex-shrink-0 text-stone-500">
+        <div className="w-8 h-8 rounded-md bg-stone-100 flex items-center justify-center flex-shrink-0 text-stone-500">
           {icon}
         </div>
         <div className="flex-1 min-w-0">

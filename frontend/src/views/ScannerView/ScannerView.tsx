@@ -33,8 +33,8 @@ export function ScannerView() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-stone-900">Captura de documentos</h2>
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-lg md:text-xl font-semibold text-stone-900">Captura de documentos</h2>
         <p className="text-sm text-stone-400 mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>

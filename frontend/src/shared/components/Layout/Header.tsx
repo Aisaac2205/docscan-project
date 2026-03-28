@@ -22,14 +22,17 @@ export function Header() {
       style={{ height: 'var(--header-height)' }}
       className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-[var(--border)] flex items-center"
     >
-      <div className="flex items-center h-full px-5 lg:border-r lg:border-[var(--border)]" style={{ width: 'var(--sidebar-width)' }}>
+      <div
+        className="flex items-center h-full px-4 lg:px-5 lg:border-r lg:border-[var(--border)]"
+        style={{ width: 'var(--sidebar-width)', minWidth: 'auto' }}
+      >
         <a href="/" className="flex items-center gap-2 group">
           <DocScanLogo />
           <span className="font-semibold text-stone-900 text-[15px] tracking-tight">DocScan</span>
         </a>
       </div>
 
-      <div className="flex-1 flex items-center justify-end px-5 gap-3">
+      <div className="flex-1 flex items-center justify-end px-4 lg:px-5 gap-2 sm:gap-3">
         {user && (
           <>
             <div className="hidden sm:flex items-center gap-2.5">
@@ -44,7 +47,7 @@ export function Header() {
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-md transition-all border border-transparent hover:border-[var(--border)]"
+              className="flex items-center gap-1.5 px-3 h-8 text-sm text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-md transition-all border border-transparent hover:border-[var(--border)] min-h-[44px]"
             >
               <LogoutIcon />
               <span className="hidden sm:inline">Salir</span>
@@ -76,3 +79,4 @@ function LogoutIcon() {
     </svg>
   );
 }
+

@@ -48,11 +48,11 @@ export function ResultPanel({
   }[status];
 
   return (
-    <div className="mt-6 bg-white border border-[var(--border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
+    <div className="mt-6 bg-white border border-[var(--border)] rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)] bg-stone-50">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-3 border-b border-[var(--border)]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-stone-200 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-md bg-stone-100 flex items-center justify-center">
             <OcrIcon size={13} className="text-stone-500" />
           </div>
           <div>
@@ -84,7 +84,7 @@ export function ResultPanel({
         <div className="lg:col-span-2 flex flex-col">
           <div
             className={`relative bg-[#F0EDE8] flex items-center justify-center overflow-hidden transition-all duration-300 ${
-              imgExpanded ? 'h-[560px]' : 'h-[420px]'
+              imgExpanded ? 'h-[360px] sm:h-[560px]' : 'h-[260px] sm:h-[420px]'
             }`}
           >
             <img
@@ -101,7 +101,7 @@ export function ResultPanel({
           </div>
 
           {/* Image footer */}
-          <div className="px-4 py-2.5 bg-stone-50 border-t border-[var(--border)] flex items-center gap-3">
+          <div className="px-3 sm:px-4 py-2.5 bg-stone-50 border-t border-[var(--border)] flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Imagen</p>
               <p className="text-[11px] text-stone-600 mt-0.5 truncate">

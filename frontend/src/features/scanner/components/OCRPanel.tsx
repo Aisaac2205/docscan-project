@@ -132,9 +132,9 @@ export function OCRPanel({
   const fieldCount = ocrResult?.extractedData ? Object.keys(ocrResult.extractedData).length : 0;
 
   return (
-    <div className="lg:col-span-3 flex flex-col min-h-[420px]">
+    <div className="lg:col-span-3 flex flex-col min-h-[320px] sm:min-h-[420px]">
       {/* ── Tab bar ── */}
-      <div className="flex border-b border-[var(--border)] bg-stone-50/60">
+      <div className="flex border-b border-[var(--border)] bg-white">
         <TabBtn active={activePanel === 'config'} onClick={() => setActivePanel('config')}>
           <OcrIcon size={12} />Extracción
         </TabBtn>
@@ -158,11 +158,11 @@ export function OCRPanel({
 
       {/* ── EXTRACCIÓN ── */}
       {activePanel === 'config' && (
-        <div className="flex-1 flex flex-col gap-4 p-5 overflow-y-auto">
+        <div className="flex-1 flex flex-col gap-4 p-3 sm:p-5 overflow-y-auto">
 
           {/* Smart analyze card */}
-          <div className="rounded-xl border border-[var(--border)] overflow-hidden">
-            <div className="px-4 pt-4 pb-3 bg-gradient-to-b from-stone-50 to-white">
+          <div className="rounded-lg border border-[var(--border)] overflow-hidden">
+            <div className="px-4 pt-4 pb-3 bg-white">
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-stone-900 flex items-center justify-center flex-shrink-0">
                   <SparkleIcon size={14} className="text-white" />
@@ -300,7 +300,7 @@ export function OCRPanel({
           {ocrResult?.extractedData ? (
             <>
               {/* Result header */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)] bg-stone-50/70">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
                 <div className="flex items-center gap-2">
                   <span className="text-[12px] font-semibold text-stone-700">
                     {fieldCount} campo{fieldCount !== 1 ? 's' : ''} extraído{fieldCount !== 1 ? 's' : ''}
@@ -350,7 +350,7 @@ export function OCRPanel({
               </div>
 
               {/* Footer */}
-              <div className="p-3 border-t border-[var(--border)] bg-stone-50/60">
+              <div className="p-3 border-t border-[var(--border)]">
                 <button
                   onClick={() => setActivePanel('chat')}
                   className="w-full h-8 flex items-center justify-center gap-2 text-xs font-medium border border-[var(--border)] text-stone-600 rounded-lg hover:bg-stone-100 transition-colors"
@@ -361,7 +361,7 @@ export function OCRPanel({
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-2">
-              <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mb-1">
+              <div className="w-12 h-12 rounded-lg bg-stone-100 flex items-center justify-center mb-1">
                 <OcrIcon size={20} className="text-stone-400" />
               </div>
               <p className="text-sm font-medium text-stone-600">Sin datos extraídos aún</p>

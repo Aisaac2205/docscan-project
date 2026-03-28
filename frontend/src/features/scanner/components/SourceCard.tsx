@@ -18,9 +18,9 @@ interface SourceCardProps {
 export function SourceCard({ icon, title, subtitle, description, action, variant = 'compact' }: SourceCardProps) {
   const isFeatured = variant === 'featured';
   return (
-    <div className={`bg-white border border-[var(--border)] rounded-xl shadow-[var(--shadow-card)] ${isFeatured ? 'p-5' : 'p-4 flex flex-col'}`}>
+    <div className={`bg-white border border-[var(--border)] rounded-lg ${isFeatured ? 'p-5' : 'p-4 flex flex-col'}`}>
       <div className={`flex items-start gap-3 ${isFeatured ? 'mb-4' : 'mb-3'}`}>
-        <div className={`w-9 h-9 rounded-lg bg-stone-100 border border-[var(--border)] flex items-center justify-center flex-shrink-0 ${isFeatured ? 'mt-0.5' : ''}`}>
+        <div className={`w-8 h-8 rounded-md bg-stone-100 flex items-center justify-center flex-shrink-0 ${isFeatured ? 'mt-0.5' : ''}`}>
           {icon}
         </div>
         <div>

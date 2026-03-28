@@ -78,28 +78,23 @@ export function Sidebar() {
         </div>
       </nav>
 
-      <div className="px-4 mt-4 space-y-2">
-        <div className="p-3 bg-stone-50 rounded-lg border border-[var(--border)]">
-          <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">
+      <div className="px-4 mt-2 border-t border-[var(--border)] pt-4 space-y-3">
+        <div>
+          <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
             Hardware
           </p>
-          <div className="space-y-1.5">
-            {[
-              { label: 'Escáner' },
-              { label: 'Cámara' },
-              { label: 'Impresora' },
-            ].map(({ label }) => (
+          <div className="space-y-1">
+            {['Escáner', 'Cámara', 'Impresora'].map((label) => (
               <div key={label} className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-stone-400" />
+                <span className="w-1 h-1 rounded-full flex-shrink-0 bg-stone-300" />
                 <span className="text-xs text-stone-400">{label}</span>
               </div>
             ))}
           </div>
         </div>
-
-        <div className="p-3 bg-stone-50 rounded-lg border border-[var(--border)]">
-          <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-1">OCR</p>
-          <p className="text-xs text-stone-400 leading-relaxed">Gemini 2.5 Flash</p>
+        <div>
+          <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-0.5">OCR</p>
+          <p className="text-xs text-stone-400">Gemini 2.5 Flash</p>
         </div>
       </div>
     </aside>

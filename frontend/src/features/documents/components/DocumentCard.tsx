@@ -28,34 +28,36 @@ export function DocumentCard({ doc }: DocumentCardProps) {
   const canExtract = doc.status !== 'processing' && !documentAction.isProcessingLocal;
 
   return (
-    <div className="bg-white border border-[var(--border)] rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-start gap-3 p-4">
-        <div className="w-10 h-10 rounded-lg bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
-          {doc.filePath ? (
-            <img
-              src={doc.filePath}
-              alt=""
-              className="w-full h-full object-cover rounded-lg"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          ) : (
-            <FileIcon />
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-medium text-stone-800 truncate">{doc.originalName}</p>
-            <StatusBadge status={doc.status} />
+    <div className="bg-white border border-[var(--border)] rounded-lg overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-3 sm:p-4">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="w-10 h-10 rounded-md bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {doc.filePath ? (
+              <img
+                src={doc.filePath}
+                alt=""
+                className="w-full h-full object-cover rounded-lg"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : (
+              <FileIcon />
+            )}
           </div>
-          <p className="text-xs text-stone-400 mt-0.5">
-            {new Date(doc.createdAt).toLocaleDateString('es-GT', {
-              day: '2-digit', month: 'short', year: 'numeric',
-            })}
-          </p>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-medium text-stone-800 truncate">{doc.originalName}</p>
+              <StatusBadge status={doc.status} />
+            </div>
+            <p className="text-xs text-stone-400 mt-0.5">
+              {new Date(doc.createdAt).toLocaleDateString('es-GT', {
+                day: '2-digit', month: 'short', year: 'numeric',
+              })}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
+        <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap sm:justify-end">
           {!isCompleted && (
             <>
               <button
@@ -124,11 +126,11 @@ export function DocumentCard({ doc }: DocumentCardProps) {
       </div>
 
       {isCompleted && isExpanded && extracted && (
-        <div className="border-t border-[var(--border)] px-4 pb-4 pt-3 animate-slide-up">
+        <div className="border-t border-[var(--border)] px-3 sm:px-4 pb-3 sm:pb-4 pt-3 animate-slide-up">
           <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2.5">
             Datos extraídos — Gemini OCR
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {Object.entries(extracted).map(([key, value]) => (
               <DataField key={key} label={key.replace(/_/g, ' ')} value={renderValue(value)} />
             ))}
@@ -149,7 +151,7 @@ function renderValue(value: unknown): string | null {
 
 function DataField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="bg-stone-50 rounded-lg px-3 py-2 border border-[var(--border)]">
+    <div className="rounded-md px-3 py-2 border border-[var(--border)]">
       <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wide">{label}</p>
       <p className="text-sm font-medium text-stone-800 mt-0.5 truncate">
         {value ?? <span className="text-stone-300 font-normal">—</span>}

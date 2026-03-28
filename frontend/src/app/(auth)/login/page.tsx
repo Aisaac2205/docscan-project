@@ -55,7 +55,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
         <div className="w-full max-w-[360px]">
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-10 lg:hidden">
@@ -63,8 +63,8 @@ export default function LoginPage() {
             <span className="font-semibold text-lg tracking-tight">DocScan</span>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold text-stone-900 mb-1">Bienvenido de vuelta</h1>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-1">Bienvenido de vuelta</h1>
             <p className="text-stone-500 text-sm">Ingresa tus credenciales para continuar</p>
           </div>
 
