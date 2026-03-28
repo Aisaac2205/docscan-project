@@ -31,7 +31,7 @@ export class OcrService {
 
     switch (mode) {
       case ExtractionMode.GENERAL:
-        return `${base} Extrae: tipo_documento, idioma, fecha (YYYY-MM-DD), partes_involucradas, resumen, campos_clave, texto_completo.`;
+        return `${base} Extrae: tipo_documento, idioma, fecha (YYYY-MM-DD), partes_involucradas, resumen, campos_clave, texto_completo. Incluye también "_confidence" con un número entre 0.0 y 1.0 indicando tu confianza en la extracción.`;
       case ExtractionMode.INVOICE:
         return `${base} Extrae de la factura: proveedor, fecha (YYYY-MM-DD), total (número), nit.`;
       case ExtractionMode.RECEIPT:
@@ -66,7 +66,7 @@ export class OcrService {
       throw new NotFoundException(`Documento con ID ${documentId} no encontrado`);
     }
 
-    if (document.status === 'completed' && document.extractedData) {
+    if (document.status === 'completed' && document.extractedData && document.documentType === mode) {
       return document.extractedData as Record<string, any>;
     }
 
@@ -86,32 +86,64 @@ export class OcrService {
       const systemInstruction = this.buildSystemInstruction(mode);
       const userPrompt = this.buildUserPrompt(mode, customFields);
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user', parts: [
-              { text: userPrompt },
-              { inlineData: { data: base64Image, mimeType: document.mimeType } },
-            ]
+      let response: Awaited<ReturnType<typeof this.ai.models.generateContent>>;
+      try {
+        response = await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            {
+              role: 'user', parts: [
+                { text: userPrompt },
+                { inlineData: { data: base64Image, mimeType: document.mimeType } },
+              ]
+            },
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
           },
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-        },
-      });
+        });
+      } catch (geminiError: any) {
+        const status = geminiError?.status ?? geminiError?.httpStatus;
+        if (status === 429) {
+          throw new InternalServerErrorException('Límite de solicitudes a Gemini alcanzado. Intenta en un momento.');
+        }
+        if (status === 401 || status === 403) {
+          throw new InternalServerErrorException('Error de autenticación con Gemini. Verifica GEMINI_API_KEY.');
+        }
+        throw new InternalServerErrorException(`Error al llamar a Gemini: ${geminiError?.message ?? 'desconocido'}`);
+      }
 
       const jsonText = response.text;
       if (!jsonText) {
         throw new InternalServerErrorException('Gemini no devolvió texto válido.');
       }
 
-      const extractedData = JSON.parse(jsonText);
-      await this.documentsRepository.update(documentId, { extractedData, status: 'completed' });
+      let rawParsed: Record<string, any>;
+      try {
+        rawParsed = JSON.parse(jsonText);
+      } catch {
+        console.error('JSON inválido de Gemini:', jsonText.slice(0, 200));
+        throw new InternalServerErrorException('Gemini devolvió JSON malformado. Intenta de nuevo.');
+      }
+
+      const confidence: number | undefined =
+        typeof rawParsed._confidence === 'number' ? rawParsed._confidence : undefined;
+      const { _confidence: _dropped, ...extractedData } = rawParsed;
+
+      await this.documentsRepository.update(documentId, {
+        extractedData,
+        status: 'completed',
+        documentType: mode,
+        ...(confidence !== undefined && { confidence }),
+      });
       return extractedData;
     } catch (error) {
-      console.error('Error al procesar con Gemini:', error);
+      if (error instanceof InternalServerErrorException) {
+        await this.documentsRepository.update(documentId, { status: 'failed' }).catch(console.error);
+        throw error;
+      }
+      console.error('Error inesperado al procesar con Gemini:', error);
       await this.documentsRepository.update(documentId, { status: 'failed' }).catch(console.error);
       throw new InternalServerErrorException('Falló la extracción de datos del documento');
     }
