@@ -34,7 +34,7 @@ export default function LoginPage() {
         </div>
         <div>
           <blockquote className="text-stone-300 text-xl font-light leading-relaxed mb-8">
-            "Digitaliza, organiza y extrae datos de tus documentos con precisión mediante inteligencia artificial."
+            &ldquo;Digitaliza, organiza y extrae datos de tus documentos con precisión mediante inteligencia artificial.&rdquo;
           </blockquote>
           <div className="grid grid-cols-3 gap-4">
             {[

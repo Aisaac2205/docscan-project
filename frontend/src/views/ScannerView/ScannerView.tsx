@@ -96,10 +96,10 @@ export function ScannerView() {
       </div>
 
       <input
-        ref={usb.fileInputRef}
+        ref={usb.fileInputRef} // eslint-disable-line react-hooks/refs -- false positive: pasar ref object a prop ref es el patrón correcto
         type="file"
         accept="image/*,application/pdf"
-        onChange={usb.handleUsbFile}
+        onChange={usb.handleUsbFile} // eslint-disable-line react-hooks/refs -- false positive: handleUsbFile es un event handler, no accede a .current en render
         className="hidden"
       />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">

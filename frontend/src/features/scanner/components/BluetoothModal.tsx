@@ -64,7 +64,7 @@ export function BluetoothModal({
               <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Impresión por Bluetooth</p>
               <p className="text-xs text-stone-500">1. Empareja el dispositivo con el botón de abajo.</p>
               <p className="text-xs text-stone-500">2. Captura o escanea un documento.</p>
-              <p className="text-xs text-stone-500">3. Usa el botón "Imprimir" — el sistema usará la impresora BT emparejada.</p>
+              <p className="text-xs text-stone-500">3. Usa el botón &ldquo;Imprimir&rdquo; — el sistema usará la impresora BT emparejada.</p>
             </div>
           )}
 

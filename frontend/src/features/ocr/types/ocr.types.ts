@@ -11,7 +11,7 @@ export const EXTRACTION_MODE_LABELS: Record<ExtractionMode, string> = {
 export type OCRResponse = {
   documentId: string;
   extractionMode: ExtractionMode;
-  extractedData: Record<string, any>;
+  extractedData: Record<string, unknown>;
 };
 
 export type SuggestedField = {

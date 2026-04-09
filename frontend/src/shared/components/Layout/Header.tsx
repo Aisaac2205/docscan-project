@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
 
@@ -26,10 +27,10 @@ export function Header() {
         className="flex items-center h-full px-4 lg:px-5 lg:border-r lg:border-[var(--border)]"
         style={{ width: 'var(--sidebar-width)', minWidth: 'auto' }}
       >
-        <a href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <DocScanLogo />
           <span className="font-semibold text-stone-900 text-[15px] tracking-tight">DocScan</span>
-        </a>
+        </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-end px-4 lg:px-5 gap-2 sm:gap-3">

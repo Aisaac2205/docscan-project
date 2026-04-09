@@ -4,7 +4,7 @@ export interface ExtractedData {
   fecha?: string | null;
   total?: number | null;
   nit?: string | null;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface Document {
@@ -16,7 +16,7 @@ export interface Document {
   rawText: string | null;
   confidence: number | null;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  extractedData: Record<string, any> | null;
+  extractedData: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -22,8 +22,8 @@ export const useScannerStore = create<ScannerState>((set) => ({
       const res = await scannerClient.captureFromCamera(base64);
       set({ scanning: false });
       return res;
-    } catch (err: any) {
-      set({ cameraError: err?.message || 'Error al capturar imagen', scanning: false });
+    } catch (err: unknown) {
+      set({ cameraError: err instanceof Error ? err.message : 'Error al capturar imagen', scanning: false });
       return null;
     }
   },

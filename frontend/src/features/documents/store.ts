@@ -30,8 +30,8 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
       const docs = await documentsClient.list();
       console.log('[documents] fetched:', docs.map(d => ({ id: d.id, status: d.status, extractedData: d.extractedData })));
       set({ documents: docs });
-    } catch (err: any) {
-      set({ error: err?.message || 'Error fetching documents' });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error fetching documents' });
     } finally {
       set({ loading: false });
     }
@@ -42,8 +42,8 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
       const doc = await documentsClient.upload(file);
       set((s) => ({ documents: [doc, ...s.documents] }));
       return doc;
-    } catch (err: any) {
-      set({ error: err?.message || 'Error uploading' });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error uploading' });
       return null;
     } finally {
       set({ loading: false });
@@ -54,8 +54,8 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
     try {
       await documentsClient.delete(id);
       set((s) => ({ documents: s.documents.filter((d) => d.id !== id) }));
-    } catch (err: any) {
-      set({ error: err?.message || 'Error deleting' });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error deleting' });
     } finally {
       set({ loading: false });
     }

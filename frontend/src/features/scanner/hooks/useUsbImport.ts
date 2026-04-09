@@ -22,8 +22,8 @@ export function useUsbImport(applyResult: (res: CaptureResult | null) => boolean
           originalName: doc.originalName,
         };
         if (applyResult(result)) toast.success('PDF importado correctamente');
-      } catch (err: any) {
-        toast.error(err?.message || 'Error al importar el PDF');
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : 'Error al importar el PDF');
       }
       return;
     }

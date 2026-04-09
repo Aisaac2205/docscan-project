@@ -37,8 +37,8 @@ export const useOCRStore = create<OCRState>((set) => ({
       const res = await ocrClient.processDocument(documentId, mode, customFields);
       set({ lastResult: res, processing: false });
       return res;
-    } catch (err: any) {
-      set({ error: err?.message || 'Error OCR', processing: false });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error OCR', processing: false });
       return null;
     }
   },
@@ -49,8 +49,8 @@ export const useOCRStore = create<OCRState>((set) => ({
       const res = await ocrClient.analyzeDocument(documentId);
       set({ analysisResult: res, analyzing: false });
       return res;
-    } catch (err: any) {
-      set({ error: err?.message || 'Error al analizar', analyzing: false });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error al analizar', analyzing: false });
       return null;
     }
   },
@@ -64,8 +64,8 @@ export const useOCRStore = create<OCRState>((set) => ({
         querying: false,
       }));
       return res;
-    } catch (err: any) {
-      set({ error: err?.message || 'Error al consultar', querying: false });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error al consultar', querying: false });
       return null;
     }
   },

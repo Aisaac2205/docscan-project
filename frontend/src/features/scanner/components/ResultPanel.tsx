@@ -94,6 +94,7 @@ export function ResultPanel({
                 className="w-full h-full border-0"
               />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- previewUrl puede ser blob URL o data URL; next/image no soporta estos esquemas
               <img
                 src={previewUrl}
                 alt="Documento capturado"

@@ -23,7 +23,7 @@ export function DocumentCard({ doc }: DocumentCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const extracted = doc.extractedData as Record<string, any> | null;
+  const extracted = doc.extractedData as Record<string, unknown> | null;
   const isCompleted = doc.status === 'completed';
   const canExtract = doc.status !== 'processing' && !documentAction.isProcessingLocal;
 
@@ -33,6 +33,7 @@ export function DocumentCard({ doc }: DocumentCardProps) {
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-md bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
             {doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf') ? (
+              // eslint-disable-next-line @next/next/no-img-element -- thumbnail dinámico de CDN con onError; next/image no soporta este handler para ocultar imágenes rotas
               <img
                 src={doc.filePath}
                 alt=""

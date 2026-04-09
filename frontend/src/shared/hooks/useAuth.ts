@@ -39,10 +39,11 @@ export function useAuth() {
         const res = await api.get<{ id: string; email: string; name?: string | null }>('/api/auth/me');
         if (!mounted) return;
         setState({ token, user: res.data, loading: false, error: null });
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
         // Only clear token on auth errors (401), not network/server errors
-        if (err?.response?.status === 401) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 401) {
           api.setToken(null);
           setState({ token: null, user: null, loading: false, error: null });
         } else {
@@ -64,8 +65,9 @@ export function useAuth() {
       const me = await api.get<User>('/api/auth/me');
       setState({ token, user: me.data, loading: false, error: null });
       return me.data;
-    } catch (err: any) {
-      setState((s) => ({ ...s, error: err?.response?.data?.message || 'Login failed', loading: false }));
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setState((s) => ({ ...s, error: message || 'Login failed', loading: false }));
       return null;
     }
   }, []);
@@ -80,8 +82,9 @@ export function useAuth() {
       const me = await api.get<User>('/api/auth/me');
       setState({ token, user: me.data, loading: false, error: null });
       return me.data;
-    } catch (err: any) {
-      setState((s) => ({ ...s, error: err?.response?.data?.message || 'Registration failed', loading: false }));
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setState((s) => ({ ...s, error: message || 'Registration failed', loading: false }));
       return null;
     }
   }, []);

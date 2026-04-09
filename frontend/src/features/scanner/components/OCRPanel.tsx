@@ -69,11 +69,13 @@ export function OCRPanel({
 
   useEffect(() => {
     if (analysisResult) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- patrón intencional: sincronizar campos sugeridos cuando cambia el análisis
       setSelectedFields(new Set(analysisResult.suggestedFields.map((f) => f.key)));
     }
   }, [analysisResult]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- patrón intencional: cambiar panel activo cuando llega el resultado OCR
     if (ocrResult) setActivePanel('result');
   }, [ocrResult]);
 
@@ -366,7 +368,7 @@ export function OCRPanel({
               </div>
               <p className="text-sm font-medium text-stone-600">Sin datos extraídos aún</p>
               <p className="text-xs text-stone-400 max-w-[200px] leading-relaxed">
-                Ve a Extracción y presiona "Extraer datos con OCR"
+                Ve a Extracción y presiona &ldquo;Extraer datos con OCR&rdquo;
               </p>
               <button
                 onClick={() => setActivePanel('config')}
