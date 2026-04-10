@@ -1,9 +1,10 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Base URL for backend API (can be overridden via env in Next.js)
-const API_BASE = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
-  ? process.env.NEXT_PUBLIC_API_URL
-  : 'http://localhost:3001';
+// NEXT_PUBLIC_API_URL is required in production; falls back to localhost for local dev only.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+if (!process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === 'production') {
+  throw new Error('Missing required environment variable: NEXT_PUBLIC_API_URL');
+}
 
 const TOKEN_STORAGE_KEY = 'docscan_token';
 

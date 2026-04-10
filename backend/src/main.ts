@@ -13,7 +13,7 @@ async function bootstrap() {
   // preflight OPTIONS requests and oversized-body errors still get
   // the Access-Control-Allow-Origin header.
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: appConfig.corsOrigins,
     credentials: true,
   });
 
