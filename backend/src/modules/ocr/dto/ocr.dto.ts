@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsArray, ArrayMaxSize, MaxLength, Matches } from 'class-validator';
 // IDs use cuid() format — validate as non-empty strings, not UUIDs
+// customFields son sanitizados por OcrService.sanitizeFieldName antes de llegar a Gemini
 
 export enum ExtractionMode {
   INVOICE  = 'invoice',   // Factura: proveedor, fecha, total, nit
@@ -9,8 +10,8 @@ export enum ExtractionMode {
   CUSTOM   = 'custom',    // Campos personalizados por el usuario
 }
 
-// Solo letras, números, espacios y guión bajo — sin comillas ni caracteres de control
-const SAFE_FIELD_REGEX = /^[\w\s]{1,50}$/;
+// Bloquea solo caracteres de control y newlines — la sanitización real ocurre en OcrService
+const SAFE_FIELD_REGEX = /^[^\x00-\x1f\x7f\n\r]{1,150}$/;
 
 export class ProcessOcrDto {
   @IsString()
@@ -20,13 +21,13 @@ export class ProcessOcrDto {
   @IsEnum(ExtractionMode)
   extractionMode?: ExtractionMode;
 
-  /** Solo cuando extractionMode = 'custom'. Máx 10 campos, 50 chars c/u, solo alfanuméricos. */
+  /** Solo cuando extractionMode = 'custom'. Máx 10 campos, 150 chars c/u. Los chars especiales son sanitizados por el servicio. */
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(10)
   @IsString({ each: true })
-  @MaxLength(50, { each: true })
-  @Matches(SAFE_FIELD_REGEX, { each: true, message: 'customFields solo puede contener letras, números, espacios y guión bajo' })
+  @MaxLength(150, { each: true })
+  @Matches(SAFE_FIELD_REGEX, { each: true, message: 'customFields no puede contener caracteres de control ni saltos de línea' })
   customFields?: string[];
 }
 
