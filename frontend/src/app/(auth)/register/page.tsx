@@ -90,7 +90,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Tu nombre"
-                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 input-focus input-focus-accent"
                 required
                 autoComplete="name"
               />
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nombre@empresa.com"
-                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 input-focus input-focus-accent"
                 required
                 autoComplete="email"
               />
@@ -120,7 +120,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
+                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 input-focus input-focus-accent"
                 minLength={6}
                 required
                 autoComplete="new-password"

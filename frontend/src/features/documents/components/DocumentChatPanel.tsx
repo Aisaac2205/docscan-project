@@ -82,7 +82,7 @@ export function DocumentChatPanel({ chat }: DocumentChatPanelProps) {
             if (e.key === 'Enter' && !e.shiftKey) handleSend();
           }}
           placeholder="Escribe tu pregunta..."
-          className="flex-1 h-8 px-3 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition-all"
+          className="flex-1 h-8 px-3 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-xs input-focus"
         />
         <button
           onClick={() => handleSend()}

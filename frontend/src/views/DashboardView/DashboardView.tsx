@@ -16,7 +16,7 @@ export function DashboardView() {
         <p className="text-sm text-stone-400 mt-0.5">Panel de control · DocScan</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 md:mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 md:mb-7 stagger-children">
         <StatCard label="Total documentos" value={loading ? '—' : String(stats.total)} icon={<DocsIcon />} />
         <StatCard label="Con OCR" value={loading ? '—' : String(stats.completed)} icon={<OcrIcon />} highlight={stats.completed > 0} />
         <StatCard label="Pendientes" value={loading ? '—' : String(stats.pending)} icon={<PendingIcon />} />
@@ -26,7 +26,7 @@ export function DashboardView() {
         <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-3">
           Hardware disponible
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 stagger-children">
           <HardwareCard
             icon={<ScannerDeviceIcon />}
             title="Escáner en red"

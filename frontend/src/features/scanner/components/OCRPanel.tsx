@@ -277,7 +277,7 @@ export function OCRPanel({
                   value={customFields}
                   onChange={(e) => setCustomFields(e.target.value)}
                   placeholder="proveedor, fecha, monto, NIT…"
-                  className="w-full h-9 px-3 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-sm focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition-all"
+                  className="w-full h-9 px-3 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-sm input-focus"
                 />
               </div>
             )}
@@ -457,7 +457,7 @@ export function OCRPanel({
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendQuestion()}
                 placeholder="Pregunta sobre el documento…"
                 disabled={!documentId || querying}
-                className="flex-1 h-9 px-3 border border-[var(--border)] rounded-xl bg-white text-stone-800 text-sm focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition-all disabled:opacity-50 placeholder:text-stone-300"
+                className="flex-1 h-9 px-3 border border-[var(--border)] rounded-xl bg-white text-stone-800 text-sm input-focus disabled:opacity-50 placeholder:text-stone-300"
               />
               <button
                 onClick={handleSendQuestion}

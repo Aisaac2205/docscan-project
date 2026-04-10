@@ -44,7 +44,7 @@ export function WifiModal({ wifiIp, wifiPort, wifiStatus, wifiError, onIpChange,
                 value={wifiIp}
                 onChange={(e) => onIpChange(e.target.value)}
                 placeholder="192.168.1.100"
-                className="w-full h-9 px-3 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm font-mono focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition-all"
+                className="w-full h-9 px-3 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm font-mono input-focus"
               />
             </div>
             <div className="w-20">
@@ -56,7 +56,7 @@ export function WifiModal({ wifiIp, wifiPort, wifiStatus, wifiError, onIpChange,
                 value={wifiPort}
                 onChange={(e) => onPortChange(e.target.value)}
                 placeholder="80"
-                className="w-full h-9 px-3 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm font-mono focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition-all"
+                className="w-full h-9 px-3 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm font-mono input-focus"
               />
             </div>
           </div>

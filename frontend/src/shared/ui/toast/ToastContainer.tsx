@@ -1,8 +1,9 @@
 'use client';
 
+import type { ReactElement } from 'react';
 import { useToastStore, type ToastType } from './store';
 
-const toastConfig: Record<ToastType, { bg: string; border: string; text: string; icon: JSX.Element }> = {
+const toastConfig: Record<ToastType, { bg: string; border: string; text: string; icon: ReactElement }> = {
   success: {
     bg: 'bg-white',
     border: 'border-[var(--success-border)]',

@@ -6,8 +6,8 @@ import { SpinnerIcon, CameraIcon, CloseIcon } from '@/shared/ui/icons';
 interface CameraModalProps {
   streamReady: boolean;
   scanning: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   onCapture: () => void;
   onClose: () => void;
 }
