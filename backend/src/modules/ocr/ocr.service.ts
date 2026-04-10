@@ -18,7 +18,7 @@ export class OcrService {
   }
 
   private sanitizeFieldName(field: string): string {
-    return field.replace(/[^\w\s]/g, '').trim().slice(0, 50);
+    return field.replace(/[^\w\s]/g, '').trim().slice(0, 100);
   }
 
   private buildSystemInstruction(mode: ExtractionMode): string {
@@ -104,7 +104,8 @@ export class OcrService {
           },
         });
       } catch (geminiError: any) {
-        const status = geminiError?.status ?? geminiError?.httpStatus;
+        console.error('[OCR] Gemini extractData error:', geminiError?.message ?? geminiError);
+        const status = geminiError?.status ?? geminiError?.httpStatus ?? geminiError?.code;
         if (status === 429) {
           throw new InternalServerErrorException('Límite de solicitudes a Gemini alcanzado. Intenta en un momento.');
         }
@@ -155,12 +156,17 @@ export class OcrService {
     if (!document) throw new NotFoundException(`Documento con ID ${documentId} no encontrado`);
 
     let imageBuffer: Buffer;
-    if (/^https?:\/\//i.test(document.filePath)) {
-      const fetchRes = await fetch(document.filePath);
-      if (!fetchRes.ok) throw new InternalServerErrorException('No se pudo descargar la imagen desde CDN');
-      imageBuffer = Buffer.from(await fetchRes.arrayBuffer());
-    } else {
-      imageBuffer = fs.readFileSync(path.resolve(document.filePath));
+    try {
+      if (/^https?:\/\//i.test(document.filePath)) {
+        const fetchRes = await fetch(document.filePath);
+        if (!fetchRes.ok) throw new InternalServerErrorException('No se pudo descargar la imagen desde CDN');
+        imageBuffer = Buffer.from(await fetchRes.arrayBuffer());
+      } else {
+        imageBuffer = fs.readFileSync(path.resolve(document.filePath));
+      }
+    } catch (fetchError: any) {
+      console.error('[OCR] analyzeDocument fetch error:', fetchError?.message ?? fetchError);
+      throw new InternalServerErrorException('No se pudo obtener el archivo del documento.');
     }
     const base64Image = imageBuffer.toString('base64');
 
@@ -214,12 +220,17 @@ export class OcrService {
     if (!document) throw new NotFoundException(`Documento con ID ${documentId} no encontrado`);
 
     let imageBuffer: Buffer;
-    if (/^https?:\/\//i.test(document.filePath)) {
-      const fetchRes = await fetch(document.filePath);
-      if (!fetchRes.ok) throw new InternalServerErrorException('No se pudo descargar la imagen desde CDN');
-      imageBuffer = Buffer.from(await fetchRes.arrayBuffer());
-    } else {
-      imageBuffer = fs.readFileSync(path.resolve(document.filePath));
+    try {
+      if (/^https?:\/\//i.test(document.filePath)) {
+        const fetchRes = await fetch(document.filePath);
+        if (!fetchRes.ok) throw new InternalServerErrorException('No se pudo descargar la imagen desde CDN');
+        imageBuffer = Buffer.from(await fetchRes.arrayBuffer());
+      } else {
+        imageBuffer = fs.readFileSync(path.resolve(document.filePath));
+      }
+    } catch (fetchError: any) {
+      console.error('[OCR] queryDocument fetch error:', fetchError?.message ?? fetchError);
+      throw new InternalServerErrorException('No se pudo obtener el archivo del documento.');
     }
     const base64Image = imageBuffer.toString('base64');
 
