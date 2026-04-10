@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsArray, ArrayMaxSize, MaxLength, Matches } from 'class-validator';
+import type { ExtractedDataByMode } from '../schemas/extraction.schemas';
 // IDs use cuid() format — validate as non-empty strings, not UUIDs
 // customFields son sanitizados por OcrService.sanitizeFieldName antes de llegar a Gemini
 
@@ -31,10 +32,10 @@ export class ProcessOcrDto {
   customFields?: string[];
 }
 
-export class OcrResultDto {
+export class OcrResultDto<M extends ExtractionMode = ExtractionMode> {
   documentId: string;
-  extractionMode: string;
-  extractedData: Record<string, any>;
+  extractionMode: M;
+  extractedData: ExtractedDataByMode[M];
 }
 
 export class AnalyzeDocumentDto {

@@ -77,6 +77,9 @@ importers:
       tesseract.js:
         specifier: ^5.0.4
         version: 5.1.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@eslint/js':
         specifier: ^9.28.0
@@ -2713,6 +2716,9 @@ packages:
   zlibjs@0.3.1:
     resolution: {integrity: sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@angular-devkit/core@19.2.23(chokidar@4.0.3)':
@@ -5339,3 +5345,5 @@ snapshots:
       graphmatch: 1.1.1
 
   zlibjs@0.3.1: {}
+
+  zod@4.3.6: {}

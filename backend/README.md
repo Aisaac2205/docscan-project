@@ -120,6 +120,20 @@ pnpm start:prod
 ---
 
 ## 🛡️ Estándares de Calidad
-- **Type Safety**: Uso estricto de TypeScript. `any` está prohibido.
-- **Validación**: DTOs validados con `class-validator`.
+- **Type Safety**: Uso estricto de TypeScript. `any` está prohibido. Todos los tipos se infieren de schemas Zod.
+- **Validación**: DTOs de entrada validados con `class-validator`. Respuestas de sistemas externos (Gemini API) validadas con **Zod** en el boundary.
 - **Clean Code**: Seguimiento de los principios SOLID.
+
+## 🔍 Validación de Schemas OCR
+
+Las respuestas de la API de Gemini son validadas con Zod en `src/modules/ocr/schemas/extraction.schemas.ts`. Cada modo de extracción tiene su propio schema tipado:
+
+| Modo | Schema | Campos principales |
+|------|--------|--------------------|
+| `invoice` | `InvoiceDataSchema` | proveedor, fecha, total, nit |
+| `receipt` | `ReceiptDataSchema` | vendedor, fecha, total, items |
+| `id_card` | `IdCardDataSchema` | nombre, documento, fecha_nacimiento |
+| `general` | `GeneralDataSchema` | tipo_documento, resumen, texto_completo |
+| `custom` | `CustomDataSchema` | campos dinámicos definidos por el usuario |
+
+Los tipos TypeScript (`InvoiceData`, `ReceiptData`, etc.) se **infieren directamente de los schemas Zod** — una sola fuente de verdad. Si Gemini rompe el contrato, el error se registra en consola y el servicio hace fallback al dato crudo, nunca silencia el problema.

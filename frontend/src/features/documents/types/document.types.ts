@@ -1,4 +1,4 @@
-/** @deprecated Use Record<string, any> — extractedData is dynamic per document type */
+/** @deprecated Use Record<string, unknown> — extractedData is dynamic per document type */
 export interface ExtractedData {
   proveedor?: string | null;
   fecha?: string | null;

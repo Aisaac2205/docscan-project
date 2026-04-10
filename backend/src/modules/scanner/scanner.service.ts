@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { Readable } from 'stream';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { StorageService } from '../storage/storage.service';
@@ -38,7 +39,7 @@ export class ScannerService {
       filename: fileName,
       path: outputPath,
       buffer,
-      stream: undefined as any,
+      stream: undefined as unknown as Readable,
     };
 
     const uploaded = await this.storageService.uploadFile(fakeFile);
@@ -133,7 +134,7 @@ export class ScannerService {
       filename: fileName,
       path: outputPath,
       buffer: imageBuffer,
-      stream: undefined as any,
+      stream: undefined as unknown as Readable,
     };
 
     const uploaded = await this.storageService.uploadFile(fakeFile);

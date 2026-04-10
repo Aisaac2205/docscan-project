@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsIn } from 'class-validator';
+import { Prisma } from '@prisma/client';
 
 export class CreateDocumentDto {
   @IsString()
@@ -29,5 +30,5 @@ export class UpdateDocumentDto {
     confidence?: number;
 
     @IsOptional()
-    extractedData?: any;
+    extractedData?: Prisma.InputJsonValue;
 }

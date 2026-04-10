@@ -5,10 +5,30 @@ import * as path from 'path';
 import { PrismaService } from '../../config/database.config';
 import { DocumentsRepository } from '../documents/repositories/documents.repository';
 import { ExtractionMode, AnalyzeResultDto, QueryResultDto } from './dto/ocr.dto';
+import { appConfig } from '../../config';
+import { Prisma } from '@prisma/client';
+import {
+  ExtractionSchemas,
+  ExtractedDataByMode,
+  AnalyzeResponseSchema,
+} from './schemas/extraction.schemas';
+
+interface GeminiApiError {
+  message?: string;
+  status?: number;
+  httpStatus?: number;
+  code?: number;
+}
+
+function toGeminiError(e: unknown): GeminiApiError {
+  if (typeof e === 'object' && e !== null) return e as GeminiApiError;
+  return { message: String(e) };
+}
 
 @Injectable()
 export class OcrService {
   private ai: GoogleGenAI;
+  private readonly geminiModel = appConfig.gemini.model;
 
   constructor(
     private readonly documentsRepository: DocumentsRepository,
@@ -55,19 +75,19 @@ export class OcrService {
     return 'Analiza el documento adjunto y devuelve el JSON solicitado.';
   }
 
-  async extractData(
+  async extractData<M extends ExtractionMode>(
     documentId: string,
     userId: string,
-    mode: ExtractionMode = ExtractionMode.GENERAL,
+    mode: M,
     customFields?: string[],
-  ): Promise<Record<string, any>> {
+  ): Promise<ExtractedDataByMode[M]> {
     const document = await this.documentsRepository.findByIdAndUserId(documentId, userId);
     if (!document) {
       throw new NotFoundException(`Documento con ID ${documentId} no encontrado`);
     }
 
     if (document.status === 'completed' && document.extractedData && document.documentType === mode) {
-      return document.extractedData as Record<string, any>;
+      return document.extractedData as ExtractedDataByMode[M];
     }
 
     try {
@@ -89,7 +109,7 @@ export class OcrService {
       let response: Awaited<ReturnType<typeof this.ai.models.generateContent>>;
       try {
         response = await this.ai.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: this.geminiModel,
           contents: [
             {
               role: 'user', parts: [
@@ -103,16 +123,17 @@ export class OcrService {
             responseMimeType: 'application/json',
           },
         });
-      } catch (geminiError: any) {
-        console.error('[OCR] Gemini extractData error:', geminiError?.message ?? geminiError);
-        const status = geminiError?.status ?? geminiError?.httpStatus ?? geminiError?.code;
+      } catch (geminiError: unknown) {
+        const err = toGeminiError(geminiError);
+        console.error('[OCR] Gemini extractData error:', err.message ?? geminiError);
+        const status = err.status ?? err.httpStatus ?? err.code;
         if (status === 429) {
           throw new InternalServerErrorException('Límite de solicitudes a Gemini alcanzado. Intenta en un momento.');
         }
         if (status === 401 || status === 403) {
           throw new InternalServerErrorException('Error de autenticación con Gemini. Verifica GEMINI_API_KEY.');
         }
-        throw new InternalServerErrorException(`Error al llamar a Gemini: ${geminiError?.message ?? 'desconocido'}`);
+        throw new InternalServerErrorException(`Error al llamar a Gemini: ${err.message ?? 'desconocido'}`);
       }
 
       const jsonText = response.text;
@@ -120,7 +141,7 @@ export class OcrService {
         throw new InternalServerErrorException('Gemini no devolvió texto válido.');
       }
 
-      let rawParsed: Record<string, any>;
+      let rawParsed: Record<string, unknown>;
       try {
         rawParsed = JSON.parse(jsonText);
       } catch {
@@ -130,10 +151,16 @@ export class OcrService {
 
       const confidence: number | undefined =
         typeof rawParsed._confidence === 'number' ? rawParsed._confidence : undefined;
-      const { _confidence: _dropped, ...extractedData } = rawParsed;
+      const { _confidence: _dropped, ...rawData } = rawParsed;
+
+      const validation = ExtractionSchemas[mode].safeParse(rawData);
+      if (!validation.success) {
+        console.warn('[OCR] Schema validation warning:', JSON.stringify(validation.error.format()));
+      }
+      const extractedData = (validation.success ? validation.data : rawData) as ExtractedDataByMode[M];
 
       await this.documentsRepository.update(documentId, {
-        extractedData,
+        extractedData: extractedData as unknown as Prisma.InputJsonValue,
         status: 'completed',
         documentType: mode,
         ...(confidence !== undefined && { confidence }),
@@ -164,8 +191,9 @@ export class OcrService {
       } else {
         imageBuffer = fs.readFileSync(path.resolve(document.filePath));
       }
-    } catch (fetchError: any) {
-      console.error('[OCR] analyzeDocument fetch error:', fetchError?.message ?? fetchError);
+    } catch (fetchError: unknown) {
+      const fetchMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      console.error('[OCR] analyzeDocument fetch error:', fetchMsg);
       throw new InternalServerErrorException('No se pudo obtener el archivo del documento.');
     }
     const base64Image = imageBuffer.toString('base64');
@@ -192,7 +220,7 @@ export class OcrService {
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: this.geminiModel,
         contents: [{
           role: 'user',
           parts: [
@@ -206,9 +234,14 @@ export class OcrService {
       const jsonText = response.text;
       if (!jsonText) throw new InternalServerErrorException('Gemini no devolvió texto válido.');
 
-      const result = JSON.parse(jsonText);
-      return { documentId, ...result };
+      const parsed = AnalyzeResponseSchema.safeParse(JSON.parse(jsonText));
+      if (!parsed.success) {
+        console.error('[OCR] analyzeDocument schema error:', JSON.stringify(parsed.error.format()));
+        throw new InternalServerErrorException('Gemini devolvió un análisis con formato inesperado.');
+      }
+      return { documentId, ...parsed.data };
     } catch (error) {
+      if (error instanceof InternalServerErrorException) throw error;
       console.error('Error al analizar documento:', error);
       throw new InternalServerErrorException('Falló el análisis del documento');
     }
@@ -228,8 +261,9 @@ export class OcrService {
       } else {
         imageBuffer = fs.readFileSync(path.resolve(document.filePath));
       }
-    } catch (fetchError: any) {
-      console.error('[OCR] queryDocument fetch error:', fetchError?.message ?? fetchError);
+    } catch (fetchError: unknown) {
+      const fetchMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      console.error('[OCR] queryDocument fetch error:', fetchMsg);
       throw new InternalServerErrorException('No se pudo obtener el archivo del documento.');
     }
     const base64Image = imageBuffer.toString('base64');
@@ -244,7 +278,7 @@ export class OcrService {
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: this.geminiModel,
         contents: [{
           role: 'user',
           parts: [

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DocumentsRepository, ExtractedData } from './repositories/documents.repository';
+import { Prisma } from '@prisma/client';
+import { DocumentsRepository } from './repositories/documents.repository';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class DocumentsService {
       originalName: dto.originalName,
       mimeType: dto.mimeType,
       filePath: dto.filePath,
-      documentType: (dto as any).documentType || 'document',
+      documentType: dto.documentType || 'document',
     });
   }
 
@@ -37,7 +38,7 @@ export class DocumentsService {
     if (!document) {
       throw new NotFoundException('Documento no encontrado');
     }
-    return this.repository.update(id, dto as any);
+    return this.repository.update(id, dto);
   }
 
   async deleteDocument(id: string, userId: string) {
@@ -48,7 +49,7 @@ export class DocumentsService {
     return this.repository.delete(id);
   }
 
-  async updateSystemData(id: string, updateData: { extractedData?: ExtractedData; status?: string }) {
-    return this.repository.update(id, updateData as any);
+  async updateSystemData(id: string, updateData: { extractedData?: Prisma.InputJsonValue; status?: string }) {
+    return this.repository.update(id, updateData);
   }
 }
