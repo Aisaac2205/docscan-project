@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
 
@@ -133,12 +134,14 @@ export default function LoginPage() {
 
 function DocScanIcon({ dark }: { dark?: boolean }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="6" fill={dark ? '#1C1917' : 'white'} />
-      <rect x="7" y="6" width="10" height="13" rx="1.5" fill={dark ? 'white' : '#1C1917'} />
-      <rect x="11" y="6" width="10" height="13" rx="1.5" fill={dark ? '#A8A29E' : '#78716C'} />
-      <rect x="9" y="20" width="14" height="2" rx="1" fill={dark ? '#78716C' : '#A8A29E'} />
-    </svg>
+    <Image
+      src="/logo.png"
+      alt="DocScan"
+      width={28}
+      height={28}
+      className={dark ? undefined : 'invert'}
+      priority
+    />
   );
 }
 

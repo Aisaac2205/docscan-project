@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
@@ -62,12 +63,7 @@ export function Header() {
 
 function DocScanLogo() {
   return (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <rect width="26" height="26" rx="6" fill="#1C1917" />
-      <rect x="6" y="5" width="9" height="12" rx="1.5" fill="white" />
-      <rect x="10" y="5" width="9" height="12" rx="1.5" fill="#78716C" />
-      <rect x="8" y="18.5" width="13" height="2" rx="1" fill="#57534E" />
-    </svg>
+    <Image src="/logo.png" alt="DocScan" width={26} height={26} priority />
   );
 }
 
