@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Protect routes under /dashboard, /documents, /scan and /features (server-side middleware)
 const PROTECTED_PATHS = ['/dashboard', '/documents', '/scan', '/features', '/app'];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
 
