@@ -11,7 +11,7 @@ API robusta y escalable construida con **NestJS**, diseñada para la gestión in
 - **Seguridad**: Passport.js + JWT (JSON Web Tokens)
 - **IA/OCR**: 
   - Google GenAI (@google/genai) para análisis semántico.
-  - Tesseract.js para reconocimiento óptico de caracteres local.
+
 - **Procesamiento de Imágenes**: Sharp
 - **Gestión de Paquetes**: pnpm
 
