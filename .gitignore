@@ -23,6 +23,7 @@ coverage/
 out/
 .turbo/
 *.tmp
+tsconfig.tsbuildinfo
 .agents/
 .claude/
 CLAUDE.md
