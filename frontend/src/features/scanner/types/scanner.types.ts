@@ -10,7 +10,15 @@ export interface ScanResult {
 }
 
 export type WifiStatus = 'idle' | 'connecting' | 'scanning' | 'error';
-export type BtStatus = 'idle' | 'connecting' | 'connected' | 'error';
+
+export interface ScannerConfig {
+  id: string;
+  name: string;
+  ip: string;
+  port: number;
+  lastSeenAt: string | null;
+  createdAt: string;
+}
 
 export interface CaptureResult {
   documentId: string;

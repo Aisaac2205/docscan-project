@@ -6,14 +6,12 @@ import { useScanResult } from '@/features/scanner/hooks/useScanResult';
 import { useCameraCapture } from '@/features/scanner/hooks/useCameraCapture';
 import { useWifiScanner } from '@/features/scanner/hooks/useWifiScanner';
 import { useUsbImport } from '@/features/scanner/hooks/useUsbImport';
-import { useBluetoothPrinter } from '@/features/scanner/hooks/useBluetoothPrinter';
 import { printDocument } from '@/features/scanner/utils/print';
 import { CameraModal } from '@/features/scanner/components/CameraModal';
 import { WifiModal } from '@/features/scanner/components/WifiModal';
-import { BluetoothModal } from '@/features/scanner/components/BluetoothModal';
 import { SourceCard } from '@/features/scanner/components/SourceCard';
 import { ResultPanel } from '@/features/scanner/components/ResultPanel';
-import { CameraIcon, WifiIcon, UsbIcon, BluetoothIcon } from '@/shared/ui/icons';
+import { CameraIcon, WifiIcon, UsbIcon } from '@/shared/ui/icons';
 
 export function ScannerView() {
   const { scanning, error, cameraError } = useScannerStore();
@@ -29,7 +27,6 @@ export function ScannerView() {
   const wifi = useWifiScanner(applyResult);
   const usb = useUsbImport(applyResult);
   const handlePrint = () => printDocument(previewUrl, ocrResult);
-  const bt = useBluetoothPrinter(handlePrint, !!previewUrl);
 
   return (
     <div>
@@ -54,26 +51,21 @@ export function ScannerView() {
       {wifi.wifiModal && (
         <WifiModal
           wifiIp={wifi.wifiIp}
-          wifiPort={wifi.wifiPort}
           wifiStatus={wifi.wifiStatus}
           wifiError={wifi.wifiError}
           onIpChange={wifi.setWifiIp}
-          onPortChange={wifi.setWifiPort}
           onScan={wifi.handleNetworkScan}
           onClose={wifi.closeWifiModal}
-        />
-      )}
-
-      {bt.btModal && (
-        <BluetoothModal
-          btStatus={bt.btStatus}
-          btDeviceName={bt.btDeviceName}
-          btError={bt.btError}
-          hasResult={!!previewUrl}
-          onConnect={bt.handleBtConnect}
-          onDisconnect={bt.disconnectBt}
-          onPrint={bt.handleBtPrint}
-          onClose={bt.closeBtModal}
+          configs={wifi.configs}
+          pingStatus={wifi.pingStatus}
+          showAddForm={wifi.showAddForm}
+          onShowAddForm={wifi.setShowAddForm}
+          saveName={wifi.saveName}
+          onSaveNameChange={wifi.setSaveName}
+          saving={wifi.saving}
+          onScanFromConfig={wifi.handleScanFromConfig}
+          onSaveConfig={wifi.handleSaveConfig}
+          onDeleteConfig={wifi.handleDeleteConfig}
         />
       )}
 
@@ -102,7 +94,7 @@ export function ScannerView() {
         onChange={usb.handleUsbFile} // eslint-disable-line react-hooks/refs -- false positive: handleUsbFile es un event handler, no accede a .current en render
         className="hidden"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
         <SourceCard
           icon={<WifiIcon />}
           title="Escáner en red"
@@ -119,20 +111,6 @@ export function ScannerView() {
             label: <><UsbIcon size={14} />Seleccionar archivo</>,
             onClick: () => usb.fileInputRef.current?.click(),
             disabled: scanning,
-          }}
-        />
-        <SourceCard
-          icon={<BluetoothIcon />}
-          title="Impresora Bluetooth"
-          subtitle={
-            bt.btStatus === 'connected' && bt.btDeviceName
-              ? <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />{bt.btDeviceName}</span>
-              : 'BT · Web Bluetooth'
-          }
-          description="Empareja una impresora Bluetooth para imprimir documentos digitalizados directamente desde el navegador."
-          action={{
-            label: <><BluetoothIcon size={14} />{bt.btStatus === 'connected' ? 'Administrar dispositivo' : 'Emparejar dispositivo'}</>,
-            onClick: bt.openBtModal,
           }}
         />
       </div>
