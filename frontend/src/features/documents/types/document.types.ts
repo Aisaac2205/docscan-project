@@ -1,12 +1,3 @@
-/** @deprecated Use Record<string, unknown> — extractedData is dynamic per document type */
-export interface ExtractedData {
-  proveedor?: string | null;
-  fecha?: string | null;
-  total?: number | null;
-  nit?: string | null;
-  [key: string]: unknown;
-}
-
 export interface Document {
   id: string;
   userId: string;
@@ -21,8 +12,3 @@ export interface Document {
   updatedAt: string;
 }
 
-export interface OCRResult {
-  text: string;
-  confidence: number;
-  documentId: string;
-}

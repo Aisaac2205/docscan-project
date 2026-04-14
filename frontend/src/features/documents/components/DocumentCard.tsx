@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import type { Document } from '../types/document.types';
 import { useDocumentAction } from '../hooks/useDocumentAction';
 import { useDocumentChat } from '../hooks/useDocumentChat';
+import { useExtractedFields } from '../hooks/useExtractedFields';
 import { DocumentChatPanel } from './DocumentChatPanel';
+import { ExtractedFieldsPanel } from './ExtractedFieldsPanel';
 import { StatusBadge } from './StatusBadge';
 import { printDocument } from '../utils/print';
 import { useDocumentStore } from '../store';
@@ -24,6 +26,7 @@ export function DocumentCard({ doc }: DocumentCardProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const extracted = doc.extractedData as Record<string, unknown> | null;
+  const renderedFields = useExtractedFields(extracted);
   const isCompleted = doc.status === 'completed';
   const canExtract = doc.status !== 'processing' && !documentAction.isProcessingLocal;
 
@@ -126,17 +129,8 @@ export function DocumentCard({ doc }: DocumentCardProps) {
         </div>
       </div>
 
-      {isCompleted && isExpanded && extracted && (
-        <div className="border-t border-[var(--border)] px-3 sm:px-4 pb-3 sm:pb-4 pt-3 animate-slide-up">
-          <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2.5">
-            Datos extraídos — Gemini OCR
-          </p>
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {Object.entries(extracted).map(([key, value]) => (
-              <DataField key={key} label={key.replace(/_/g, ' ')} value={renderValue(value)} />
-            ))}
-          </div>
-        </div>
+      {isCompleted && isExpanded && renderedFields.length > 0 && (
+        <ExtractedFieldsPanel fields={renderedFields} />
       )}
 
       {isChatOpen && <DocumentChatPanel chat={documentChat} />}
@@ -144,19 +138,3 @@ export function DocumentCard({ doc }: DocumentCardProps) {
   );
 }
 
-function renderValue(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === 'object') return JSON.stringify(value, null, 2);
-  return String(value);
-}
-
-function DataField({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div className="rounded-md px-3 py-2 border border-[var(--border)]">
-      <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-medium text-stone-800 mt-0.5 truncate">
-        {value ?? <span className="text-stone-300 font-normal">—</span>}
-      </p>
-    </div>
-  );
-}
