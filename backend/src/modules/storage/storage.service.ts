@@ -55,10 +55,10 @@ export class StorageService {
         if (!uploadSuccess) {
           throw new HttpException('Failed to upload to storage', HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        fs.unlinkSync(tempPath);
+        await this.safeUnlink(tempPath);
         return { url: `${this.cdnBaseUrl}${remotePath}`, size: pdfBuffer.length, width: 0, height: 0 };
       } catch (error) {
-        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        if (fs.existsSync(tempPath)) await this.safeUnlink(tempPath);
         if (error instanceof HttpException) throw error;
         throw new HttpException(
           `Failed to upload PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -71,7 +71,10 @@ export class StorageService {
     const tempOutputPath = path.join(path.dirname(tempPath), outputFileName);
 
     try {
-      const optimizedBuffer = await sharp(tempPath)
+      // Leer a buffer antes de procesar para liberar el file handle en Windows
+      // (sharp(path) mantiene el descriptor abierto en Windows → EBUSY al unlinkSync)
+      const inputBuffer = fs.readFileSync(tempPath);
+      const optimizedBuffer = await sharp(inputBuffer)
         .resize(4096, 4096, {
           fit: 'inside',
           withoutEnlargement: true,
@@ -91,9 +94,9 @@ export class StorageService {
         );
       }
 
-      fs.unlinkSync(tempPath);
+      await this.safeUnlink(tempPath);
       if (fs.existsSync(tempOutputPath)) {
-        fs.unlinkSync(tempOutputPath);
+        await this.safeUnlink(tempOutputPath);
       }
 
       return {
@@ -104,10 +107,10 @@ export class StorageService {
       };
     } catch (error) {
       if (fs.existsSync(tempPath)) {
-        fs.unlinkSync(tempPath);
+        await this.safeUnlink(tempPath);
       }
       if (fs.existsSync(tempOutputPath)) {
-        fs.unlinkSync(tempOutputPath);
+        await this.safeUnlink(tempOutputPath);
       }
       throw new HttpException(
         `Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -133,6 +136,24 @@ export class StorageService {
     } catch (error) {
       console.error('Bunny upload error:', error);
       return false;
+    }
+  }
+
+  /** Elimina un archivo con reintentos — Windows puede tener el handle ocupado brevemente tras escribirlo (EBUSY). */
+  private async safeUnlink(filePath: string): Promise<void> {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        fs.unlinkSync(filePath);
+        return;
+      } catch (err: unknown) {
+        const code = (err as { code?: string }).code;
+        if (code === 'ENOENT') return; // ya fue borrado
+        if (code === 'EBUSY' && attempt < 2) {
+          await new Promise((r) => setTimeout(r, 80 * (attempt + 1)));
+        } else {
+          throw err;
+        }
+      }
     }
   }
 
