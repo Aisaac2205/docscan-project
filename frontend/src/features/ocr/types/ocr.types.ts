@@ -1,11 +1,12 @@
-export type ExtractionMode = 'invoice' | 'receipt' | 'id_card' | 'general' | 'custom';
+export type ExtractionMode = 'cv' | 'id_card' | 'fiscal_social' | 'medical_cert' | 'general' | 'custom';
 
 export const EXTRACTION_MODE_LABELS: Record<ExtractionMode, string> = {
-  general: 'Texto libre',
-  invoice: 'Factura',
-  receipt: 'Recibo / Ticket',
-  id_card: 'DPI / Cédula',
-  custom:  'Personalizado',
+  cv:           'Currículum Vitae',
+  id_card:      'DPI / Pasaporte',
+  fiscal_social: 'NIT / IGSS',
+  medical_cert: 'Constancia Médica',
+  general:      'Texto libre',
+  custom:       'Personalizado',
 };
 
 export type OCRResponse = {
