@@ -15,7 +15,7 @@ interface OCRChatPanelProps {
   question: string;
   setQuestion: (v: string) => void;
   handleSendQuestion: () => void;
-  chatEndRef: React.RefObject<HTMLDivElement>;
+  chatEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const HINT_QUESTIONS = [

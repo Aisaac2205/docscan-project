@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PrintIcon, SparkleIcon, OcrIcon, SpinnerIcon } from '@/shared/ui/icons';
-import type { ExtractionMode, OCRResponse, AnalyzeResult } from '@/features/ocr/types/ocr.types';
+import type { ExtractionMode, OCRResponse, AnalyzeResult, ProviderInfo, ProviderId } from '@/features/ocr/types/ocr.types';
 import { OCRPanel } from './OCRPanel';
 
 interface ResultPanelProps {
@@ -18,6 +18,11 @@ interface ResultPanelProps {
   querying: boolean;
   analysisResult: AnalyzeResult | null;
   queryHistory: { id: string; question: string; answer: string; createdAt: string }[];
+  providers: ProviderInfo[];
+  selectedProvider: ProviderId | undefined;
+  selectedModel: string | undefined;
+  onProviderChange: (id: ProviderId) => void;
+  onModelChange: (model: string) => void;
   onExtract: (fields?: string[]) => void;
   onAnalyze: () => void;
   onQuery: (question: string) => void;
@@ -29,6 +34,7 @@ export function ResultPanel({
   ocrMode, setOcrMode, customFields, setCustomFields,
   processingOcr, analyzing, querying,
   analysisResult, queryHistory,
+  providers, selectedProvider, selectedModel, onProviderChange, onModelChange,
   onExtract, onAnalyze, onQuery, onPrint,
 }: ResultPanelProps) {
   const [imgExpanded, setImgExpanded] = useState(false);
@@ -145,6 +151,11 @@ export function ResultPanel({
           ocrResult={ocrResult}
           analysisResult={analysisResult}
           queryHistory={queryHistory}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          selectedModel={selectedModel}
+          onProviderChange={onProviderChange}
+          onModelChange={onModelChange}
           onExtract={onExtract}
           onAnalyze={onAnalyze}
           onQuery={onQuery}

@@ -20,6 +20,7 @@ export function ScannerView() {
     analyzing, querying,
     ocrMode, setOcrMode, customFields, setCustomFields,
     ocrResult, analysisResult, queryHistory,
+    providers, selectedProvider, selectedModel, setSelectedModel, onProviderChange,
     applyResult, handleAnalyze, handleExtract, handleQuery,
   } = useScanResult();
 
@@ -135,6 +136,11 @@ export function ScannerView() {
           querying={querying}
           analysisResult={analysisResult}
           queryHistory={queryHistory}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          selectedModel={selectedModel}
+          onProviderChange={onProviderChange}
+          onModelChange={setSelectedModel}
           onExtract={handleExtract}
           onAnalyze={handleAnalyze}
           onQuery={handleQuery}

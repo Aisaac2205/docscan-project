@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useOCRStore } from '@/features/ocr/store';
 import { useDocumentStore } from '@/features/documents/store';
+import { ocrClient } from '@/features/ocr/client';
 import { toast } from '@/shared/ui/toast/store';
-import type { ExtractionMode } from '@/features/ocr/types/ocr.types';
+import type { ExtractionMode, ProviderInfo, ProviderId } from '@/features/ocr/types/ocr.types';
 import type { CaptureResult } from '../types/scanner.types';
 
 export function useScanResult() {
@@ -19,6 +20,30 @@ export function useScanResult() {
   const [ocrMode, setOcrMode] = useState<ExtractionMode>('general');
   const [customFields, setCustomFields] = useState('');
   const documentIdRef = useRef<string | null>(null);
+
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId | undefined>(undefined);
+  const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    ocrClient.getProviders()
+      .then((list) => {
+        const available = list.filter((p) => p.available);
+        setProviders(available);
+        if (available.length > 1) {
+          setSelectedProvider(available[0].id);
+          setSelectedModel(available[0].models[0]?.id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Cuando cambia el provider, resetear el modelo al primero disponible de ese provider
+  const handleProviderChange = (id: ProviderId) => {
+    setSelectedProvider(id);
+    const provider = providers.find((p) => p.id === id);
+    setSelectedModel(provider?.models[0]?.id);
+  };
 
   const applyResult = (res: CaptureResult | null): boolean => {
     if (!res?.url) return false;
@@ -43,7 +68,7 @@ export function useScanResult() {
 
   const handleAnalyze = async () => {
     if (!documentIdRef.current) return;
-    const result = await analyzeDocument(documentIdRef.current);
+    const result = await analyzeDocument(documentIdRef.current, selectedProvider, selectedModel);
     if (!result) toast.error('No se pudo analizar el documento');
   };
 
@@ -55,14 +80,13 @@ export function useScanResult() {
       let customFieldsArr: string[] | undefined = fields;
 
       if (fields && fields.length > 0) {
-        // When coming from smart analysis, use custom mode with selected fields
         mode = 'custom';
         customFieldsArr = fields;
       } else if (ocrMode === 'custom') {
         customFieldsArr = customFields.split(',').map((f) => f.trim()).filter(Boolean);
       }
 
-      const result = await processDocument(documentIdRef.current, mode, customFieldsArr);
+      const result = await processDocument(documentIdRef.current, mode, customFieldsArr, selectedProvider, selectedModel);
       if (result) toast.success('Datos extraídos correctamente');
       else toast.error('No se pudieron extraer los datos');
     } catch (err: unknown) {
@@ -74,7 +98,7 @@ export function useScanResult() {
 
   const handleQuery = async (question: string) => {
     if (!documentIdRef.current) return;
-    const result = await queryDocument(documentIdRef.current, question);
+    const result = await queryDocument(documentIdRef.current, question, selectedProvider, selectedModel);
     if (!result) toast.error('No se pudo consultar el documento');
   };
 
@@ -92,6 +116,11 @@ export function useScanResult() {
     ocrResult: lastResult,
     analysisResult,
     queryHistory,
+    providers,
+    selectedProvider,
+    selectedModel,
+    setSelectedModel,
+    onProviderChange: handleProviderChange,
     applyResult,
     handleAnalyze,
     handleExtract,

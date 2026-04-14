@@ -27,7 +27,7 @@ export interface OCRPanelHandlers {
   exportJson: () => void;
   handleExtract: () => void;
   handleSendQuestion: () => void;
-  chatEndRef: React.RefObject<HTMLDivElement>;
+  chatEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useOCRPanel({
@@ -68,7 +68,7 @@ export function useOCRPanel({
   const toggleField = (key: string) => {
     setSelectedFields((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   };

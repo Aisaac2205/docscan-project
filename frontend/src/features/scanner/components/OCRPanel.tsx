@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { OcrIcon, SparkleIcon, ChatIcon } from '@/shared/ui/icons';
-import type { ExtractionMode, OCRResponse, AnalyzeResult } from '@/features/ocr/types/ocr.types';
+import type { ExtractionMode, OCRResponse, AnalyzeResult, ProviderInfo, ProviderId } from '@/features/ocr/types/ocr.types';
 import { useOCRPanel } from '../hooks/useOCRPanel';
 import { ExtractionConfigPanel } from './ExtractionConfigPanel';
 import { OCRResultPanel } from './OCRResultPanel';
@@ -20,6 +20,11 @@ interface OCRPanelProps {
   ocrResult: OCRResponse | null;
   analysisResult: AnalyzeResult | null;
   queryHistory: { id: string; question: string; answer: string; createdAt: string }[];
+  providers: ProviderInfo[];
+  selectedProvider: ProviderId | undefined;
+  selectedModel: string | undefined;
+  onProviderChange: (id: ProviderId) => void;
+  onModelChange: (model: string) => void;
   onExtract: (fields?: string[]) => void;
   onAnalyze: () => void;
   onQuery: (question: string) => void;
@@ -29,6 +34,7 @@ export function OCRPanel({
   documentId, ocrMode, setOcrMode, customFields, setCustomFields,
   processingOcr, analyzing, querying,
   ocrResult, analysisResult, queryHistory,
+  providers, selectedProvider, selectedModel, onProviderChange, onModelChange,
   onExtract, onAnalyze, onQuery,
 }: OCRPanelProps) {
   const panel = useOCRPanel({
@@ -80,6 +86,11 @@ export function OCRPanel({
           toggleAllFields={panel.toggleAllFields}
           handleExtract={panel.handleExtract}
           onAnalyze={onAnalyze}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          selectedModel={selectedModel}
+          onProviderChange={onProviderChange}
+          onModelChange={onModelChange}
         />
       )}
 

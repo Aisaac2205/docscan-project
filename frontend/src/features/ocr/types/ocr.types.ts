@@ -1,5 +1,19 @@
 export type ExtractionMode = 'cv' | 'id_card' | 'fiscal_social' | 'medical_cert' | 'general' | 'custom';
 
+export type ProviderId = 'gemini' | 'lmstudio';
+
+export type ModelInfo = {
+  id: string;
+  name: string;
+};
+
+export type ProviderInfo = {
+  id: ProviderId;
+  displayName: string;
+  available: boolean;
+  models: ModelInfo[];
+};
+
 export const EXTRACTION_MODE_LABELS: Record<ExtractionMode, string> = {
   cv:           'Currículum Vitae',
   id_card:      'DPI / Pasaporte',
