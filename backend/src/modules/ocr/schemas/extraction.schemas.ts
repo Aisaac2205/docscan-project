@@ -7,51 +7,92 @@ import { ExtractionMode } from '../dto/ocr.dto';
 // `.catchall(z.unknown())` preserves any extra fields Gemini adds without
 // breaking validation.
 
-export const InvoiceDataSchema = z
+export const CvDataSchema = z
   .object({
-    proveedor: z.string().optional(),
-    fecha: z.string().optional(),
-    total: z.number().optional(),
-    nit: z.string().optional(),
-    numero_factura: z.string().optional(),
-    moneda: z.string().optional(),
-    items: z
+    // Datos personales
+    nombre_completo: z.string().optional(),
+    correo: z.string().optional(),
+    telefono: z.string().optional(),
+    ubicacion: z.string().optional(),
+    linkedin: z.string().optional(),
+    github: z.string().optional(),
+    portafolio: z.string().optional(),
+    // Experiencia laboral
+    experiencia: z
       .array(
         z.object({
-          descripcion: z.string(),
-          cantidad: z.number().optional(),
-          precio: z.number().optional(),
+          empresa: z.string().optional(),
+          cargo: z.string().optional(),
+          fecha_inicio: z.string().optional(),
+          fecha_fin: z.string().optional(),
+          responsabilidades: z.array(z.string()).optional(),
         }),
       )
       .optional(),
-  })
-  .catchall(z.unknown());
-
-export const ReceiptDataSchema = z
-  .object({
-    vendedor: z.string().optional(),
-    fecha: z.string().optional(),
-    total: z.number().optional(),
-    subtotal: z.number().optional(),
-    items: z
+    // Educación
+    educacion: z
       .array(
         z.object({
-          descripcion: z.string(),
-          cantidad: z.number().optional(),
-          precio: z.number().optional(),
+          institucion: z.string().optional(),
+          titulo: z.string().optional(),
+          fecha_inicio: z.string().optional(),
+          fecha_fin: z.string().optional(),
         }),
       )
       .optional(),
+    // Habilidades
+    habilidades_tecnicas: z.array(z.string()).optional(),
+    idiomas: z.array(z.string()).optional(),
+    certificaciones: z.array(z.string()).optional(),
   })
   .catchall(z.unknown());
 
 export const IdCardDataSchema = z
   .object({
-    nombre: z.string().optional(),
-    documento: z.string().optional(),
+    primer_nombre: z.string().optional(),
+    otros_nombres: z.string().optional(),
+    primer_apellido: z.string().optional(),
+    segundo_apellido: z.string().optional(),
+    cui: z.string().optional(),
     fecha_nacimiento: z.string().optional(),
-    direccion: z.string().optional(),
-    nacionalidad: z.string().optional(),
+    fecha_emision: z.string().optional(),
+    fecha_vencimiento: z.string().optional(),
+    genero: z.string().optional(),
+    estado_civil: z.string().optional(),
+    municipio_vecindad: z.string().optional(),
+    departamento_vecindad: z.string().optional(),
+  })
+  .catchall(z.unknown());
+
+export const FiscalSocialDataSchema = z
+  .object({
+    // SAT / RTU
+    nit: z.string().optional(),
+    nombre_razon_social: z.string().optional(),
+    estado_contribuyente: z.string().optional(), // Activo, Suspendido, etc.
+    regimen_fiscal: z.string().optional(),
+    direccion_fiscal: z.string().optional(),
+    // IGSS
+    numero_igss: z.string().optional(),
+    numero_patronal: z.string().optional(),
+  })
+  .catchall(z.unknown());
+
+export const MedicalCertDataSchema = z
+  .object({
+    // Paciente
+    nombre_paciente: z.string().optional(),
+    // Médico
+    nombre_medico: z.string().optional(),
+    numero_colegiado: z.string().optional(), // Colegio de Médicos y Cirujanos de Guatemala
+    tiene_sello: z.boolean().optional(),
+    tiene_firma: z.boolean().optional(),
+    // Diagnóstico y reposo
+    diagnostico: z.string().optional(),
+    fecha_emision: z.string().optional(),
+    fecha_inicio_reposo: z.string().optional(),
+    fecha_fin_reposo: z.string().optional(),
+    dias_reposo: z.number().optional(),
   })
   .catchall(z.unknown());
 
@@ -91,18 +132,20 @@ export const AnalyzeResponseSchema = z.object({
 // ─── Schema map keyed by ExtractionMode ─────────────────────────────────────
 
 export const ExtractionSchemas = {
-  [ExtractionMode.INVOICE]: InvoiceDataSchema,
-  [ExtractionMode.RECEIPT]: ReceiptDataSchema,
-  [ExtractionMode.ID_CARD]: IdCardDataSchema,
-  [ExtractionMode.GENERAL]: GeneralDataSchema,
-  [ExtractionMode.CUSTOM]: CustomDataSchema,
+  [ExtractionMode.CV]:           CvDataSchema,
+  [ExtractionMode.ID_CARD]:      IdCardDataSchema,
+  [ExtractionMode.FISCAL_SOCIAL]: FiscalSocialDataSchema,
+  [ExtractionMode.MEDICAL_CERT]: MedicalCertDataSchema,
+  [ExtractionMode.GENERAL]:      GeneralDataSchema,
+  [ExtractionMode.CUSTOM]:       CustomDataSchema,
 } as const;
 
 // ─── Inferred TypeScript types ───────────────────────────────────────────────
 
-export type InvoiceData = z.infer<typeof InvoiceDataSchema>;
-export type ReceiptData = z.infer<typeof ReceiptDataSchema>;
+export type CvData = z.infer<typeof CvDataSchema>;
 export type IdCardData = z.infer<typeof IdCardDataSchema>;
+export type FiscalSocialData = z.infer<typeof FiscalSocialDataSchema>;
+export type MedicalCertData = z.infer<typeof MedicalCertDataSchema>;
 export type GeneralData = z.infer<typeof GeneralDataSchema>;
 export type CustomData = z.infer<typeof CustomDataSchema>;
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;

@@ -4,11 +4,12 @@ import type { ExtractedDataByMode } from '../schemas/extraction.schemas';
 // customFields son sanitizados por OcrService.sanitizeFieldName antes de llegar a Gemini
 
 export enum ExtractionMode {
-  INVOICE  = 'invoice',   // Factura: proveedor, fecha, total, nit
-  RECEIPT  = 'receipt',   // Recibo/ticket: vendedor, fecha, total, items
-  ID_CARD  = 'id_card',   // DPI, cédula, pasaporte
-  GENERAL  = 'general',   // Texto libre completo
-  CUSTOM   = 'custom',    // Campos personalizados por el usuario
+  CV           = 'cv',           // Currículum Vitae: datos personales, experiencia, educación, habilidades
+  ID_CARD      = 'id_card',      // DPI / Pasaporte guatemalteco: CUI, nombres, vigencia
+  FISCAL_SOCIAL = 'fiscal_social', // NIT (SAT), RTU, número de afiliación IGSS
+  MEDICAL_CERT = 'medical_cert', // Constancia médica: médico, colegiado, reposo
+  GENERAL      = 'general',      // Texto libre completo
+  CUSTOM       = 'custom',       // Campos personalizados por el usuario
 }
 
 // Bloquea solo caracteres de control y newlines — la sanitización real ocurre en OcrService

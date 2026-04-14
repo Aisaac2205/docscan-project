@@ -50,14 +50,85 @@ export class OcrService {
       'Responde ÚNICAMENTE con el JSON solicitado, sin texto adicional.';
 
     switch (mode) {
+case ExtractionMode.CV:
+      return (
+        `${base} Actúa como un sistema experto de extracción de datos de Recursos Humanos enfocado en Guatemala. ` +
+        'Tu tarea es analizar el texto del Currículum Vitae proporcionado y extraer la información estructurada. ' +
+        '\n\nREGLAS ESTRICTAS:\n' +
+        '1. Devuelve ÚNICAMENTE un objeto JSON válido. No incluyas saludos, explicaciones, ni bloques de código markdown (como ```json).\n' +
+        '2. Extrae SOLO información presente en el texto. No infieras, deduzcas ni inventes datos.\n' +
+        '3. Si un campo o sección no está presente, su valor debe ser estrictamente null (no omitas la llave).\n' +
+        '4. Normaliza las fechas al formato YYYY-MM. Si la fecha indica el presente, usa "actual".\n' +
+        '\nESTRUCTURA JSON REQUERIDA:\n' +
+        '{\n' +
+        '  "datos_personales": {\n' +
+        '    "nombre_completo": "string",\n' +
+        '    "cui_dpi": "string (busca números de 13 dígitos)",\n' +
+        '    "correo": "string",\n' +
+        '    "telefono": "string",\n' +
+        '    "ubicacion": "string (ej. Ciudad de Guatemala, Mixco)",\n' +
+        '    "redes": { "linkedin": "string", "github": "string", "portafolio": "string" }\n' +
+        '  },\n' +
+        '  "experiencia": [\n' +
+        '    {\n' +
+        '      "empresa": "string",\n' +
+        '      "cargo": "string",\n' +
+        '      "fecha_inicio": "YYYY-MM",\n' +
+        '      "fecha_fin": "YYYY-MM o actual",\n' +
+        '      "responsabilidades": ["string (logros o tareas extraídas)"]\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "educacion": [\n' +
+        '    {\n' +
+        '      "institucion": "string",\n' +
+        '      "nivel": "string (ej. Universitario, Diversificado, Maestría)",\n' +
+        '      "titulo": "string (ej. Perito Contador, Bachiller, Ingeniería)",\n' +
+        '      "fecha_inicio": "YYYY",\n' +
+        '      "fecha_fin": "YYYY o actual"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "habilidades": {\n' +
+        '    "tecnicas": ["string (herramientas, lenguajes)"],\n' +
+        '    "blandas": ["string"]\n' +
+        '  },\n' +
+        '  "idiomas": [{ "idioma": "string", "nivel": "string o null" }],\n' +
+        '  "certificaciones": [{ "nombre": "string", "emisor": "string", "anio": "YYYY o null" }],\n' +
+        '  "_metadata": {\n' +
+        '    "confidence_score": "number (0.0 a 1.0 basando la legibilidad e integridad del documento)",\n' +
+        '    "requiere_revision_manual": "boolean (true si el confidence_score es menor a 0.85 o si faltan datos clave como nombre y contacto)"\n' +
+        '  }\n' +
+        '}'
+      );
+      case ExtractionMode.ID_CARD:
+        return (
+          `${base} Estás analizando un DPI guatemalteco (Documento Personal de Identificación). ` +
+          'El DPI contiene EXACTAMENTE estos campos — no inventes ni agregues otros: ' +
+          'primer_nombre, otros_nombres, primer_apellido, segundo_apellido, ' +
+          'cui (número de 13 dígitos), ' +
+          'fecha_nacimiento (YYYY-MM-DD), fecha_emision (YYYY-MM-DD), fecha_vencimiento (YYYY-MM-DD), ' +
+          'genero, estado_civil, municipio_vecindad, departamento_vecindad. ' +
+          'Si un campo no es visible en el documento, usa null. ' +
+          'Incluye UN ÚNICO campo "_confidence" (número entre 0.0 y 1.0) que represente la confianza global de la extracción. ' +
+          'NO agregues campos de confianza individuales por campo ni ningún otro campo fuera de los listados.'
+        );
+      case ExtractionMode.FISCAL_SOCIAL:
+        return (
+          `${base} Estás analizando un documento fiscal o de seguridad social guatemalteco (RTU, constancia de NIT, carné del IGSS, resolución patronal). ` +
+          'Extrae: nit (número sin guiones), nombre_razon_social, estado_contribuyente, regimen_fiscal, direccion_fiscal. ' +
+          'Si es un documento del IGSS extrae también: numero_igss, numero_patronal. ' +
+          'Si un campo no está presente, usa null. Incluye "_confidence" entre 0.0 y 1.0.'
+        );
+      case ExtractionMode.MEDICAL_CERT:
+        return (
+          `${base} Estás analizando una constancia o certificado médico en Guatemala. ` +
+          'Extrae: nombre_paciente, nombre_medico, numero_colegiado (número de colegiado del Colegio de Médicos y Cirujanos de Guatemala), ' +
+          'tiene_sello (true/false según si hay un sello visible), tiene_firma (true/false), ' +
+          'diagnostico (si aparece), fecha_emision (YYYY-MM-DD), ' +
+          'fecha_inicio_reposo (YYYY-MM-DD), fecha_fin_reposo (YYYY-MM-DD), dias_reposo (número entero). ' +
+          'Si un campo no está presente, usa null. Incluye "_confidence" entre 0.0 y 1.0.'
+        );
       case ExtractionMode.GENERAL:
         return `${base} Extrae: tipo_documento, idioma, fecha (YYYY-MM-DD), partes_involucradas, resumen, campos_clave, texto_completo. Incluye también "_confidence" con un número entre 0.0 y 1.0 indicando tu confianza en la extracción.`;
-      case ExtractionMode.INVOICE:
-        return `${base} Extrae de la factura: proveedor, fecha (YYYY-MM-DD), total (número), nit.`;
-      case ExtractionMode.RECEIPT:
-        return `${base} Extrae del recibo: vendedor, fecha (YYYY-MM-DD), total (número), items (array con descripcion, cantidad, precio).`;
-      case ExtractionMode.ID_CARD:
-        return `${base} Extrae del documento de identidad: nombre, documento, fecha_nacimiento (YYYY-MM-DD), direccion, nacionalidad.`;
       case ExtractionMode.CUSTOM:
         return `${base} Extrae únicamente los campos que se indiquen. Si un campo no existe en el documento, usa null.`;
     }
@@ -205,9 +276,9 @@ export class OcrService {
       'Analiza visualmente el documento adjunto y determina su tipo y los campos que contiene.';
 
     const userPrompt =
-      'Analiza este documento y devuelve EXACTAMENTE este JSON:\n' +
+      'Analiza este documento en contexto de Recursos Humanos en Guatemala y devuelve EXACTAMENTE este JSON:\n' +
       '{\n' +
-      '  "detectedType": "tipo en inglés: invoice|receipt|id_card|contract|purchase_order|payroll|bank_statement|customs|legal|general",\n' +
+      '  "detectedType": "tipo en inglés: cv|id_card|fiscal_social|medical_cert|general",\n' +
       '  "detectedTypeLabel": "nombre en español del tipo de documento",\n' +
       '  "confidence": 0.0,\n' +
       '  "description": "descripción breve de 1 línea de qué es el documento",\n' +
@@ -215,7 +286,9 @@ export class OcrService {
       '    { "key": "nombre_campo_sin_espacios", "label": "Etiqueta legible", "description": "qué contiene este campo" }\n' +
       '  ]\n' +
       '}\n' +
-      'Incluye entre 4 y 12 campos sugeridos relevantes para este tipo de documento. ' +
+      'Tipos posibles: cv (Currículum Vitae), id_card (DPI o Pasaporte guatemalteco), ' +
+      'fiscal_social (RTU, NIT, carné del IGSS), medical_cert (constancia médica), general (cualquier otro). ' +
+      'Incluye entre 4 y 12 campos sugeridos relevantes para este tipo de documento en RRHH. ' +
       'Los keys solo pueden tener letras minúsculas, números y guión bajo.';
 
     try {
