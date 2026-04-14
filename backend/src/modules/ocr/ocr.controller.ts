@@ -8,6 +8,8 @@ import {
   AnalyzeResultDto, QueryResultDto,
 } from './dto/ocr.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { OcrProviderRegistry } from './providers/ocr-provider.registry';
+import type { ProviderInfo } from './providers/ocr-provider.interface';
 
 interface AuthenticatedRequest extends Request {
   user: { id: string };
@@ -17,7 +19,16 @@ interface AuthenticatedRequest extends Request {
 @UseGuards(JwtAuthGuard)
 @Throttle({ ai: { ttl: 60_000, limit: 10 } })
 export class OcrController {
-  constructor(private readonly ocrService: OcrService) {}
+  constructor(
+    private readonly ocrService: OcrService,
+    private readonly registry: OcrProviderRegistry,
+  ) {}
+
+  /** Lista los providers disponibles con sus modelos. Usado por el frontend para el picker. */
+  @Get('providers')
+  async providers(): Promise<ProviderInfo[]> {
+    return this.registry.listAvailable();
+  }
 
   @Post('process')
   async process(
@@ -31,6 +42,8 @@ export class OcrController {
       userId,
       mode,
       dto.customFields,
+      dto.provider,
+      dto.model,
     );
     return { documentId: dto.documentId, extractionMode: mode, extractedData };
   }
@@ -40,7 +53,7 @@ export class OcrController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: AnalyzeDocumentDto,
   ): Promise<AnalyzeResultDto> {
-    return this.ocrService.analyzeDocument(dto.documentId, req.user.id);
+    return this.ocrService.analyzeDocument(dto.documentId, req.user.id, dto.provider, dto.model);
   }
 
   @Post('query')
@@ -48,7 +61,7 @@ export class OcrController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: QueryDocumentDto,
   ): Promise<QueryResultDto> {
-    return this.ocrService.queryDocument(dto.documentId, req.user.id, dto.question);
+    return this.ocrService.queryDocument(dto.documentId, req.user.id, dto.question, dto.provider, dto.model);
   }
 
   @Get('query/:documentId/history')

@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsArray, ArrayMaxSize, MaxLength, Matches } from 'class-validator';
 import type { ExtractedDataByMode } from '../schemas/extraction.schemas';
+import type { ProviderId } from '../providers/ocr-provider.interface';
 // IDs use cuid() format — validate as non-empty strings, not UUIDs
 // customFields son sanitizados por OcrService.sanitizeFieldName antes de llegar a Gemini
 
@@ -31,6 +32,17 @@ export class ProcessOcrDto {
   @MaxLength(150, { each: true })
   @Matches(SAFE_FIELD_REGEX, { each: true, message: 'customFields no puede contener caracteres de control ni saltos de línea' })
   customFields?: string[];
+
+  /** Provider de IA a usar. Si se omite usa el default configurado en OCR_PROVIDER. */
+  @IsOptional()
+  @IsEnum(['gemini', 'lmstudio'] as const)
+  provider?: ProviderId;
+
+  /** Modelo específico del provider. Si se omite usa el configurado en .env. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  model?: string;
 }
 
 export class OcrResultDto<M extends ExtractionMode = ExtractionMode> {
@@ -42,6 +54,15 @@ export class OcrResultDto<M extends ExtractionMode = ExtractionMode> {
 export class AnalyzeDocumentDto {
   @IsString()
   documentId: string;
+
+  @IsOptional()
+  @IsEnum(['gemini', 'lmstudio'] as const)
+  provider?: ProviderId;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  model?: string;
 }
 
 export class QueryDocumentDto {
@@ -51,6 +72,15 @@ export class QueryDocumentDto {
   @IsString()
   @MaxLength(500)
   question: string;
+
+  @IsOptional()
+  @IsEnum(['gemini', 'lmstudio'] as const)
+  provider?: ProviderId;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  model?: string;
 }
 
 export interface SuggestedField {
