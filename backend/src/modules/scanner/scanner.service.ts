@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Readable } from 'stream';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { StorageService } from '../storage/storage.service';
 import { DocumentsService } from '../documents/documents.service';
+import { PrismaService } from '../../config/database.config';
 import { appConfig } from '../../config';
 import * as http from 'http';
 import * as https from 'https';
@@ -13,7 +14,49 @@ export class ScannerService {
   constructor(
     private readonly storageService: StorageService,
     private readonly documentsService: DocumentsService,
+    private readonly prisma: PrismaService,
   ) {}
+
+  /* ── Scanner configs ── */
+
+  async getConfigs(userId: string) {
+    return this.prisma.scannerConfig.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async createConfig(userId: string, data: { name: string; ip: string; port: number }) {
+    return this.prisma.scannerConfig.create({
+      data: { userId, ...data },
+    });
+  }
+
+  async deleteConfig(id: string, userId: string) {
+    const config = await this.prisma.scannerConfig.findUnique({ where: { id } });
+    if (!config) throw new NotFoundException('Escáner no encontrado');
+    if (config.userId !== userId) throw new ForbiddenException();
+    await this.prisma.scannerConfig.delete({ where: { id } });
+  }
+
+  async pingConfig(id: string, userId: string): Promise<{ online: boolean }> {
+    const config = await this.prisma.scannerConfig.findUnique({ where: { id } });
+    if (!config) throw new NotFoundException('Escáner no encontrado');
+    if (config.userId !== userId) throw new ForbiddenException();
+
+    const online = await this.httpGet(
+      `http://${config.ip}:${config.port}/eSCL/ScannerStatus`,
+    ).then(() => true).catch(() => false);
+
+    if (online) {
+      await this.prisma.scannerConfig.update({
+        where: { id },
+        data: { lastSeenAt: new Date() },
+      });
+    }
+
+    return { online };
+  }
 
   async saveCapturedImage(
     imageData: string,

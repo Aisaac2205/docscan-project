@@ -1,7 +1,8 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ScannerService } from './scanner.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CreateScannerConfigDto } from './dto/scanner.dto';
 
 @Controller('scanner')
 @UseGuards(JwtAuthGuard)
@@ -22,5 +23,36 @@ export class ScannerController {
     @CurrentUser() user: { id: string },
   ) {
     return this.scannerService.scanFromNetwork(body.ipAddress, body.port ?? 80, user.id);
+  }
+
+  /* ── Scanner configs ── */
+
+  @Get('configs')
+  async getConfigs(@CurrentUser() user: { id: string }) {
+    return this.scannerService.getConfigs(user.id);
+  }
+
+  @Post('configs')
+  async createConfig(
+    @Body() body: CreateScannerConfigDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.scannerService.createConfig(user.id, body);
+  }
+
+  @Delete('configs/:id')
+  async deleteConfig(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    await this.scannerService.deleteConfig(id, user.id);
+  }
+
+  @Get('configs/:id/ping')
+  async pingConfig(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.scannerService.pingConfig(id, user.id);
   }
 }

@@ -8,3 +8,9 @@ export class ScanResultDto {
   imageData: string;
   deviceId: string;
 }
+
+export class CreateScannerConfigDto {
+  name: string;
+  ip: string;
+  port: number;
+}
