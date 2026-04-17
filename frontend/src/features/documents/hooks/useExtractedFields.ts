@@ -7,6 +7,13 @@ function formatLabel(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function normalizeKey(key: string): string {
+  return key
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
 function isNullish(v: unknown): boolean {
   return v === null || v === undefined || v === '';
 }
@@ -61,7 +68,7 @@ function classifyValue(value: unknown): FieldValue | null {
 }
 
 function classifyFields(obj: Record<string, unknown>): RenderedField[] {
-  return Object.entries(obj).flatMap(([key, value]) => {
+  const fields = Object.entries(obj).flatMap(([key, value]) => {
     // Omitir campos internos (_confidence, _metadata, etc.) y valores vacíos
     if (key.startsWith('_') || isNullish(value)) return [];
 
@@ -69,6 +76,38 @@ function classifyFields(obj: Record<string, unknown>): RenderedField[] {
     if (!classified) return [];
 
     return [{ key, label: formatLabel(key), value: classified }];
+  });
+
+  return fields.sort((a, b) => {
+    const aKey = normalizeKey(a.key);
+    const bKey = normalizeKey(b.key);
+
+    const aIsSummary = /(resumen|summary|overview|sintesis)/.test(aKey);
+    const bIsSummary = /(resumen|summary|overview|sintesis)/.test(bKey);
+    if (aIsSummary !== bIsSummary) return aIsSummary ? -1 : 1;
+
+    const typeRank = (type: FieldValue['type']) => {
+      if (type === 'primitive' || type === 'list') return 0;
+      if (type === 'object') return 1;
+      return 2; // array
+    };
+
+    const byType = typeRank(a.value.type) - typeRank(b.value.type);
+    if (byType !== 0) return byType;
+
+    const rankByBusinessKey = (key: string) => {
+      if (/(titulo|tipo|documento)/.test(key)) return 0;
+      if (/(fecha|date|emision)/.test(key)) return 1;
+      if (/(emisor|issuer|proveedor|sender)/.test(key)) return 2;
+      if (/(receptor|cliente|receiver|buyer)/.test(key)) return 3;
+      if (/(total|subtotal|monto|importe|amount)/.test(key)) return 4;
+      return 5;
+    };
+
+    const byBusinessKey = rankByBusinessKey(aKey) - rankByBusinessKey(bKey);
+    if (byBusinessKey !== 0) return byBusinessKey;
+
+    return a.label.localeCompare(b.label, 'es', { sensitivity: 'base' });
   });
 }
 

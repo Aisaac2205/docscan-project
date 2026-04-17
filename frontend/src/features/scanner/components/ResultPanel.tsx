@@ -5,6 +5,12 @@ import { PrintIcon, SparkleIcon, OcrIcon, SpinnerIcon } from '@/shared/ui/icons'
 import type { ExtractionMode, OCRResponse, AnalyzeResult, ProviderInfo, ProviderId } from '@/features/ocr/types/ocr.types';
 import { OCRPanel } from './OCRPanel';
 
+function buildPdfViewerSrc(url: string): string {
+  const params = 'navpanes=0&view=FitH';
+  if (url.includes('#')) return `${url}&${params}`;
+  return `${url}#${params}`;
+}
+
 interface ResultPanelProps {
   previewUrl: string;
   ocrResult: OCRResponse | null;
@@ -38,7 +44,10 @@ export function ResultPanel({
   onExtract, onAnalyze, onQuery, onPrint,
 }: ResultPanelProps) {
   const [imgExpanded, setImgExpanded] = useState(false);
+  const isPdf = previewUrl.toLowerCase().endsWith('.pdf');
+  const pdfViewerSrc = isPdf ? buildPdfViewerSrc(previewUrl) : previewUrl;
   const hasOcrData = !!ocrResult?.extractedData;
+  const hasResultLikeState = hasOcrData || !!analysisResult;
 
   const status = analyzing || processingOcr
     ? 'processing'
@@ -84,21 +93,31 @@ export function ResultPanel({
         </div>
       </div>
 
-      {/* Body: image (2/5) + OCR panel (3/5) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-[var(--border)]">
+      {/* Body: preview + OCR panel */}
+      <div className="flex flex-col lg:flex-row lg:items-start">
         {/* Image pane */}
-        <div className="lg:col-span-2 flex flex-col">
+        <div
+          className={`flex flex-col border-b lg:border-b-0 lg:border-r border-[var(--border)] ${
+            isPdf ? 'lg:w-[50%] lg:max-w-[760px]' : 'lg:w-[42%] lg:max-w-[560px]'
+          }`}
+        >
           <div
             className={`relative bg-[#F0EDE8] flex items-center justify-center overflow-hidden transition-all duration-300 ${
-              imgExpanded ? 'h-[360px] sm:h-[560px]' : 'h-[260px] sm:h-[420px]'
+              imgExpanded
+                ? isPdf ? 'h-[360px] sm:h-[560px] lg:h-[760px]' : 'h-[340px] sm:h-[520px] lg:h-[640px]'
+                : hasResultLikeState
+                  ? isPdf ? 'h-[280px] sm:h-[420px] lg:h-[620px]' : 'h-[230px] sm:h-[330px] lg:h-[380px]'
+                  : isPdf ? 'h-[320px] sm:h-[500px] lg:h-[700px]' : 'h-[260px] sm:h-[420px] lg:h-[560px]'
             }`}
           >
-            {previewUrl.toLowerCase().endsWith('.pdf') ? (
-              <iframe
-                src={previewUrl}
-                title="Documento PDF"
-                className="w-full h-full border-0"
-              />
+            {isPdf ? (
+              <div className="w-full h-full p-2 sm:p-3 lg:p-4">
+                <iframe
+                  src={pdfViewerSrc}
+                  title="Documento PDF"
+                  className="w-full h-full border border-[var(--border)] rounded-md bg-white"
+                />
+              </div>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element -- previewUrl puede ser blob URL o data URL; next/image no soporta estos esquemas
               <img
@@ -111,7 +130,7 @@ export function ResultPanel({
               onClick={() => setImgExpanded((v) => !v)}
               className="absolute bottom-2 right-2 h-6 px-2.5 text-[10px] font-semibold bg-black/40 text-white rounded-md hover:bg-black/60 transition-colors backdrop-blur-sm"
             >
-              {imgExpanded ? '↑ Reducir' : '↓ Expandir'}
+              {imgExpanded ? '↙ Ajustar' : '↗ Expandir'}
             </button>
           </div>
 
@@ -119,12 +138,12 @@ export function ResultPanel({
           <div className="px-3 sm:px-4 py-2.5 bg-stone-50 border-t border-[var(--border)] flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
-                {previewUrl.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Imagen'}
+                {isPdf ? 'PDF' : 'Imagen'}
               </p>
               <p className="text-[11px] text-stone-600 mt-0.5 truncate">
                 {ocrResult
                   ? `Modo: ${ocrResult.extractionMode}`
-                  : previewUrl.toLowerCase().endsWith('.pdf')
+                  : isPdf
                   ? 'PDF · Listo para procesar'
                   : 'Listo para procesar'}
               </p>
@@ -139,27 +158,29 @@ export function ResultPanel({
         </div>
 
         {/* OCR Panel */}
-        <OCRPanel
-          documentId={documentId}
-          ocrMode={ocrMode}
-          setOcrMode={setOcrMode}
-          customFields={customFields}
-          setCustomFields={setCustomFields}
-          processingOcr={processingOcr}
-          analyzing={analyzing}
-          querying={querying}
-          ocrResult={ocrResult}
-          analysisResult={analysisResult}
-          queryHistory={queryHistory}
-          providers={providers}
-          selectedProvider={selectedProvider}
-          selectedModel={selectedModel}
-          onProviderChange={onProviderChange}
-          onModelChange={onModelChange}
-          onExtract={onExtract}
-          onAnalyze={onAnalyze}
-          onQuery={onQuery}
-        />
+        <div className="flex-1 min-w-0">
+          <OCRPanel
+            documentId={documentId}
+            ocrMode={ocrMode}
+            setOcrMode={setOcrMode}
+            customFields={customFields}
+            setCustomFields={setCustomFields}
+            processingOcr={processingOcr}
+            analyzing={analyzing}
+            querying={querying}
+            ocrResult={ocrResult}
+            analysisResult={analysisResult}
+            queryHistory={queryHistory}
+            providers={providers}
+            selectedProvider={selectedProvider}
+            selectedModel={selectedModel}
+            onProviderChange={onProviderChange}
+            onModelChange={onModelChange}
+            onExtract={onExtract}
+            onAnalyze={onAnalyze}
+            onQuery={onQuery}
+          />
+        </div>
       </div>
     </div>
   );

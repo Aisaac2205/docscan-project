@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useOCRStore } from '../../ocr/store';
+import { ocrClient } from '../../ocr/client';
+import type { ProviderId, ProviderInfo } from '../../ocr/types/ocr.types';
 
 interface ChatMessage {
   q: string;
@@ -12,6 +14,36 @@ export function useDocumentChat(docId: string) {
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId | undefined>(undefined);
+  const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    ocrClient.getProviders()
+      .then((list) => {
+        setProviders(list);
+
+        const firstAvailable = list.find((p) => p.available);
+        if (firstAvailable) {
+          setSelectedProvider(firstAvailable.id);
+          setSelectedModel(firstAvailable.models[0]?.id);
+        }
+      })
+      .catch(() => {
+        setProviders([]);
+      });
+  }, []);
+
+  const activeProvider = useMemo(
+    () => providers.find((p) => p.id === selectedProvider),
+    [providers, selectedProvider],
+  );
+
+  const handleProviderChange = (id: ProviderId) => {
+    setSelectedProvider(id);
+    const provider = providers.find((p) => p.id === id);
+    setSelectedModel(provider?.models[0]?.id);
+  };
 
   const handleSend = async (q?: string) => {
     const textQuery = (q ?? question).trim();
@@ -22,7 +54,7 @@ export function useDocumentChat(docId: string) {
     setError(null);
     setHistory((prev) => [...prev, { q: textQuery, a: '' }]);
 
-    const result = await queryDocument(docId, textQuery);
+    const result = await queryDocument(docId, textQuery, selectedProvider, selectedModel);
     if (result?.answer) {
       setHistory((prev) =>
         prev.map((item, i, arr) =>
@@ -42,6 +74,12 @@ export function useDocumentChat(docId: string) {
     history,
     isSending,
     error,
+    providers,
+    selectedProvider,
+    selectedModel,
+    activeProvider,
+    handleProviderChange,
+    setSelectedModel,
     handleSend,
   };
 }

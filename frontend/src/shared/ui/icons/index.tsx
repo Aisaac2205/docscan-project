@@ -230,3 +230,30 @@ export function ChevronDownIcon({ className = '', size = 12 }: IconProps) {
     </svg>
   );
 }
+
+export function EyeIcon({ className = '', size = 14 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" className={className}>
+      <path d="M1 7s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="7" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ className = '', size = 13 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" className={className}>
+      <rect x="4" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M2 9H1.5A.5.5 0 0 1 1 8.5v-7A.5.5 0 0 1 1.5 1h7a.5.5 0 0 1 .5.5V2"
+        stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function CheckSmallIcon({ className = '', size = 13 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" className={className}>
+      <path d="M2.5 6.5l3 3 5-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

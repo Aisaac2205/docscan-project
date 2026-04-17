@@ -25,6 +25,81 @@ export class OcrService {
     return field.replace(/[^\w\s]/g, '').trim().slice(0, 100);
   }
 
+  private stripMarkdownFences(text: string): string {
+    const trimmed = text.trim();
+    if (trimmed.startsWith('```')) {
+      return trimmed
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/, '')
+        .trim();
+    }
+    return trimmed;
+  }
+
+  // Extrae el primer bloque JSON balanceado { ... } ignorando llaves dentro de strings
+  private extractFirstJsonObject(text: string): string | null {
+    const src = text.trim();
+    const start = src.indexOf('{');
+    if (start < 0) return null;
+
+    let inString = false;
+    let escaped = false;
+    let depth = 0;
+
+    for (let i = start; i < src.length; i += 1) {
+      const ch = src[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (inString) continue;
+
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) return src.slice(start, i + 1);
+      }
+    }
+
+    return null;
+  }
+
+  private parseProviderJson(jsonText: string): Record<string, unknown> {
+    const direct = this.stripMarkdownFences(jsonText);
+    try {
+      return JSON.parse(direct) as Record<string, unknown>;
+    } catch {
+      const extracted = this.extractFirstJsonObject(direct);
+      if (extracted) {
+        try {
+          return JSON.parse(extracted) as Record<string, unknown>;
+        } catch {
+          // sigue abajo para error final más claro
+        }
+      }
+
+      const preview = direct.slice(0, 300);
+      const likelyTruncated = extracted === null;
+      throw new InternalServerErrorException(
+        likelyTruncated
+          ? `La IA devolvió un JSON incompleto o truncado. Reintenta la extracción. Preview: ${preview}`
+          : `La IA devolvió JSON malformado. Reintenta la extracción. Preview: ${preview}`,
+      );
+    }
+  }
+
   private buildSystemInstruction(mode: ExtractionMode): string {
     const base =
       'Eres un sistema de extracción de datos de documentos. ' +
@@ -37,51 +112,19 @@ export class OcrService {
       case ExtractionMode.CV:
         return (
           `${base} Actúa como un sistema experto de extracción de datos de Recursos Humanos enfocado en Guatemala. ` +
-          'Tu tarea es analizar el texto del Currículum Vitae proporcionado y extraer la información estructurada. ' +
-          '\n\nREGLAS ESTRICTAS:\n' +
-          '1. Devuelve ÚNICAMENTE un objeto JSON válido. No incluyas saludos, explicaciones, ni bloques de código markdown (como ```json).\n' +
-          '2. Extrae SOLO información presente en el texto. No infieras, deduzcas ni inventes datos.\n' +
-          '3. Si un campo o sección no está presente, su valor debe ser estrictamente null (no omitas la llave).\n' +
-          '4. Normaliza las fechas al formato YYYY-MM. Si la fecha indica el presente, usa "actual".\n' +
-          '\nESTRUCTURA JSON REQUERIDA:\n' +
-          '{\n' +
-          '  "datos_personales": {\n' +
-          '    "nombre_completo": "string",\n' +
-          '    "cui_dpi": "string (busca números de 13 dígitos)",\n' +
-          '    "correo": "string",\n' +
-          '    "telefono": "string",\n' +
-          '    "ubicacion": "string (ej. Ciudad de Guatemala, Mixco)",\n' +
-          '    "redes": { "linkedin": "string", "github": "string", "portafolio": "string" }\n' +
-          '  },\n' +
-          '  "experiencia": [\n' +
-          '    {\n' +
-          '      "empresa": "string",\n' +
-          '      "cargo": "string",\n' +
-          '      "fecha_inicio": "YYYY-MM",\n' +
-          '      "fecha_fin": "YYYY-MM o actual",\n' +
-          '      "responsabilidades": ["string (logros o tareas extraídas)"]\n' +
-          '    }\n' +
-          '  ],\n' +
-          '  "educacion": [\n' +
-          '    {\n' +
-          '      "institucion": "string",\n' +
-          '      "nivel": "string (ej. Universitario, Diversificado, Maestría)",\n' +
-          '      "titulo": "string (ej. Perito Contador, Bachiller, Ingeniería)",\n' +
-          '      "fecha_inicio": "YYYY",\n' +
-          '      "fecha_fin": "YYYY o actual"\n' +
-          '    }\n' +
-          '  ],\n' +
-          '  "habilidades": {\n' +
-          '    "tecnicas": ["string (herramientas, lenguajes)"],\n' +
-          '    "blandas": ["string"]\n' +
-          '  },\n' +
-          '  "idiomas": [{ "idioma": "string", "nivel": "string o null" }],\n' +
-          '  "certificaciones": [{ "nombre": "string", "emisor": "string", "anio": "YYYY o null" }],\n' +
-          '  "_metadata": {\n' +
-          '    "confidence_score": "number (0.0 a 1.0 basando la legibilidad e integridad del documento)",\n' +
-          '    "requiere_revision_manual": "boolean (true si el confidence_score es menor a 0.85 o si faltan datos clave como nombre y contacto)"\n' +
-          '  }\n' +
-          '}'
+          'Tu tarea es analizar el Currículum Vitae proporcionado y devolver un JSON con la información que detectes. ' +
+          '\n\nPRINCIPIO FUNDAMENTAL: Los CV no tienen formato fijo. Extrae SOLO las secciones y campos que realmente existan en el documento. ' +
+          'NO inventes datos, NO infieras información ausente, NO agregues campos vacíos ni null.' +
+          '\n\nREGLAS:\n' +
+          '1. Devuelve ÚNICAMENTE un objeto JSON válido. Sin texto adicional ni bloques markdown.\n' +
+          '2. Si una sección NO existe en el CV, OMÍTELA por completo del JSON (no uses null).\n' +
+          '3. Organiza la salida en secciones lógicas según el propio contenido del CV, SIN ESQUEMA FIJO predefinido.\n' +
+          '4. Preserva el mayor detalle posible: roles, responsabilidades, logros, proyectos, prácticas, certificaciones, tecnologías, idiomas y cualquier sección presente.\n' +
+          '5. Si hay listas/bullets en el CV, consérvalos como arreglos de strings.\n' +
+          '6. Normaliza fechas al formato YYYY-MM cuando sea posible; si indica presente, usa "actual".\n' +
+          '7. Mantén nombres de claves claros y consistentes en snake_case, pero prioriza fidelidad al contenido real del CV.\n' +
+          'Incluye "_confidence" como número entre 0.0 y 1.0 al nivel raíz del JSON. ' +
+          'Recuerda: solo incluye secciones y campos que realmente existan en el documento, con máximo detalle.'
         );
       case ExtractionMode.ID_CARD:
         return (
@@ -180,9 +223,10 @@ export class OcrService {
 
       let rawParsed: Record<string, unknown>;
       try {
-        rawParsed = JSON.parse(jsonText);
-      } catch {
-        console.error('JSON inválido:', jsonText.slice(0, 200));
+        rawParsed = this.parseProviderJson(jsonText);
+      } catch (err) {
+        console.error('JSON inválido:', jsonText.slice(0, 300));
+        if (err instanceof InternalServerErrorException) throw err;
         throw new InternalServerErrorException(`${provider.displayName} devolvió JSON malformado. Intenta de nuevo.`);
       }
 

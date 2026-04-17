@@ -7,45 +7,7 @@ import { ExtractionMode } from '../dto/ocr.dto';
 // `.catchall(z.unknown())` preserves any extra fields Gemini adds without
 // breaking validation.
 
-export const CvDataSchema = z
-  .object({
-    // Datos personales
-    nombre_completo: z.string().optional(),
-    correo: z.string().optional(),
-    telefono: z.string().optional(),
-    ubicacion: z.string().optional(),
-    linkedin: z.string().optional(),
-    github: z.string().optional(),
-    portafolio: z.string().optional(),
-    // Experiencia laboral
-    experiencia: z
-      .array(
-        z.object({
-          empresa: z.string().optional(),
-          cargo: z.string().optional(),
-          fecha_inicio: z.string().optional(),
-          fecha_fin: z.string().optional(),
-          responsabilidades: z.array(z.string()).optional(),
-        }),
-      )
-      .optional(),
-    // Educación
-    educacion: z
-      .array(
-        z.object({
-          institucion: z.string().optional(),
-          titulo: z.string().optional(),
-          fecha_inicio: z.string().optional(),
-          fecha_fin: z.string().optional(),
-        }),
-      )
-      .optional(),
-    // Habilidades
-    habilidades_tecnicas: z.array(z.string()).optional(),
-    idiomas: z.array(z.string()).optional(),
-    certificaciones: z.array(z.string()).optional(),
-  })
-  .catchall(z.unknown());
+export const CvDataSchema = z.record(z.string(), z.unknown());
 
 export const IdCardDataSchema = z
   .object({

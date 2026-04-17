@@ -8,6 +8,37 @@ function formatFieldLabel(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** Flatten nested objects (CV-style) for readable print output */
+function flattenNested(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key.startsWith('_')) continue;
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (value === null || value === undefined) continue;
+    if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+          const flattened = flattenNested(item, `${fullKey}[${i}]`);
+          Object.assign(result, flattened);
+        } else {
+          result[`${fullKey}[${i}]`] = typeof item === 'object' ? JSON.stringify(item) : String(item);
+        }
+      });
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, flattenNested(value as Record<string, unknown>, fullKey));
+    } else {
+      result[fullKey] = String(value);
+    }
+  }
+  return result;
+}
+
+const CV_SECTION_KEYS = ['datos_personales', 'experiencia', 'educacion', 'habilidades', 'idiomas', 'certificaciones'];
+function looksLikeCvData(data: Record<string, unknown>): boolean {
+  const keys = Object.keys(data);
+  return CV_SECTION_KEYS.some((k) => keys.includes(k));
+}
+
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined) return '—';
   if (typeof value === 'number') {
@@ -21,7 +52,9 @@ function formatFieldValue(value: unknown): string {
 }
 
 function buildExtractedRows(extracted: Record<string, unknown>): string {
-  return Object.entries(extracted)
+  const isCv = looksLikeCvData(extracted);
+  const data = isCv ? flattenNested(extracted) : extracted;
+  return Object.entries(data)
     .map(
       ([key, value]) => `
         <tr>

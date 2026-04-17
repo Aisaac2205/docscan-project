@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useScannerStore } from '@/features/scanner/store';
 import { useScanResult } from '@/features/scanner/hooks/useScanResult';
 import { useCameraCapture } from '@/features/scanner/hooks/useCameraCapture';
@@ -21,8 +21,22 @@ export function ScannerView() {
     ocrMode, setOcrMode, customFields, setCustomFields,
     ocrResult, analysisResult, queryHistory,
     providers, selectedProvider, selectedModel, setSelectedModel, onProviderChange,
+    autoOpenResult, setAutoOpenResult,
+    pendingRedirectDocId, pendingRedirectUntil, openPendingResultNow, cancelPendingRedirect,
     applyResult, handleAnalyze, handleExtract, handleQuery,
   } = useScanResult();
+
+  const [nowTs, setNowTs] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!pendingRedirectUntil) return;
+    const id = window.setInterval(() => setNowTs(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [pendingRedirectUntil]);
+
+  const redirectSecondsLeft = pendingRedirectUntil
+    ? Math.max(0, Math.ceil((pendingRedirectUntil - nowTs) / 1000))
+    : 0;
 
   const camera = useCameraCapture(applyResult);
   const wifi = useWifiScanner(applyResult);
@@ -123,29 +137,63 @@ export function ScannerView() {
       )}
 
       {previewUrl && (
-        <ResultPanel
-          previewUrl={previewUrl}
-          ocrResult={ocrResult}
-          documentId={documentId}
-          ocrMode={ocrMode}
-          setOcrMode={setOcrMode}
-          customFields={customFields}
-          setCustomFields={setCustomFields}
-          processingOcr={processingOcr}
-          analyzing={analyzing}
-          querying={querying}
-          analysisResult={analysisResult}
-          queryHistory={queryHistory}
-          providers={providers}
-          selectedProvider={selectedProvider}
-          selectedModel={selectedModel}
-          onProviderChange={onProviderChange}
-          onModelChange={setSelectedModel}
-          onExtract={handleExtract}
-          onAnalyze={handleAnalyze}
-          onQuery={handleQuery}
-          onPrint={handlePrint}
-        />
+        <>
+          <div className="mt-4 p-3 sm:p-4 rounded-lg border border-[var(--border)] bg-stone-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <label className="flex items-center gap-2 text-sm text-stone-700">
+              <input
+                type="checkbox"
+                checked={autoOpenResult}
+                onChange={(e) => setAutoOpenResult(e.target.checked)}
+                className="h-4 w-4 rounded border-[var(--border)]"
+              />
+              Abrir automáticamente en Documentos al terminar OCR
+            </label>
+
+            {pendingRedirectDocId && (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs text-stone-500">
+                  Redirigiendo en {redirectSecondsLeft}s
+                </span>
+                <button
+                  onClick={openPendingResultNow}
+                  className="h-8 px-3 text-xs font-semibold bg-stone-900 text-white rounded-md hover:bg-stone-800 transition-colors"
+                >
+                  Ver ahora
+                </button>
+                <button
+                  onClick={cancelPendingRedirect}
+                  className="h-8 px-3 text-xs font-semibold border border-[var(--border)] text-stone-600 rounded-md hover:bg-white transition-colors"
+                >
+                  Quedarme aquí
+                </button>
+              </div>
+            )}
+          </div>
+
+          <ResultPanel
+            previewUrl={previewUrl}
+            ocrResult={ocrResult}
+            documentId={documentId}
+            ocrMode={ocrMode}
+            setOcrMode={setOcrMode}
+            customFields={customFields}
+            setCustomFields={setCustomFields}
+            processingOcr={processingOcr}
+            analyzing={analyzing}
+            querying={querying}
+            analysisResult={analysisResult}
+            queryHistory={queryHistory}
+            providers={providers}
+            selectedProvider={selectedProvider}
+            selectedModel={selectedModel}
+            onProviderChange={onProviderChange}
+            onModelChange={setSelectedModel}
+            onExtract={handleExtract}
+            onAnalyze={handleAnalyze}
+            onQuery={handleQuery}
+            onPrint={handlePrint}
+          />
+        </>
       )}
     </div>
   );

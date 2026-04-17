@@ -1,140 +1,91 @@
-import React, { useState } from 'react';
 import type { Document } from '../types/document.types';
-import { useDocumentAction } from '../hooks/useDocumentAction';
-import { useDocumentChat } from '../hooks/useDocumentChat';
-import { useExtractedFields } from '../hooks/useExtractedFields';
-import { DocumentChatPanel } from './DocumentChatPanel';
-import { ExtractedFieldsPanel } from './ExtractedFieldsPanel';
 import { StatusBadge } from './StatusBadge';
-import { printDocument } from '../utils/print';
-import { useDocumentStore } from '../store';
 import {
-  FileIcon, OcrIcon, PrintIcon, TrashIcon, SpinnerIcon,
-  SparkleIcon, ChatIcon, ChevronDownIcon,
+  FileIcon, EyeIcon, PrintIcon, TrashIcon,
 } from '@/shared/ui/icons';
 
 interface DocumentCardProps {
   doc: Document;
+  onOpen: (doc: Document) => void;
+  onDelete: (id: string) => void;
+  onPrint: (doc: Document) => void;
 }
 
-export function DocumentCard({ doc }: DocumentCardProps) {
-  const { deleteDocument } = useDocumentStore();
-  const documentAction = useDocumentAction(doc);
-  const documentChat = useDocumentChat(doc.id);
-  
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-
-  const extracted = doc.extractedData as Record<string, unknown> | null;
-  const renderedFields = useExtractedFields(extracted);
-  const isCompleted = doc.status === 'completed';
-  const canExtract = doc.status !== 'processing' && !documentAction.isProcessingLocal;
+export function DocumentCard({ doc, onOpen, onDelete, onPrint }: DocumentCardProps) {
+  const isImage = doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf');
+  const isPdf = doc.filePath?.toLowerCase().endsWith('.pdf');
 
   return (
-    <div className="bg-white border border-[var(--border)] rounded-lg overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-3 sm:p-4">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-md bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
-            {doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf') ? (
-              // eslint-disable-next-line @next/next/no-img-element -- thumbnail dinámico de CDN con onError; next/image no soporta este handler para ocultar imágenes rotas
-              <img
-                src={doc.filePath}
-                alt=""
-                className="w-full h-full object-cover rounded-lg"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            ) : (
-              <FileIcon />
-            )}
-          </div>
+    <div
+      onClick={() => onOpen(doc)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpen(doc); }}
+      role="button"
+      tabIndex={0}
+      className="group w-full text-left bg-white border border-[var(--border)] rounded-xl overflow-hidden hover:border-stone-300 hover:shadow-sm transition-all duration-200 cursor-pointer"
+    >
+      {/* Thumbnail bar */}
+      <div className="flex items-stretch">
+        <div className={`flex items-center justify-center flex-shrink-0 ${isPdf ? 'w-14 bg-stone-50' : 'w-14 bg-stone-100'}`}>
+          {isImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={doc.filePath}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : (
+            <FileIcon className={isPdf ? 'text-stone-400' : 'text-stone-300'} />
+          )}
+        </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-medium text-stone-800 truncate">{doc.originalName}</p>
-              <StatusBadge status={doc.status} />
-            </div>
-            <p className="text-xs text-stone-400 mt-0.5">
+        {/* Content */}
+        <div className="flex-1 min-w-0 px-3 py-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-medium text-stone-800 truncate group-hover:text-stone-900 transition-colors">
+              {doc.originalName}
+            </p>
+            <StatusBadge status={doc.status} />
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-xs text-stone-400">
               {new Date(doc.createdAt).toLocaleDateString('es-GT', {
                 day: '2-digit', month: 'short', year: 'numeric',
               })}
             </p>
+            {doc.confidence !== null && doc.confidence !== undefined && (
+              <span className="text-[10px] text-stone-400">
+                {Math.round(doc.confidence * 100)}% confianza
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap sm:justify-end">
-          {!isCompleted && (
-            <>
-              <button
-                onClick={documentAction.handleSmartExtract}
-                disabled={!canExtract || documentAction.isLocked}
-                title="Analizar y extraer todos los campos automáticamente"
-                className="h-8 px-3 text-xs font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-              >
-                {documentAction.isProcessingLocal
-                  ? <><SpinnerIcon size={12} />Procesando...</>
-                  : <><SparkleIcon size={12} />Extraer con IA</>}
-              </button>
-              <button
-                onClick={documentAction.handleExtract}
-                disabled={!canExtract || documentAction.isLocked}
-                title="Extracción general de texto"
-                className="h-8 px-3 text-xs font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <OcrIcon size={12} />OCR
-              </button>
-            </>
-          )}
-
-          {isCompleted && extracted && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 px-3 flex items-center gap-1.5 text-xs font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 hover:text-stone-900 transition-colors"
-            >
-              Ver campos
-              <ChevronDownIcon className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-            </button>
-          )}
-
+        {/* Actions — visible on hover */}
+        <div className="flex items-center gap-0.5 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => {
-              setIsChatOpen(!isChatOpen);
-              if (!isChatOpen) setIsExpanded(false);
-            }}
-            title="Preguntar sobre el documento"
-            className={`h-8 px-3 flex items-center gap-1.5 text-xs font-medium border rounded-lg transition-colors ${
-              isChatOpen
-                ? 'bg-stone-900 text-white border-stone-900'
-                : 'border-[var(--border)] text-stone-600 bg-white hover:bg-stone-50 hover:text-stone-900'
-            }`}
+            onClick={(e) => { e.stopPropagation(); onOpen(doc); }}
+            title="Ver documento"
+            className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
           >
-            <ChatIcon size={12} />
-            {documentChat.history.length > 0 ? `${documentChat.history.length}` : 'Preguntar'}
+            <EyeIcon size={14} />
           </button>
-
           <button
-            onClick={() => printDocument(doc)}
-            title="Imprimir documento"
-            className="h-8 px-3 flex items-center gap-1.5 text-xs font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 hover:text-stone-900 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onPrint(doc); }}
+            title="Imprimir"
+            className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
           >
-            <PrintIcon />Imprimir
+            <PrintIcon size={13} />
           </button>
-
           <button
-            onClick={() => deleteDocument(doc.id)}
-            title="Eliminar documento"
-            className="h-8 w-8 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
+            title="Eliminar"
+            className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
           >
-            <TrashIcon />
+            <TrashIcon size={13} />
           </button>
         </div>
       </div>
-
-      {isCompleted && isExpanded && renderedFields.length > 0 && (
-        <ExtractedFieldsPanel fields={renderedFields} />
-      )}
-
-      {isChatOpen && <DocumentChatPanel chat={documentChat} />}
     </div>
   );
 }
-

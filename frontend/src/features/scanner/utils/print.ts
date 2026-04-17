@@ -2,13 +2,50 @@ import type { OCRResponse } from '@/features/ocr/types/ocr.types';
 import { EXTRACTION_MODE_LABELS } from '@/features/ocr/types/ocr.types';
 import { formatValue } from './format';
 
+/** Flatten nested objects to dot-notation for readable print output */
+function flattenNested(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Skip internal keys
+    if (key.startsWith('_')) continue;
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (value === null || value === undefined) continue;
+    if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        if (typeof item === 'object' && item !== null) {
+          const flattened = flattenNested(item, `${fullKey}[${i}]`);
+          Object.assign(result, flattened);
+        } else {
+          result[`${fullKey}[${i}]`] = String(item);
+        }
+      });
+    } else if (typeof value === 'object') {
+      Object.assign(result, flattenNested(value as Record<string, unknown>, fullKey));
+    } else {
+      result[fullKey] = String(value);
+    }
+  }
+  return result;
+}
+
+function formatLabel(key: string): string {
+  return key
+    .replace(/\.\[?\d+\]?/g, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function printDocument(previewUrl: string | null, ocrResult: OCRResponse | null): void {
   const w = window.open('', '_blank', 'width=820,height=720');
   if (!w) return;
   const data = ocrResult?.extractedData;
+
   const rows = data
-    ? Object.entries(data)
-        .map(([k, v]) => `<tr><th>${k}</th><td>${formatValue(v)}</td></tr>`)
+    ? (ocrResult.extractionMode === 'cv'
+        ? Object.entries(flattenNested(data as Record<string, unknown>))
+        : Object.entries(data)
+      )
+        .map(([k, v]) => `<tr><th>${formatLabel(k)}</th><td>${formatValue(v)}</td></tr>`)
         .join('')
     : '';
   w.document.write(`<!DOCTYPE html><html><head>
