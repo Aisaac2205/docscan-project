@@ -1,203 +1,191 @@
 # DocScan - Plataforma de Digitalización de Documentos (RRHH)
 
-Proyecto de digitalización de documentos enfocado en Recursos Humanos con OCR integrado mediante IA (soporte para CVs, DPIs, Constancias Médicas y Documentos Fiscales). Monorepo con backend NestJS y frontend Next.js 15.
+Proyecto de digitalización de documentos con OCR integrado. Monorepo con backend NestJS y frontend Next.js.
+
+## ⚠️ Escáner físico: alcance real
+
+La integración de escáner físico está orientada a **entornos locales/on-premise**.
+
+- ✅ Soportado: PC Windows local + NAPS2 + Scanner Agent + Backend DocScan.
+- ❌ No soportado: escaneo de hardware físico directo desde web pública.
+
+Este flujo se mantiene como **demo sólida para operación local**.
+
+---
+
+## Documentación clave (on-prem)
+
+1. **`SCANNER.md`**  
+   Arquitectura, límites, contrato backend, troubleshooting y checklist operativo.
+2. **`scanner-agent/README.md`**  
+   Instalación del agente local, variables `.env`, modos (`scan`, `flush-queue`, `daemon`).
+3. **`backend/.env.example`**  
+   Variables mínimas del backend (incluye `SCANNER_AGENT_KEY`).
+
+---
 
 ## Tecnologías
 
 | Capa | Tecnología |
 |------|------------|
 | Backend | NestJS + TypeScript |
-| Frontend | Next.js 15 (App Router) + TypeScript + TailwindCSS |
-| OCR / IA | Google Gemini 2.5 Flash / Modelos Locales (LM Studio) usando API OpenAI |
-| Almacenamiento | Bunny CDN + Sharp (optimización de imágenes) |
-| Scanner físico | NAPS2 CLI (con fallback a imagen de muestra) |
-| Base de datos | PostgreSQL + Prisma ORM |
+| Frontend | Next.js (App Router) + React |
+| OCR / IA | Google Gemini / LM Studio |
+| Almacenamiento | Bunny CDN + Sharp |
+| Scanner físico (on-prem) | NAPS2 CLI + Scanner Agent |
+| Base de datos | PostgreSQL + Prisma |
 | Estado global | Zustand |
-| HTTP cliente | Axios |
-| Docker | Orquestación completa |
 
-## Requisitos Previos
+---
+
+## Requisitos previos
 
 - Node.js 18+
 - Docker y Docker Compose
-- Cuenta en [Bunny CDN](https://bunny.net) (para almacenamiento de archivos)
-- API Key de Google Gemini o instancia local de LM Studio (para OCR)
-- NAPS2 instalado (opcional, para scanner físico)
+- PostgreSQL (vía docker-compose)
+- Cuenta Bunny CDN (si querés almacenamiento remoto)
+- API key de Gemini o instancia de LM Studio
+- Para scanner on-prem: Windows 10/11 + NAPS2
 
-## Instalación
+---
 
-### 1. Instalar dependencias
+## Instalación (stack general)
+
+### 1) Instalar dependencias
 
 ```bash
 npm run install:all
 ```
 
-### 2. Configurar variables de entorno
+### 2) Configurar entorno backend
 
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-Editar `backend/.env` con los valores correspondientes (ver sección de Variables de Entorno).
+Editar `backend/.env` con tus valores.
 
-### 3. Levantar base de datos
+### 3) Levantar base de datos
 
 ```bash
 docker-compose up -d postgres
 ```
 
-### 4. Sincronizar esquema de base de datos
+### 4) Sincronizar schema
 
 ```bash
-npm run db:push        # desarrollo rápido (sin migración)
+npm run db:push
 # o
-npm run db:migrate     # crear y aplicar migración
+npm run db:migrate
 ```
 
-## Ejecución en Desarrollo
+### 5) Levantar app
 
 ```bash
-# Terminal 1 - Backend (puerto 3001)
 npm run dev:backend
-
-# Terminal 2 - Frontend (puerto 3000)
 npm run dev:frontend
 ```
 
-## Variables de Entorno
+---
 
-| Variable | Descripción | Requerida |
-|----------|-------------|-----------|
-| `DATABASE_URL` | Cadena de conexión PostgreSQL | Sí |
-| `JWT_SECRET` | Secreto para firmar tokens JWT | Sí |
-| `GEMINI_API_KEY` | API Key de Google Gemini para OCR | No (si usas LM Studio) |
-| `BUNNY_STORAGE_ZONE` | Zona de almacenamiento Bunny CDN | Sí |
-| `BUNNY_STORAGE_ACCESS_KEY` | Access key de Bunny CDN | Sí |
-| `BUNNY_STORAGE_HOST` | Host de storage de Bunny | Sí |
-| `BUNNY_CDN_BASE_URL` | URL base del CDN para acceso público | Sí |
-| `NEXT_PUBLIC_API_URL` | URL base de la API (frontend) | Sí |
-| `OCR_PROVIDER` | `gemini` o `lmstudio` (por defecto `gemini`) | No |
-| `LMSTUDIO_BASE_URL` | URL de LM Studio (default: `http://127.0.0.1:1234/v1`) | No |
-| `LMSTUDIO_MODEL` | Nombre del modelo en LM Studio (opcional) | No |
-| `NAPS2_CLI_PATH` | Ruta a `naps2.console.exe` | No |
-| `NAPS2_FORCE_MOCK` | `true` para omitir NAPS2 y usar imagen de muestra | No |
+## Guía corta: cómo agregar `.env` correctamente
 
-## URLs
+### Backend (`backend/.env`)
 
-| Servicio | URL |
-|----------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:3001/api |
-| Health Check | http://localhost:3001/api/health |
-
-## Estructura del Proyecto
-
-```
-docscan/
-├── backend/                    # API NestJS
-│   ├── src/
-│   │   ├── common/             # Guards, decoradores
-│   │   ├── config/             # Configuración global
-│   │   └── modules/
-│   │       ├── auth/           # JWT + bcrypt
-│   │       ├── documents/      # CRUD + upload
-│   │       ├── ocr/            # Gemini 2.5 Flash
-│   │       ├── scanner/        # NAPS2 CLI
-│   │       ├── storage/        # Sharp + Bunny CDN
-│   │       └── health/         # Health check
-│   ├── prisma/                 # Schema y migraciones
-│   └── mocks/                  # Imagen de muestra para mock scan
-├── frontend/                   # App Next.js 15
-│   └── src/
-│       ├── app/                # Rutas (App Router - UI routing y RSC)
-│       ├── views/              # Vistas orquestadoras (Feature Composition)
-│       ├── features/           # Módulos por dominio (Aislados: hooks, components, types)
-│       └── shared/             # API client, hooks, UI compartida
-├── docker-compose.yml
-├── CLAUDE.md
-└── README.md
-```
-
-## API Endpoints
-
-### Auth (públicos)
-- `POST /api/auth/register` — Registro de usuario
-- `POST /api/auth/login` — Inicio de sesión → devuelve JWT
-
-### Documents (requieren JWT)
-- `GET /api/documents` — Listar documentos del usuario autenticado
-- `GET /api/documents/:id` — Obtener documento por ID
-- `POST /api/documents/upload` — Subir imagen (multipart/form-data, campo `file`)
-- `DELETE /api/documents/:id` — Eliminar documento
-
-### Scanner (requieren JWT)
-- `GET /api/scanner/devices` — Listar perfiles NAPS2 disponibles
-- `POST /api/scanner/scan` — Disparar escaneo físico vía NAPS2 (body: `{ deviceId? }`)
-- `POST /api/scanner/capture` — Guardar imagen capturada en base64 (body: `{ imageData }`)
-
-### OCR (requiere JWT)
-- `POST /api/ocr/process` — Extraer datos del documento usando modelo IA (body: `{ documentId, mode }`)
-- `POST /api/ocr/analyze` — Analizar visualmente el documento para diagnosticar qué es (body: `{ documentId }`)
-- `POST /api/ocr/query` — Hacer una pregunta textual en chat usando el documento de contexto (body: `{ documentId, question }`)
-
-### Health
-- `GET /api/health` — Estado del servidor y base de datos
-
-## Flujo Principal
-
-```
-Usuario sube imagen
-  → multer guarda en disco temporalmente
-  → Sharp optimiza a WebP (máx 4096×4096, calidad 85)
-  → Bunny CDN almacena la imagen y devuelve URL pública
-  → Prisma guarda el documento con la URL CDN en PostgreSQL
-  → Usuario solicita OCR
-  → OcrService descarga la imagen desde CDN
-  → Gemini 2.5 Flash extrae: proveedor, fecha, total, NIT
-  → Resultado JSON se persiste en Document.extractedData
-```
-
-## Producción con Docker
+1. Crear archivo desde plantilla:
 
 ```bash
-npm run docker:build    # Construir imágenes
-npm run docker:up       # Levantar todos los servicios
-docker-compose logs -f  # Ver logs
-docker-compose down     # Detener servicios
+cp backend/.env.example backend/.env
 ```
 
-## Funcionalidades Implementadas
+2. Completar al menos:
 
-1. Autenticación JWT con registro y login
-2. Upload de imágenes con optimización automática (Sharp → WebP)
-3. Almacenamiento en Bunny CDN
-4. OCR enfocado en RRHH (CVs, DPIs, Constancias Médicas, RTUs, etc.)
-5. Caché de resultados OCR (no re-procesa si ya está completado)
-6. Escaneo físico vía NAPS2 CLI con fallback a imagen de muestra
-7. Captura de imágenes en base64 desde cámara/webcam
-8. Frontend con rutas protegidas (middleware SSR + cookie `docscan_token`)
-9. Inteligencia Artificial multi-proveedor (Google Gemini o modelos locales vía LM Studio)
-10. Chat conversacional sobre documentos individuales (Query API)
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `BUNNY_STORAGE_ZONE`
+- `BUNNY_STORAGE_ACCESS_KEY`
+- `BUNNY_STORAGE_HOST`
+- `BUNNY_CDN_BASE_URL`
+- `SCANNER_AGENT_KEY` (si usarás scanner on-prem)
 
-## Configurar LM Studio (Modelos Locales de IA)
+#### Cómo generar `SCANNER_AGENT_KEY` segura
 
-El backend soporta oficialmente conectarse a instancias locales de _LM Studio_ (u otros compatibles con API de OpenAI) para ofrecer privacidad de datos total al procesar los documentos RRHH.
+PowerShell:
 
-Para habilitarlo:
-
-1. Abre **LM Studio**.
-2. Dirígete a la vista "Local Server" y levanta el servidor (generalmente en `http://127.0.0.1:1234/v1`).
-3. Carga un modelo preferiblemente **multimodal/Vision** en caso de que tus documentos sean imágenes y no PDFs (ej: Llava, Qwen-VL).
-4. Configura en `backend/.env` las siguientes variables (ajusta las URLs si ejecutas backend dentro de un Docker y LM Studio en el host):
-
-```env
-OCR_PROVIDER=lmstudio
-LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
-LMSTUDIO_MODELS_URL=http://127.0.0.1:1234/v1/models
-# LMSTUDIO_MODEL=nombre_modelo_opcional # (deja vacío para usar el listado activo por defecto)
+```powershell
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+($bytes | ForEach-Object { $_.ToString("x2") }) -join ""
 ```
 
-5. Reinicia el API (`npm run dev:backend`) para re-cargar estas variables.
+Luego usar el MISMO valor en:
+
+- `backend/.env` → `SCANNER_AGENT_KEY=...`
+- `scanner-agent/.env` → `SCANNER_AGENT_KEY=...`
+
+Si no coinciden, el backend rechazará peticiones del agent con `401`.
+
+3. Guardar y reiniciar backend.
+
+### Scanner Agent (`scanner-agent/.env`)
+
+1. Crear desde plantilla:
+
+```bash
+cd scanner-agent
+copy .env.example .env
+```
+
+2. Completar obligatorias:
+
+- `NAPS2_PATH`
+- `SCAN_TEMP_DIR`
+- `BACKEND_BASE_URL`
+- `SCANNER_AGENT_KEY` (**debe coincidir** con backend)
+- `TARGET_USER_ID`
+- `EXTRACTION_MODE`
+
+3. Completar operativas recomendadas:
+
+- `QUEUE_RETRY_BASE_MS`
+- `HEARTBEAT_INTERVAL_MS`
+- `FLUSH_INTERVAL_MS`
+- `SCANNER_AGENT_ID`
+- `SCANNER_AGENT_VERSION`
+
+> Más detalle y ejemplos completos en `scanner-agent/README.md`.
+
+---
+
+## Inicio rápido del flujo on-prem scanner
+
+1. Revisar `SCANNER.md`.
+2. Configurar backend `.env` con `SCANNER_AGENT_KEY`.
+3. Instalar NAPS2 y validar CLI en Windows.
+4. Configurar `scanner-agent/.env`.
+5. Ejecutar:
+
+```bash
+cd scanner-agent
+npm install
+npm run dev
+```
+
+Modo continuo:
+
+```bash
+npm run dev:daemon
+```
+
+---
+
+## URLs locales
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:3001/api`
+- Health: `http://localhost:3001/api/health`
+
+---
 
 ## Licencia
 
