@@ -3,6 +3,7 @@ import { talentPoolClient } from './client';
 import type {
   TalentPoolCandidate,
   TalentPoolCriteria,
+  TalentPoolHistoryItem,
   TalentPoolRankPayload,
   TalentPoolRankResult,
 } from './types/talent-pool.types';
@@ -143,6 +144,9 @@ type TalentPoolState = {
   candidatos: TalentPoolCandidate[];
   evaluando: boolean;
   resultado: TalentPoolRankResult | null;
+  historial: TalentPoolHistoryItem[];
+  loadingHistorial: boolean;
+  updatingPinRunId: string | null;
   error: string | null;
   setCriterio: <K extends keyof TalentPoolCriteria>(key: K, value: TalentPoolCriteria[K]) => void;
   addCandidate: () => void;
@@ -150,6 +154,8 @@ type TalentPoolState = {
   updateCandidate: (id: string, patch: Partial<Pick<TalentPoolCandidate, 'nombre' | 'resumenCv'>>) => void;
   addCandidatesFromDocuments: (documents: Document[]) => AddFromDocumentsResult;
   evaluate: (provider?: 'gemini' | 'lmstudio', model?: string) => Promise<TalentPoolRankResult | null>;
+  loadHistory: (limit?: number) => Promise<void>;
+  togglePinned: (runId: string, isPinned: boolean) => Promise<boolean>;
   clearResult: () => void;
 };
 
@@ -158,6 +164,9 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   candidatos: [createCandidate(), createCandidate()],
   evaluando: false,
   resultado: null,
+  historial: [],
+  loadingHistorial: false,
+  updatingPinRunId: null,
   error: null,
 
   setCriterio: (key, value) => {
@@ -249,7 +258,29 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
 
     try {
       const result = await talentPoolClient.rank(payload);
-      set({ resultado: result, evaluando: false });
+      set((state) => ({
+        resultado: result,
+        evaluando: false,
+        historial: [
+          {
+            id: result.run.id,
+            puesto: result.puesto,
+            prioridadProceso: result.prioridadProceso,
+            tonoInforme: result.tonoInforme,
+            totalCandidatos: result.totalCandidatos,
+            rankingTop3: result.ranking.slice(0, 3),
+            resumenGeneral: result.resumenGeneral,
+            provider: result.run.provider,
+            model: result.run.model,
+            isPinned: result.run.isPinned,
+            createdAt: result.run.createdAt,
+          },
+          ...state.historial.filter((item) => item.id !== result.run.id),
+        ].sort((a, b) => {
+          if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }),
+      }));
       return result;
     } catch (err: unknown) {
       let message = 'No pudimos evaluar candidatos. Probá de nuevo.';
@@ -264,6 +295,51 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
 
       set({ evaluando: false, error: message });
       return null;
+    }
+  },
+
+  loadHistory: async (limit = 20) => {
+    set({ loadingHistorial: true });
+    try {
+      const history = await talentPoolClient.listHistory(limit);
+      set({ historial: history, loadingHistorial: false });
+    } catch {
+      set({ loadingHistorial: false });
+    }
+  },
+
+  togglePinned: async (runId, isPinned) => {
+    set({ updatingPinRunId: runId });
+    try {
+      const updated = await talentPoolClient.setPinned(runId, isPinned);
+      set((state) => {
+        const nextHistory = state.historial
+          .map((item) => (item.id === updated.id ? { ...item, isPinned: updated.isPinned } : item))
+          .sort((a, b) => {
+            if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+
+        const nextResult = state.resultado?.run.id === updated.id
+          ? {
+            ...state.resultado,
+            run: {
+              ...state.resultado.run,
+              isPinned: updated.isPinned,
+            },
+          }
+          : state.resultado;
+
+        return {
+          historial: nextHistory,
+          resultado: nextResult,
+          updatingPinRunId: null,
+        };
+      });
+      return true;
+    } catch {
+      set({ updatingPinRunId: null });
+      return false;
     }
   },
 

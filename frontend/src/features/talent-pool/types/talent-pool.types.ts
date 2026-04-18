@@ -47,6 +47,29 @@ export type TalentPoolRankResult = {
   totalCandidatos: number;
   ranking: TalentPoolRankedCandidate[];
   resumenGeneral: string;
+  run: TalentPoolRunMeta;
+};
+
+export type TalentPoolRunMeta = {
+  id: string;
+  provider: string;
+  model: string | null;
+  isPinned: boolean;
+  createdAt: string;
+};
+
+export type TalentPoolHistoryItem = {
+  id: string;
+  puesto: string;
+  prioridadProceso: TalentPoolPriority;
+  tonoInforme: TalentPoolTone;
+  totalCandidatos: number;
+  rankingTop3: TalentPoolRankedCandidate[];
+  resumenGeneral: string;
+  provider: string;
+  model: string | null;
+  isPinned: boolean;
+  createdAt: string;
 };
 
 export const PRIORITY_OPTIONS: Array<{ value: TalentPoolPriority; label: string; helper: string }> = [

@@ -1,11 +1,15 @@
 import {
   ArrayMaxSize,
   ArrayMinSize,
+  IsBoolean,
   IsArray,
   IsEnum,
+  IsInt,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -124,6 +128,7 @@ export interface TalentPoolRankResultDto {
   totalCandidatos: number;
   ranking: TalentPoolRankedCandidateDto[];
   resumenGeneral: string;
+  run: TalentPoolRunMetaDto;
 }
 
 export interface TalentPoolCandidateRawScore {
@@ -131,4 +136,40 @@ export interface TalentPoolCandidateRawScore {
   score: number;
   explicacion: string;
   alertas?: string[];
+}
+
+export interface TalentPoolRunMetaDto {
+  id: string;
+  provider: string;
+  model: string | null;
+  isPinned: boolean;
+  createdAt: string;
+}
+
+export interface TalentPoolHistoryItemDto {
+  id: string;
+  puesto: string;
+  prioridadProceso: TalentPoolPriority;
+  tonoInforme: TalentPoolTone;
+  totalCandidatos: number;
+  rankingTop3: TalentPoolRankedCandidateDto[];
+  resumenGeneral: string;
+  provider: string;
+  model: string | null;
+  isPinned: boolean;
+  createdAt: string;
+}
+
+export class TalentPoolHistoryQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number;
+}
+
+export class TalentPoolPinRunDto {
+  @IsBoolean()
+  isPinned: boolean;
 }

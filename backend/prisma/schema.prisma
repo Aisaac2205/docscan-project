@@ -13,6 +13,7 @@ model User {
   name           String
   documents      Document[]
   scannerConfigs ScannerConfig[]
+  talentPoolRuns TalentPoolRun[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -62,4 +63,23 @@ model DocumentQuery {
   createdAt  DateTime @default(now())
 
   @@index([documentId])
+}
+
+model TalentPoolRun {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider           String
+  model              String?
+  criteriosSnapshot  Json
+  candidatosSnapshot Json
+  rankingSnapshot    Json
+  resumenGeneral     String   @db.Text
+  isPinned           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, isPinned, createdAt])
 }

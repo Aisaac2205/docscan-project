@@ -1,23 +1,199 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../config/database.config';
 import { OcrProviderRegistry } from '../ocr/providers/ocr-provider.registry';
 import {
   TalentPoolCandidateRawScore,
+  TalentPoolCriteriaDto,
+  TalentPoolHistoryItemDto,
   TalentPoolLabel,
   TalentPoolPriority,
   TalentPoolRankDto,
   TalentPoolRankResultDto,
   TalentPoolRankedCandidateDto,
+  TalentPoolRunMetaDto,
   TalentPoolTone,
 } from './dto/talent-pool.dto';
 import { TalentPoolRankResponseSchema } from './schemas/talent-pool.schemas';
 
+const TALENT_POOL_RETENTION_MIN_RECENT = 20;
+const TALENT_POOL_RETENTION_TTL_DAYS = 90;
+
 @Injectable()
 export class TalentPoolService {
-  constructor(private readonly registry: OcrProviderRegistry) {}
+  constructor(
+    private readonly registry: OcrProviderRegistry,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  private parseRunCriterios(snapshot: unknown): TalentPoolCriteriaDto {
+    const typed = snapshot as Partial<TalentPoolCriteriaDto>;
+    return {
+      puesto: typeof typed?.puesto === 'string' ? typed.puesto : '',
+      objetivoRol: typeof typed?.objetivoRol === 'string' ? typed.objetivoRol : '',
+      imprescindible: Array.isArray(typed?.imprescindible) ? typed.imprescindible.filter((item): item is string => typeof item === 'string') : [],
+      deseable: Array.isArray(typed?.deseable) ? typed.deseable.filter((item): item is string => typeof item === 'string') : [],
+      experienciaMinima: typeof typed?.experienciaMinima === 'string' ? typed.experienciaMinima : '',
+      idiomaRequerido: typeof typed?.idiomaRequerido === 'string' ? typed.idiomaRequerido : '',
+      ubicacionModalidad: typeof typed?.ubicacionModalidad === 'string' ? typed.ubicacionModalidad : '',
+      noQueremos: Array.isArray(typed?.noQueremos) ? typed.noQueremos.filter((item): item is string => typeof item === 'string') : [],
+      prioridadProceso: typed?.prioridadProceso === TalentPoolPriority.RAPIDEZ
+      || typed?.prioridadProceso === TalentPoolPriority.CALIDAD
+      || typed?.prioridadProceso === TalentPoolPriority.EQUILIBRIO
+        ? typed.prioridadProceso
+        : TalentPoolPriority.EQUILIBRIO,
+      tonoInforme: typed?.tonoInforme === TalentPoolTone.BREVE
+      || typed?.tonoInforme === TalentPoolTone.DETALLADO
+      || typed?.tonoInforme === TalentPoolTone.ESTANDAR
+        ? typed.tonoInforme
+        : TalentPoolTone.ESTANDAR,
+    };
+  }
+
+  private parseRunRanking(snapshot: unknown): TalentPoolRankedCandidateDto[] {
+    if (!Array.isArray(snapshot)) return [];
+
+    return snapshot
+      .filter((item): item is Record<string, unknown> => !!item && typeof item === 'object')
+      .map((item, index) => {
+        const rawScore = typeof item.score === 'number' ? item.score : 0;
+        const score = this.normalizeScore(rawScore);
+        return {
+          nombre: typeof item.nombre === 'string' ? item.nombre.trim() : `Candidato ${index + 1}`,
+          score,
+          etiqueta: this.labelFromScore(score),
+          explicacion: typeof item.explicacion === 'string' ? item.explicacion.trim() : '',
+          alertas: Array.isArray(item.alertas)
+            ? item.alertas.filter((alerta): alerta is string => typeof alerta === 'string').map((alerta) => alerta.trim()).filter(Boolean)
+            : [],
+          orden: typeof item.orden === 'number' ? Math.max(1, Math.round(item.orden)) : index + 1,
+        };
+      })
+      .sort((a, b) => a.orden - b.orden)
+      .map((item, index) => ({ ...item, orden: index + 1 }));
+  }
+
+  private buildRunMeta(run: {
+    id: string;
+    provider: string;
+    model: string | null;
+    isPinned: boolean;
+    createdAt: Date;
+  }): TalentPoolRunMetaDto {
+    return {
+      id: run.id,
+      provider: run.provider,
+      model: run.model,
+      isPinned: run.isPinned,
+      createdAt: run.createdAt.toISOString(),
+    };
+  }
+
+  private async cleanupOldRuns(userId: string): Promise<void> {
+    const ttlCutoff = new Date(Date.now() - TALENT_POOL_RETENTION_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+    const candidates = await this.prisma.talentPoolRun.findMany({
+      where: {
+        userId,
+        isPinned: false,
+        createdAt: { lt: ttlCutoff },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (candidates.length <= TALENT_POOL_RETENTION_MIN_RECENT) {
+      return;
+    }
+
+    const idsToDelete = candidates.slice(TALENT_POOL_RETENTION_MIN_RECENT).map((row) => row.id);
+    if (idsToDelete.length === 0) {
+      return;
+    }
+
+    await this.prisma.talentPoolRun.deleteMany({
+      where: {
+        userId,
+        isPinned: false,
+        id: { in: idsToDelete },
+      },
+    });
+  }
+
+  async history(userId: string, limit = 20): Promise<TalentPoolHistoryItemDto[]> {
+    const safeLimit = Math.max(1, Math.min(50, limit));
+    const runs = await this.prisma.talentPoolRun.findMany({
+      where: { userId },
+      orderBy: [
+        { isPinned: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: safeLimit,
+      select: {
+        id: true,
+        criteriosSnapshot: true,
+        rankingSnapshot: true,
+        resumenGeneral: true,
+        provider: true,
+        model: true,
+        isPinned: true,
+        createdAt: true,
+      },
+    });
+
+    return runs.map((run) => {
+      const criterios = this.parseRunCriterios(run.criteriosSnapshot);
+      const ranking = this.parseRunRanking(run.rankingSnapshot);
+      return {
+        id: run.id,
+        puesto: criterios.puesto,
+        prioridadProceso: criterios.prioridadProceso,
+        tonoInforme: criterios.tonoInforme,
+        totalCandidatos: ranking.length,
+        rankingTop3: ranking.slice(0, 3),
+        resumenGeneral: run.resumenGeneral,
+        provider: run.provider,
+        model: run.model,
+        isPinned: run.isPinned,
+        createdAt: run.createdAt.toISOString(),
+      };
+    });
+  }
+
+  async setPinned(userId: string, runId: string, isPinned: boolean): Promise<TalentPoolRunMetaDto> {
+    const existing = await this.prisma.talentPoolRun.findUnique({
+      where: { id: runId },
+      select: { id: true, userId: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('No encontramos esa evaluación en el historial.');
+    }
+
+    if (existing.userId !== userId) {
+      throw new ForbiddenException('No tenés permisos para modificar esta evaluación.');
+    }
+
+    const updated = await this.prisma.talentPoolRun.update({
+      where: { id: runId },
+      data: { isPinned },
+      select: {
+        id: true,
+        provider: true,
+        model: true,
+        isPinned: true,
+        createdAt: true,
+      },
+    });
+
+    return this.buildRunMeta(updated);
+  }
 
   private cleanList(items: string[]): string[] {
     return items
@@ -209,7 +385,7 @@ export class TalentPoolService {
     }
   }
 
-  async rank(dto: TalentPoolRankDto): Promise<TalentPoolRankResultDto> {
+  async rank(userId: string, dto: TalentPoolRankDto): Promise<TalentPoolRankResultDto> {
     this.validateTalentPoolLimits(dto);
 
     const provider = this.registry.get(dto.provider);
@@ -263,13 +439,39 @@ export class TalentPoolService {
         orden: index + 1,
       }));
 
-      return {
+      const result: Omit<TalentPoolRankResultDto, 'run'> = {
         puesto: dto.criterios.puesto,
         prioridadProceso: dto.criterios.prioridadProceso,
         tonoInforme: dto.criterios.tonoInforme,
         totalCandidatos: ordered.length,
         ranking: ordered,
         resumenGeneral: validation.data.resumen_general?.trim() || `Se evaluaron ${ordered.length} candidatos para ${dto.criterios.puesto}.`,
+      };
+
+      const savedRun = await this.prisma.talentPoolRun.create({
+        data: {
+          userId,
+          provider: provider.id,
+          model: dto.model?.trim() || null,
+          criteriosSnapshot: dto.criterios as unknown as Prisma.InputJsonValue,
+          candidatosSnapshot: dto.candidatos as unknown as Prisma.InputJsonValue,
+          rankingSnapshot: result.ranking as unknown as Prisma.InputJsonValue,
+          resumenGeneral: result.resumenGeneral,
+        },
+        select: {
+          id: true,
+          provider: true,
+          model: true,
+          isPinned: true,
+          createdAt: true,
+        },
+      });
+
+      await this.cleanupOldRuns(userId);
+
+      return {
+        ...result,
+        run: this.buildRunMeta(savedRun),
       };
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof InternalServerErrorException) {

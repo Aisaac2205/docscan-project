@@ -3,10 +3,8 @@ import {
   Get,
   Post,
   Delete,
-  Body,
   Param,
   UseGuards,
-  Request,
   UseInterceptors,
   UploadedFile,
   HttpCode,
@@ -47,7 +45,7 @@ export class DocumentsController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: appConfig.upload.dir,
-        filename: (req, file, cb) => {
+        filename: (_req, file, cb) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           cb(null, `${uniqueSuffix}${ext}`);

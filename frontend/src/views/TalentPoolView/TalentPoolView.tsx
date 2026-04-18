@@ -136,6 +136,9 @@ export function TalentPoolView() {
     criterios,
     candidatos,
     resultado,
+    historial,
+    loadingHistorial,
+    updatingPinRunId,
     evaluando,
     error,
     setCriterio,
@@ -144,6 +147,8 @@ export function TalentPoolView() {
     updateCandidate,
     addCandidatesFromDocuments,
     evaluate,
+    loadHistory,
+    togglePinned,
   } = useTalentPoolStore();
   const { documents, loading: loadingDocuments, fetchDocuments } = useDocumentStore();
 
@@ -203,6 +208,12 @@ export function TalentPoolView() {
     });
   }, [fetchDocuments]);
 
+  useEffect(() => {
+    loadHistory(20).catch(() => {
+      toast.info('No pudimos cargar el historial de evaluaciones por ahora.');
+    });
+  }, [loadHistory]);
+
   const validate = (): string | null => {
     if (!criterios.puesto.trim()) return 'Completá el campo “Puesto”.';
     if (!criterios.objetivoRol.trim()) return 'Completá el campo “Objetivo del rol”.';
@@ -260,6 +271,15 @@ export function TalentPoolView() {
     }
 
     setSelectedDocumentIds([]);
+  };
+
+  const handleTogglePinned = async (runId: string, nextPinned: boolean) => {
+    const success = await togglePinned(runId, nextPinned);
+    if (success) {
+      toast.success(nextPinned ? 'Evaluación fijada en historial.' : 'Evaluación desfijada del historial.');
+      return;
+    }
+    toast.error('No pudimos actualizar el estado fijado de esta evaluación.');
   };
 
   return (
@@ -597,7 +617,7 @@ export function TalentPoolView() {
             {evaluando ? <><SpinnerIcon className="text-white/70" /> Evaluando candidatos…</> : 'Evaluar y ordenar candidatos'}
           </button>
           <p className="text-xs text-stone-400">
-            La evaluación es temporal (v1): no guardamos estos datos en base de datos.
+            Cada evaluación se guarda en historial para seguimiento del proceso.
           </p>
         </div>
 
@@ -608,20 +628,36 @@ export function TalentPoolView() {
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--border)] bg-white p-4 md:p-5 space-y-3">
+      <section className="rounded-xl border border-[var(--border)] bg-white p-4 md:p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-stone-800">Ranking recomendado</h2>
-          <p className="text-xs text-stone-400">Resultados ordenados de mayor a menor ajuste para {resultado?.puesto || 'el puesto'}.</p>
+          <h2 className="text-sm font-semibold text-stone-800">Resultado actual</h2>
+          <p className="text-xs text-stone-400">Priorizamos la última corrida para decidir rápido, y debajo queda el historial.</p>
         </div>
 
         {!resultado ? (
           <div className="rounded-lg border border-dashed border-[var(--border)] bg-stone-50 px-4 py-8 text-center text-sm text-stone-400">
-            Cuando evalúes los candidatos, acá vas a ver el ranking con explicación y alertas.
+            Cuando evalúes los candidatos, acá vas a ver el ranking actual con explicación y alertas.
           </div>
         ) : (
           <>
-            <div className="rounded-lg border border-[var(--info-border)] bg-[var(--info-bg)] px-3 py-2 text-sm text-stone-700">
-              <span className="font-semibold">Resumen:</span> {resultado.resumenGeneral}
+            <div className="rounded-lg border border-stone-300 bg-stone-900 px-3 py-2.5 text-sm text-white">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p>
+                  <span className="font-semibold">Resumen:</span> {resultado.resumenGeneral}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePinned(resultado.run.id, !resultado.run.isPinned)}
+                  disabled={updatingPinRunId === resultado.run.id}
+                  className="h-8 px-3 rounded-md border border-white/30 text-[11px] font-semibold hover:bg-white/10 disabled:opacity-50"
+                >
+                  {resultado.run.isPinned ? 'Desfijar' : 'Fijar'}
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-white/75">
+                Corrida actual · {new Date(resultado.run.createdAt).toLocaleString('es-GT')}
+                {resultado.run.model ? ` · ${resultado.run.provider} (${resultado.run.model})` : ` · ${resultado.run.provider}`}
+              </p>
             </div>
 
             <div className="space-y-2.5">
@@ -658,6 +694,67 @@ export function TalentPoolView() {
               ))}
             </div>
           </>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-[var(--border)] bg-white p-4 md:p-5 space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-stone-800">Historial de evaluaciones</h2>
+          <p className="text-xs text-stone-400">
+            Las evaluaciones fijadas quedan arriba. Después se ordena por fecha más reciente.
+          </p>
+        </div>
+
+        {loadingHistorial ? (
+          <div className="rounded-lg border border-[var(--border)] bg-stone-50 px-3 py-4 text-sm text-stone-500 flex items-center gap-2">
+            <SpinnerIcon className="text-stone-400" /> Cargando historial…
+          </div>
+        ) : historial.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-[var(--border)] bg-stone-50 px-4 py-6 text-center text-sm text-stone-400">
+            Todavía no hay evaluaciones guardadas.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {historial.map((run) => (
+              <article key={run.id} className={`rounded-lg border p-3 ${run.isPinned ? 'border-amber-300 bg-amber-50/40' : 'border-[var(--border)] bg-white'}`}>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-stone-800 truncate">{run.puesto}</h3>
+                      {run.isPinned && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-300 text-amber-700 bg-amber-100">
+                          Fijada
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-stone-500 mt-0.5">
+                      {new Date(run.createdAt).toLocaleString('es-GT')} · {run.totalCandidatos} candidato(s)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePinned(run.id, !run.isPinned)}
+                    disabled={updatingPinRunId === run.id}
+                    className="h-8 px-3 rounded-md border border-[var(--border)] bg-white text-[11px] font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+                  >
+                    {run.isPinned ? 'Desfijar' : 'Fijar'}
+                  </button>
+                </div>
+
+                <p className="mt-2 text-[12px] text-stone-600">{run.resumenGeneral}</p>
+
+                {run.rankingTop3.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {run.rankingTop3.map((item) => (
+                      <span key={`${run.id}-${item.orden}-${item.nombre}`} className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-stone-50 px-2 py-1 text-[11px] text-stone-700">
+                        #{item.orden} {item.nombre} ({item.score})
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
         )}
       </section>
     </div>
