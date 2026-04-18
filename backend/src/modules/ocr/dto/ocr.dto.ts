@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsArray, ArrayMaxSize, MaxLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  ArrayMaxSize,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import type { ExtractedDataByMode } from '../schemas/extraction.schemas';
 import type { ProviderId } from '../providers/ocr-provider.interface';
 // IDs use cuid() format — validate as non-empty strings, not UUIDs
@@ -13,8 +21,8 @@ export enum ExtractionMode {
   CUSTOM       = 'custom',       // Campos personalizados por el usuario
 }
 
-// Bloquea solo caracteres de control y newlines — la sanitización real ocurre en OcrService
-const SAFE_FIELD_REGEX = /^[^\x00-\x1f\x7f\n\r]{1,150}$/;
+// Bloquea saltos de línea; la sanitización fuerte ocurre en OcrService
+const SAFE_FIELD_REGEX = /^[^\n\r]{1,150}$/;
 
 export class ProcessOcrDto {
   @IsString()

@@ -10,6 +10,6 @@ import { OcrProviderRegistry } from './providers/ocr-provider.registry';
   imports: [DocumentsModule],
   controllers: [OcrController],
   providers: [GeminiProvider, LMStudioProvider, OcrProviderRegistry, OcrService],
-  exports: [OcrService],
+  exports: [OcrService, OcrProviderRegistry],
 })
 export class OcrModule {}

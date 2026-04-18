@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Protect routes under /dashboard, /documents, /scan and /features (server-side middleware)
-const PROTECTED_PATHS = ['/dashboard', '/documents', '/scan', '/features', '/app'];
+// Protect routes under /dashboard, /documents, /scan, /talent-pool and /features (server-side middleware)
+const PROTECTED_PATHS = ['/dashboard', '/documents', '/scan', '/talent-pool', '/features', '/app'];
 
 export function proxy(req: NextRequest) {
   const { nextUrl } = req;
@@ -24,5 +24,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/documents/:path*', '/scan/:path*', '/features/:path*'],
+  matcher: ['/dashboard/:path*', '/documents/:path*', '/scan/:path*', '/talent-pool/:path*', '/features/:path*'],
 };

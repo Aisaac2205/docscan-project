@@ -26,5 +26,6 @@ out/
 tsconfig.tsbuildinfo
 .agents/
 .claude/
+.atl/
 CLAUDE.md
 skills-lock.json

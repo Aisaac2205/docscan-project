@@ -7,6 +7,7 @@ import { OcrModule } from './modules/ocr/ocr.module';
 import { ScannerModule } from './modules/scanner/scanner.module';
 import { HealthModule } from './modules/health/health.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { TalentPoolModule } from './modules/talent-pool/talent-pool.module';
 import { PrismaModule } from './config/prisma.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { appConfig } from './config/app.config';
@@ -29,6 +30,7 @@ import { appConfig } from './config/app.config';
     AuthModule,
     DocumentsModule,
     OcrModule,
+    TalentPoolModule,
     ScannerModule,
     HealthModule,
     StorageModule,

@@ -1,9 +1,17 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PrismaService } from '../../config/database.config';
 import { DocumentsRepository } from '../documents/repositories/documents.repository';
-import { ExtractionMode, AnalyzeResultDto, QueryResultDto } from './dto/ocr.dto';
+import {
+  ExtractionMode,
+  AnalyzeResultDto,
+  QueryResultDto,
+} from './dto/ocr.dto';
 import { Prisma } from '@prisma/client';
 import {
   ExtractionSchemas,
@@ -138,12 +146,37 @@ export class OcrService {
           'Incluye UN ÚNICO campo "_confidence" (número entre 0.0 y 1.0) que represente la confianza global de la extracción. ' +
           'NO agregues campos de confianza individuales por campo ni ningún otro campo fuera de los listados.'
         );
-      case ExtractionMode.FISCAL_SOCIAL:
+case ExtractionMode.FISCAL_SOCIAL:
         return (
-          `${base} Estás analizando un documento fiscal o de seguridad social guatemalteco (RTU, constancia de NIT, carné del IGSS, resolución patronal). ` +
-          'Extrae: nit (número sin guiones), nombre_razon_social, estado_contribuyente, regimen_fiscal, direccion_fiscal. ' +
-          'Si es un documento del IGSS extrae también: numero_igss, numero_patronal. ' +
-          'Si un campo no está presente, usa null. Incluye "_confidence" entre 0.0 y 1.0.'
+          `${base} Actúa como un sistema experto de extracción de datos legales y fiscales enfocado en Guatemala. ` +
+          'Analiza el documento proporcionado (que puede ser un RTU, Constancia de NIT, Carné del IGSS o Resolución Patronal) y extrae la información estructurada. ' +
+          '\n\nREGLAS ESTRICTAS:\n' +
+          '1. Devuelve ÚNICAMENTE un objeto JSON válido. No incluyas bloques de código markdown (como ```json) ni texto adicional.\n' +
+          '2. Extrae SOLO información presente en el texto. No deduzcas datos. Si un campo no existe, usa estrictamente null.\n' +
+          '3. El NIT debe ir exclusivamente con números, sin guiones.\n' +
+          '\nESTRUCTURA JSON REQUERIDA:\n' +
+          '{\n' +
+          '  "datos_fiscales": {\n' +
+          '    "nit": "string (sin guiones)",\n' +
+          '    "nombre_razon_social": "string (nombre completo o razón social registrada)",\n' +
+          '    "cui_dpi": "string (búscalo como Código Único de Identificación, 13 dígitos)",\n' +
+          '    "estado_contribuyente": "string (ej. ACTIVO, OMISO)",\n' +
+          '    "regimen_fiscal": "string (ej. PEQUENO CONTRIBUYENTE, REGIMEN GENERAL)",\n' +
+          '    "actividad_economica": "string",\n' +
+          '    "es_emisor_fel": "boolean (true si en Características Especiales indica EMISOR DE FACTURA ELECTRÓNICA, false si no)",\n' +
+          '    "direccion_fiscal": "string"\n' +
+          '  },\n' +
+          '  "datos_igss": {\n' +
+          '    "numero_afiliacion": "string",\n' +
+          '    "numero_patronal": "string"\n' +
+          '  },\n' +
+          '  "_metadata": {\n' +
+          '    "tipo_documento_detectado": "string (RTU, Constancia IGSS, etc.)",\n' +
+          '    "fecha_vencimiento_documento": "YYYY-MM-DD o null (importante si es RTU)",\n' +
+          '    "confidence_score": "number (0.0 a 1.0)",\n' +
+          '    "requiere_revision_manual": "boolean (true si no detecta NIT ni número de IGSS, o si el score es menor a 0.85)"\n' +
+          '  }\n' +
+          '}'
         );
       case ExtractionMode.MEDICAL_CERT:
         return (
@@ -232,7 +265,8 @@ export class OcrService {
 
       const confidence: number | undefined =
         typeof rawParsed._confidence === 'number' ? rawParsed._confidence : undefined;
-      const { _confidence: _, ...rawData } = rawParsed;
+      const rawData: Record<string, unknown> = { ...rawParsed };
+      delete rawData._confidence;
 
       const validation = ExtractionSchemas[mode].safeParse(rawData);
       if (!validation.success) {

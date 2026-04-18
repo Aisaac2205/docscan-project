@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 const tabs = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'Inicio',
     path: '/dashboard',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -37,6 +37,19 @@ const tabs = [
         <rect x="2" y="1" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <rect x="5" y="3" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M7 7h4M7 9.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'talent-pool',
+    label: 'Candidatos',
+    path: '/talent-pool',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="5" cy="5" r="2.25" stroke="currentColor" strokeWidth="1.3" />
+        <circle cx="11" cy="5" r="2.25" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M1.75 13c0-1.9 1.56-3.45 3.5-3.45h1.5c1.94 0 3.5 1.55 3.5 3.45" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+        <path d="M7.75 13c0-1.55 1.27-2.8 2.85-2.8h.8c1.57 0 2.85 1.25 2.85 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
   },

@@ -25,7 +25,8 @@ export class GeminiProvider implements OcrProvider {
   }
 
   async generateContent(opts: GenerateOptions): Promise<string> {
-    const { systemInstruction, userPrompt, imageBase64, mimeType, jsonMode } = opts;
+    const { systemInstruction, userPrompt, imageBase64, mimeType, jsonMode, model: modelOverride } = opts;
+    const model = modelOverride || this.defaultModel;
 
     const parts: { text?: string; inlineData?: { data: string; mimeType: string } }[] = [
       { text: userPrompt },
@@ -35,7 +36,7 @@ export class GeminiProvider implements OcrProvider {
     }
 
     const response = await this.ai.models.generateContent({
-      model: this.defaultModel,
+      model,
       contents: [{ role: 'user', parts }],
       config: {
         systemInstruction,
