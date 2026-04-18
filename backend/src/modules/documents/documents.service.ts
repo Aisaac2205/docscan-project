@@ -33,6 +33,10 @@ export class DocumentsService {
     return document;
   }
 
+  async findByOriginalName(userId: string, originalName: string) {
+    return this.repository.findByOriginalName(userId, originalName);
+  }
+
   async updateDocument(id: string, userId: string, dto: UpdateDocumentDto) {
     const document = await this.repository.findByIdAndUserId(id, userId);
     if (!document) {
