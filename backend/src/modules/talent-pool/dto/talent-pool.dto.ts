@@ -146,6 +146,10 @@ export interface TalentPoolRunMetaDto {
   createdAt: string;
 }
 
+export interface TalentPoolClearHistoryResultDto {
+  deletedCount: number;
+}
+
 export interface TalentPoolHistoryItemDto {
   id: string;
   puesto: string;

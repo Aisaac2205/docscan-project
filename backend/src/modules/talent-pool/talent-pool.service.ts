@@ -10,6 +10,7 @@ import { PrismaService } from '../../config/database.config';
 import { OcrProviderRegistry } from '../ocr/providers/ocr-provider.registry';
 import {
   TalentPoolCandidateRawScore,
+  TalentPoolClearHistoryResultDto,
   TalentPoolCriteriaDto,
   TalentPoolHistoryItemDto,
   TalentPoolLabel,
@@ -193,6 +194,16 @@ export class TalentPoolService {
     });
 
     return this.buildRunMeta(updated);
+  }
+
+  async clearHistory(userId: string): Promise<TalentPoolClearHistoryResultDto> {
+    const deleted = await this.prisma.talentPoolRun.deleteMany({
+      where: { userId },
+    });
+
+    return {
+      deletedCount: deleted.count,
+    };
   }
 
   private cleanList(items: string[]): string[] {

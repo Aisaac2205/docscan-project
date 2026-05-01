@@ -17,6 +17,7 @@ export enum ExtractionMode {
   ID_CARD      = 'id_card',      // DPI / Pasaporte guatemalteco: CUI, nombres, vigencia
   FISCAL_SOCIAL = 'fiscal_social', // NIT (SAT), RTU, número de afiliación IGSS
   MEDICAL_CERT = 'medical_cert', // Constancia médica: médico, colegiado, reposo
+  BACKGROUND_CHECK = 'background_check', // Antecedentes penales/policiacos (Guatemala)
   GENERAL      = 'general',      // Texto libre completo
   CUSTOM       = 'custom',       // Campos personalizados por el usuario
 }

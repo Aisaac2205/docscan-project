@@ -187,6 +187,35 @@ case ExtractionMode.FISCAL_SOCIAL:
           'fecha_inicio_reposo (YYYY-MM-DD), fecha_fin_reposo (YYYY-MM-DD), dias_reposo (número entero). ' +
           'Si un campo no está presente, usa null. Incluye "_confidence" entre 0.0 y 1.0.'
         );
+      case ExtractionMode.BACKGROUND_CHECK:
+        return (
+          `${base} Actúa como un sistema experto de extracción de datos legales enfocado en Guatemala. ` +
+          'Analiza el documento proporcionado y determina si son Antecedentes Penales (Organismo Judicial) o Policiacos (PNC). ' +
+          '\n\nREGLAS ESTRICTAS:\n' +
+          '1. Devuelve ÚNICAMENTE un objeto JSON válido.\n' +
+          '2. El campo "tiene_antecedentes" es CRÍTICO: debe ser "false" si el documento indica explícitamente que la persona "CARECE" de antecedentes. Si indica que sí tiene, u omite la palabra carece en el contexto del récord, debe ser "true".\n' +
+          '\nESTRUCTURA JSON REQUERIDA:\n' +
+          '{\n' +
+          '  "tipo_documento": "string (PENAL o POLICIACO)",\n' +
+          '  "datos_ciudadano": {\n' +
+          '    "nombre_completo": "string",\n' +
+          '    "cui_dpi": "string (13 dígitos)"\n' +
+          '  },\n' +
+          '  "resultado": {\n' +
+          '    "tiene_antecedentes": "boolean (false si CARECE, true si tiene)",\n' +
+          '    "delito_indicado": "string o null (si tiene antecedentes, extrae el motivo; de lo contrario null)"\n' +
+          '  },\n' +
+          '  "validacion": {\n' +
+          '    "fecha_emision": "YYYY-MM-DD",\n' +
+          '    "numero_boleta_o_recibo": "string o null",\n' +
+          '    "codigo_validacion": "string o null (búscalo cerca del código QR si existe)"\n' +
+          '  },\n' +
+          '  "_metadata": {\n' +
+          '    "confidence_score": "number",\n' +
+          '    "requiere_revision_manual": "boolean (MÁXIMA PRIORIDAD: true si tiene_antecedentes es true, o si el score < 0.90)"\n' +
+          '  }\n' +
+          '}'
+        );
       case ExtractionMode.GENERAL:
         return `${base} Extrae: tipo_documento, idioma, fecha (YYYY-MM-DD), partes_involucradas, resumen, campos_clave, texto_completo. Incluye también "_confidence" con un número entre 0.0 y 1.0 indicando tu confianza en la extracción.`;
       case ExtractionMode.CUSTOM:
@@ -312,7 +341,7 @@ case ExtractionMode.FISCAL_SOCIAL:
     const userPrompt =
       'Analiza este documento en contexto de Recursos Humanos en Guatemala y devuelve EXACTAMENTE este JSON:\n' +
       '{\n' +
-      '  "detectedType": "tipo en inglés: cv|id_card|fiscal_social|medical_cert|general",\n' +
+      '  "detectedType": "tipo en inglés: cv|id_card|fiscal_social|medical_cert|background_check|general",\n' +
       '  "detectedTypeLabel": "nombre en español del tipo de documento",\n' +
       '  "confidence": 0.0,\n' +
       '  "description": "descripción breve de 1 línea de qué es el documento",\n' +
@@ -321,7 +350,7 @@ case ExtractionMode.FISCAL_SOCIAL:
       '  ]\n' +
       '}\n' +
       'Tipos posibles: cv (Currículum Vitae), id_card (DPI o Pasaporte guatemalteco), ' +
-      'fiscal_social (RTU, NIT, carné del IGSS), medical_cert (constancia médica), general (cualquier otro). ' +
+      'fiscal_social (RTU, NIT, carné del IGSS), medical_cert (constancia médica), background_check (antecedentes penales o policiacos), general (cualquier otro). ' +
       'Incluye entre 4 y 12 campos sugeridos relevantes para este tipo de documento en RRHH. ' +
       'Los keys solo pueden tener letras minúsculas, números y guión bajo.';
 

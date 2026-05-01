@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -9,6 +9,7 @@ import {
   TalentPoolPinRunDto,
   TalentPoolRankDto,
   TalentPoolRankResultDto,
+  TalentPoolClearHistoryResultDto,
   TalentPoolRunMetaDto,
 } from './dto/talent-pool.dto';
 
@@ -41,5 +42,12 @@ export class TalentPoolController {
     @Body() dto: TalentPoolPinRunDto,
   ): Promise<TalentPoolRunMetaDto> {
     return this.talentPoolService.setPinned(user.id, id, dto.isPinned);
+  }
+
+  @Delete('history')
+  async clearHistory(
+    @CurrentUser() user: { id: string },
+  ): Promise<TalentPoolClearHistoryResultDto> {
+    return this.talentPoolService.clearHistory(user.id);
   }
 }

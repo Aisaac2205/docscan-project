@@ -58,6 +58,29 @@ export const MedicalCertDataSchema = z
   })
   .catchall(z.unknown());
 
+export const BackgroundCheckDataSchema = z
+  .object({
+    tipo_documento: z.string().optional(),
+    datos_ciudadano: z.object({
+      nombre_completo: z.string().optional(),
+      cui_dpi: z.string().optional(),
+    }).optional(),
+    resultado: z.object({
+      tiene_antecedentes: z.boolean().optional(),
+      delito_indicado: z.union([z.string(), z.null()]).optional(),
+    }).optional(),
+    validacion: z.object({
+      fecha_emision: z.string().optional(),
+      numero_boleta_o_recibo: z.union([z.string(), z.null()]).optional(),
+      codigo_validacion: z.union([z.string(), z.null()]).optional(),
+    }).optional(),
+    _metadata: z.object({
+      confidence_score: z.number().optional(),
+      requiere_revision_manual: z.boolean().optional(),
+    }).optional(),
+  })
+  .catchall(z.unknown());
+
 export const GeneralDataSchema = z
   .object({
     tipo_documento: z.string().optional(),
@@ -98,6 +121,7 @@ export const ExtractionSchemas = {
   [ExtractionMode.ID_CARD]:      IdCardDataSchema,
   [ExtractionMode.FISCAL_SOCIAL]: FiscalSocialDataSchema,
   [ExtractionMode.MEDICAL_CERT]: MedicalCertDataSchema,
+  [ExtractionMode.BACKGROUND_CHECK]: BackgroundCheckDataSchema,
   [ExtractionMode.GENERAL]:      GeneralDataSchema,
   [ExtractionMode.CUSTOM]:       CustomDataSchema,
 } as const;
@@ -108,6 +132,7 @@ export type CvData = z.infer<typeof CvDataSchema>;
 export type IdCardData = z.infer<typeof IdCardDataSchema>;
 export type FiscalSocialData = z.infer<typeof FiscalSocialDataSchema>;
 export type MedicalCertData = z.infer<typeof MedicalCertDataSchema>;
+export type BackgroundCheckData = z.infer<typeof BackgroundCheckDataSchema>;
 export type GeneralData = z.infer<typeof GeneralDataSchema>;
 export type CustomData = z.infer<typeof CustomDataSchema>;
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;

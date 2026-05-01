@@ -3,6 +3,7 @@ export const EXTRACTION_MODES = [
   'id_card',
   'fiscal_social',
   'medical_cert',
+  'background_check',
   'general',
   'custom',
 ] as const;
