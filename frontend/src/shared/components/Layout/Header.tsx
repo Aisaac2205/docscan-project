@@ -30,7 +30,7 @@ export function Header() {
       >
         <Link href="/" className="flex items-center gap-2 group">
           <DocScanLogo />
-          <span className="font-semibold text-stone-900 text-[15px] tracking-tight">DocScan</span>
+          <span className="font-semibold text-stone-900 text-base tracking-tight">DocScan</span>
         </Link>
       </div>
 
@@ -38,7 +38,7 @@ export function Header() {
         {user && (
           <>
             <div className="hidden sm:flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-stone-100 border border-[var(--border)] flex items-center justify-center text-xs font-semibold text-stone-600">
+              <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-stone-100 border border-[var(--border)] flex items-center justify-center text-xs font-semibold text-stone-600">
                 {initials}
               </div>
               <div className="text-sm">
@@ -63,7 +63,7 @@ export function Header() {
 
 function DocScanLogo() {
   return (
-    <Image src="/logo.png" alt="DocScan" width={26} height={26} priority />
+    <Image src="/logo.png" alt="DocScan" width={30} height={30} priority style={{ width: 'var(--header-logo-size)', height: 'var(--header-logo-size)' }} />
   );
 }
 

@@ -54,8 +54,8 @@ export function DocumentsView() {
     <div>
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h1 className="text-lg md:text-xl font-semibold text-stone-900">Documentos</h1>
-          <p className="text-sm text-stone-400 mt-0.5">
+          <h1 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Documentos</h1>
+          <p className="text-sm lg:text-base text-stone-400 mt-0.5">
             {documents.length} documento{documents.length !== 1 ? 's' : ''} en tu biblioteca
           </p>
         </div>

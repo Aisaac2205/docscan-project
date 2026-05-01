@@ -64,7 +64,7 @@ export function printDocument(previewUrl: string | null, ocrResult: OCRResponse 
     <h1>Documento digitalizado</h1>
     <p class="meta">Generado: ${new Date().toLocaleDateString('es-GT', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
     ${previewUrl ? `<img src="${previewUrl}" alt="Documento" />` : ''}
-    <h2>Datos extraídos — ${EXTRACTION_MODE_LABELS[ocrResult?.extractionMode ?? 'general']}</h2>
+    <h2>Datos extraídos — ${EXTRACTION_MODE_LABELS[ocrResult?.extractionMode ?? 'background_check']}</h2>
     ${rows ? `<table>${rows}</table>` : '<p style="color:#888">Sin datos OCR.</p>'}
     <script>window.onload=function(){window.print()}<\/script>
   </body></html>`);

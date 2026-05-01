@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { useScannerStore } from '@/features/scanner/store';
 import { useScanResult } from '@/features/scanner/hooks/useScanResult';
 import { useCameraCapture } from '@/features/scanner/hooks/useCameraCapture';
@@ -11,6 +10,7 @@ import { CameraModal } from '@/features/scanner/components/CameraModal';
 import { WifiModal } from '@/features/scanner/components/WifiModal';
 import { SourceCard } from '@/features/scanner/components/SourceCard';
 import { ResultPanel } from '@/features/scanner/components/ResultPanel';
+import { ScanResultBar } from '@/features/scanner/components/ScanResultBar';
 import { CameraIcon, WifiIcon, UsbIcon } from '@/shared/ui/icons';
 
 export function ScannerView() {
@@ -22,21 +22,9 @@ export function ScannerView() {
     ocrResult, analysisResult, queryHistory,
     providers, selectedProvider, selectedModel, setSelectedModel, onProviderChange,
     autoOpenResult, setAutoOpenResult,
-    pendingRedirectDocId, pendingRedirectUntil, openPendingResultNow, cancelPendingRedirect,
+    pendingRedirectDocId, redirectSecondsLeft, openPendingResultNow, cancelPendingRedirect,
     applyResult, handleAnalyze, handleExtract, handleQuery,
   } = useScanResult();
-
-  const [nowTs, setNowTs] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (!pendingRedirectUntil) return;
-    const id = window.setInterval(() => setNowTs(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, [pendingRedirectUntil]);
-
-  const redirectSecondsLeft = pendingRedirectUntil
-    ? Math.max(0, Math.ceil((pendingRedirectUntil - nowTs) / 1000))
-    : 0;
 
   const camera = useCameraCapture(applyResult);
   const wifi = useWifiScanner(applyResult);
@@ -46,8 +34,8 @@ export function ScannerView() {
   return (
     <div>
       <div className="mb-4 md:mb-6">
-        <h2 className="text-lg md:text-xl font-semibold text-stone-900">Captura de documentos</h2>
-        <p className="text-sm text-stone-400 mt-0.5">
+        <h2 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Captura de documentos</h2>
+        <p className="text-sm lg:text-base text-stone-400 mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>
       </div>
@@ -96,7 +84,7 @@ export function ScannerView() {
       </div>
 
       <div className="flex items-center gap-3 mb-3 mt-5">
-        <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
+        <span className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
           Escáneres físicos
         </span>
         <div className="flex-1 h-px bg-[var(--border)]" />
@@ -138,37 +126,14 @@ export function ScannerView() {
 
       {previewUrl && (
         <>
-          <div className="mt-4 p-3 sm:p-4 rounded-lg border border-[var(--border)] bg-stone-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="flex items-center gap-2 text-sm text-stone-700">
-              <input
-                type="checkbox"
-                checked={autoOpenResult}
-                onChange={(e) => setAutoOpenResult(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--border)]"
-              />
-              Abrir automáticamente en Documentos al terminar OCR
-            </label>
-
-            {pendingRedirectDocId && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-xs text-stone-500">
-                  Redirigiendo en {redirectSecondsLeft}s
-                </span>
-                <button
-                  onClick={openPendingResultNow}
-                  className="h-8 px-3 text-xs font-semibold bg-stone-900 text-white rounded-md hover:bg-stone-800 transition-colors"
-                >
-                  Ver ahora
-                </button>
-                <button
-                  onClick={cancelPendingRedirect}
-                  className="h-8 px-3 text-xs font-semibold border border-[var(--border)] text-stone-600 rounded-md hover:bg-white transition-colors"
-                >
-                  Quedarme aquí
-                </button>
-              </div>
-            )}
-          </div>
+          <ScanResultBar
+            autoOpenResult={autoOpenResult}
+            onAutoOpenChange={setAutoOpenResult}
+            pendingRedirectDocId={pendingRedirectDocId}
+            redirectSecondsLeft={redirectSecondsLeft}
+            onOpenNow={openPendingResultNow}
+            onCancel={cancelPendingRedirect}
+          />
 
           <ResultPanel
             previewUrl={previewUrl}

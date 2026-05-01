@@ -22,7 +22,7 @@ export function useScanResult() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [processingOcr, setProcessingOcr] = useState(false);
-  const [ocrMode, setOcrMode] = useState<ExtractionMode>('general');
+  const [ocrMode, setOcrMode] = useState<ExtractionMode>('background_check');
   const [customFields, setCustomFields] = useState('');
   const documentIdRef = useRef<string | null>(null);
 
@@ -32,6 +32,7 @@ export function useScanResult() {
   const [autoOpenResult, setAutoOpenResultState] = useState(true);
   const [pendingRedirectDocId, setPendingRedirectDocId] = useState<string | null>(null);
   const [pendingRedirectUntil, setPendingRedirectUntil] = useState<number | null>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearPendingRedirect = () => {
@@ -96,6 +97,12 @@ export function useScanResult() {
     if (stored === '1') setAutoOpenResultState(true);
   }, []);
 
+  useEffect(() => {
+    if (!pendingRedirectUntil) return;
+    const id = window.setInterval(() => setNowTs(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [pendingRedirectUntil]);
+
   useEffect(() => () => {
     if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
   }, []);
@@ -113,7 +120,7 @@ export function useScanResult() {
     setPreviewUrl(res.url);
     documentIdRef.current = res.documentId;
     setDocumentId(res.documentId);
-    setOcrMode('general');
+    setOcrMode('background_check');
     setCustomFields('');
     addDocument({
       id: res.documentId,
@@ -177,6 +184,10 @@ export function useScanResult() {
     if (!result) toast.error('No se pudo consultar el documento');
   };
 
+  const redirectSecondsLeft = pendingRedirectUntil
+    ? Math.max(0, Math.ceil((pendingRedirectUntil - nowTs) / 1000))
+    : 0;
+
   return {
     previewUrl,
     documentId,
@@ -197,7 +208,7 @@ export function useScanResult() {
     autoOpenResult,
     setAutoOpenResult,
     pendingRedirectDocId,
-    pendingRedirectUntil,
+    redirectSecondsLeft,
     openPendingResultNow,
     cancelPendingRedirect,
     setSelectedModel,

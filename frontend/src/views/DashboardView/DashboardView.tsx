@@ -12,8 +12,8 @@ export function DashboardView() {
   return (
     <div>
       <div className="mb-5 md:mb-7">
-        <h1 className="text-lg md:text-xl font-semibold text-stone-900">Bienvenido, {firstName}</h1>
-        <p className="text-sm text-stone-400 mt-0.5">Panel de control · DocScan</p>
+        <h1 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Bienvenido, {firstName}</h1>
+        <p className="text-sm lg:text-base text-stone-400 mt-0.5">Panel de control · DocScan</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 md:mb-7 stagger-children">
@@ -23,7 +23,7 @@ export function DashboardView() {
       </div>
 
       <div className="mb-6">
-        <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-3">
+        <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">
           Hardware disponible
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 stagger-children">

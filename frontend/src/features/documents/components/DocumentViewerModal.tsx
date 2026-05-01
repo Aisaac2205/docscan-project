@@ -50,9 +50,9 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
     >
       <div className="flex flex-col w-full max-w-6xl h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* ── Top bar ─────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--border)] bg-white flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 lg:py-4 border-b border-[var(--border)] bg-white flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-stone-100 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg bg-stone-100 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
               {doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -66,10 +66,10 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-stone-800 truncate">{doc.originalName}</p>
+              <p className="text-sm lg:text-base font-semibold text-stone-800 truncate">{doc.originalName}</p>
               <div className="flex items-center gap-2">
                 <StatusBadge status={doc.status} />
-                <span className="text-[10px] text-stone-400">
+                <span className="text-[10px] lg:text-xs text-stone-400">
                   {new Date(doc.createdAt).toLocaleDateString('es-GT', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
               </div>
@@ -83,27 +83,27 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
                 <button
                   onClick={() => documentAction.handleSmartExtract()}
                   disabled={doc.status === 'processing'}
-                  className="h-8 px-3 text-xs font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  className="h-8 lg:h-9 px-3 text-xs lg:text-sm font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
                 >
                   {doc.status === 'processing'
-                    ? <><SpinnerIcon size={12} />Procesando…</>
-                    : <><SparkleIcon size={12} />Extraer con IA</>}
+                    ? <><SpinnerIcon size={12} className="lg:w-3.5 lg:h-3.5" />Procesando…</>
+                    : <><SparkleIcon size={12} className="lg:w-3.5 lg:h-3.5" />Extraer con IA</>}
                 </button>
                 <button
                   onClick={() => documentAction.handleExtract()}
                   disabled={doc.status === 'processing'}
-                  className="h-8 px-3 text-xs font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="h-8 lg:h-9 px-3 text-xs lg:text-sm font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <OcrIcon size={12} />OCR
+                  <OcrIcon size={12} className="lg:w-3.5 lg:h-3.5" />OCR
                 </button>
               </>
             )}
             <button
               onClick={() => printDocument(doc)}
-              className="h-8 w-8 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+              className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
               title="Imprimir"
             >
-              <PrintIcon size={14} />
+              <PrintIcon size={14} className="lg:w-4 lg:h-4" />
             </button>
             <button
               onClick={() => {
@@ -112,16 +112,16 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
                   onClose();
                 }
               }}
-              className="h-8 w-8 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               title="Eliminar"
             >
-              <TrashIcon size={14} />
+              <TrashIcon size={14} className="lg:w-4 lg:h-4" />
             </button>
           </div>
         </div>
 
         {/* ── Tabs ────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-0 border-b border-[var(--border)] bg-stone-50 px-4 sm:px-6 flex-shrink-0">
+        <div className="flex items-center gap-0 border-b border-[var(--border)] bg-stone-50 px-4 sm:px-6 lg:px-8 flex-shrink-0">
           <TabButton
             active={activeTab === 'preview'}
             onClick={() => setActiveTab('preview')}
@@ -144,7 +144,7 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
         {/* ── Content ─────────────────────────────────────────────── */}
         <div className="flex-1 overflow-hidden">
           {activeTab === 'preview' && (
-            <div className="h-full overflow-auto bg-stone-100 flex items-center justify-center p-4">
+            <div className="h-full overflow-auto bg-stone-100 flex items-center justify-center p-4 lg:p-6">
               {doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -164,14 +164,14 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
               ) : (
                 <div className="flex flex-col items-center gap-3 text-stone-400">
                   <FileIcon size={48} />
-                  <p className="text-sm">Sin vista previa disponible</p>
+                  <p className="text-sm lg:text-base">Sin vista previa disponible</p>
                 </div>
               )}
             </div>
           )}
 
           {activeTab === 'data' && isCompleted && renderedFields.length > 0 && (
-            <div className="h-full overflow-auto p-4 sm:p-6">
+            <div className="h-full overflow-auto p-4 sm:p-6 lg:p-8">
               <ExtractedFieldsPanel fields={renderedFields} />
             </div>
           )}
@@ -179,13 +179,13 @@ export function DocumentViewerModal({ doc, onClose, onDeleted }: DocumentViewerM
           {activeTab === 'data' && (!isCompleted || renderedFields.length === 0) && (
             <div className="h-full flex flex-col items-center justify-center text-stone-400 gap-2">
               <OcrIcon size={32} />
-              <p className="text-sm">{!isCompleted ? 'Aún no se han extraído datos' : 'No hay datos extraídos para mostrar'}</p>
+              <p className="text-sm lg:text-base">{!isCompleted ? 'Aún no se han extraído datos' : 'No hay datos extraídos para mostrar'}</p>
               {!isCompleted && (
                 <button
                   onClick={() => documentAction.handleSmartExtract()}
-                  className="mt-2 h-8 px-4 text-xs font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors flex items-center gap-1.5"
+                  className="mt-2 h-8 lg:h-9 px-4 text-xs lg:text-sm font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors flex items-center gap-1.5"
                 >
-                  <SparkleIcon size={12} />Extraer con IA
+                  <SparkleIcon size={12} className="lg:w-3.5 lg:h-3.5" />Extraer con IA
                 </button>
               )}
             </div>
@@ -206,7 +206,7 @@ function TabButton({ active, onClick, label }: { active: boolean; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+      className={`px-4 lg:px-5 py-2.5 lg:py-3 text-xs lg:text-sm font-medium border-b-2 transition-colors ${
         active
           ? 'border-stone-900 text-stone-900 bg-white'
           : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-100'

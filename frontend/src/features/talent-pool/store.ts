@@ -146,6 +146,7 @@ type TalentPoolState = {
   resultado: TalentPoolRankResult | null;
   historial: TalentPoolHistoryItem[];
   loadingHistorial: boolean;
+  clearingHistory: boolean;
   updatingPinRunId: string | null;
   error: string | null;
   setCriterio: <K extends keyof TalentPoolCriteria>(key: K, value: TalentPoolCriteria[K]) => void;
@@ -156,6 +157,7 @@ type TalentPoolState = {
   evaluate: (provider?: 'gemini' | 'lmstudio', model?: string) => Promise<TalentPoolRankResult | null>;
   loadHistory: (limit?: number) => Promise<void>;
   togglePinned: (runId: string, isPinned: boolean) => Promise<boolean>;
+  clearHistory: () => Promise<number | null>;
   clearResult: () => void;
 };
 
@@ -166,6 +168,7 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   resultado: null,
   historial: [],
   loadingHistorial: false,
+  clearingHistory: false,
   updatingPinRunId: null,
   error: null,
 
@@ -340,6 +343,28 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
     } catch {
       set({ updatingPinRunId: null });
       return false;
+    }
+  },
+
+  clearHistory: async () => {
+    set({ clearingHistory: true });
+    try {
+      const result = await talentPoolClient.clearHistory();
+      set((state) => {
+        const shouldClearCurrentResult = state.resultado
+          ? state.historial.some((item) => item.id === state.resultado?.run.id)
+          : false;
+
+        return {
+          historial: [],
+          resultado: shouldClearCurrentResult ? null : state.resultado,
+          clearingHistory: false,
+        };
+      });
+      return result.deletedCount;
+    } catch {
+      set({ clearingHistory: false });
+      return null;
     }
   },
 

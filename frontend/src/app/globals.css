@@ -93,18 +93,42 @@
     --shadow-elevated: 0 2px 8px rgba(0,0,0,0.04);
 
     /* Fluid typography */
-    --text-heading-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
-    --text-heading-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
-    --text-body: clamp(0.875rem, 0.85rem + 0.125vw, 0.9375rem);
+    --text-heading-xl: clamp(1.25rem, 0.8rem + 2vw, 1.5rem);
+    --text-heading-lg: clamp(1.125rem, 0.8rem + 1.5vw, 1.25rem);
+    --text-body: clamp(0.875rem, 0.8rem + 0.5vw, 0.9375rem);
+    --text-label: clamp(0.625rem, 0.55rem + 0.35vw, 0.75rem);
 
     /* Fluid spacing */
     --space-page: clamp(1rem, 0.75rem + 1.25vw, 1.5rem);
+    --space-card: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+
+    /* Layout component sizing tokens */
+    --sidebar-icon-size: 16px;
+    --sidebar-label-size: 0.6875rem;
+    --sidebar-sublabel-size: 0.625rem;
+    --header-logo-size: 26px;
+    --header-avatar-size: 28px;
   }
 
   @media (min-width: 1024px) {
     :root {
-      --sidebar-width: 220px;
+      font-size: 16px;
+      --sidebar-width: 260px;
+      --header-height: 64px;
       --bottom-nav-height: 0px;
+
+      --text-heading-xl: clamp(1.5rem, 0.8rem + 2.5vw, 2.25rem);
+      --text-heading-lg: clamp(1.25rem, 0.8rem + 2vw, 1.75rem);
+      --text-body: clamp(0.9375rem, 0.85rem + 0.5vw, 1.0625rem);
+      --text-label: clamp(0.6875rem, 0.6rem + 0.5vw, 0.8125rem);
+      --space-page: clamp(1.5rem, 1rem + 1.5vw, 2rem);
+      --space-card: clamp(1.25rem, 0.75rem + 1.25vw, 1.75rem);
+
+      --sidebar-icon-size: 20px;
+      --sidebar-label-size: 0.75rem;
+      --sidebar-sublabel-size: 0.6875rem;
+      --header-logo-size: 30px;
+      --header-avatar-size: 32px;
     }
   }
 
@@ -205,4 +229,10 @@
   .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
   .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
   .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+  /* Sidebar icon responsive sizing via CSS custom properties */
+  .sidebar-icon {
+    width: var(--sidebar-icon-size);
+    height: var(--sidebar-icon-size);
+  }
 }

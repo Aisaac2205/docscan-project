@@ -1,4 +1,4 @@
-export type ExtractionMode = 'cv' | 'id_card' | 'fiscal_social' | 'medical_cert' | 'general' | 'custom';
+export type ExtractionMode = 'cv' | 'id_card' | 'fiscal_social' | 'medical_cert' | 'background_check' | 'general' | 'custom';
 
 export type ProviderId = 'gemini' | 'lmstudio';
 
@@ -19,7 +19,8 @@ export const EXTRACTION_MODE_LABELS: Record<ExtractionMode, string> = {
   id_card:      'DPI / Pasaporte',
   fiscal_social: 'NIT / IGSS',
   medical_cert: 'Constancia Médica',
-  general:      'Texto libre',
+  background_check: 'Antecedentes Penales/Policiacos',
+  general:      'General',
   custom:       'Personalizado',
 };
 

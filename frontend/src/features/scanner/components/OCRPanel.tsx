@@ -132,7 +132,7 @@ function TabBtn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-semibold transition-colors border-b-2 -mb-px disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`flex items-center gap-1.5 px-4 py-2.5 lg:py-3 text-[11px] lg:text-xs font-semibold transition-colors border-b-2 -mb-px disabled:opacity-40 disabled:cursor-not-allowed ${
         active
           ? 'text-stone-900 border-stone-900 bg-white'
           : 'text-stone-400 border-transparent hover:text-stone-600 hover:bg-white/60'

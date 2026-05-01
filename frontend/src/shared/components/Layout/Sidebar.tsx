@@ -8,7 +8,7 @@ const tabs = [
     label: 'Inicio',
     path: '/dashboard',
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
@@ -21,7 +21,7 @@ const tabs = [
     label: 'Escanear',
     path: '/scan',
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M1 5h14" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M5 11v4M8 11v4M11 11v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -33,7 +33,7 @@ const tabs = [
     label: 'Documentos',
     path: '/documents',
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <rect x="5" y="3" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M7 7h4M7 9.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -45,7 +45,7 @@ const tabs = [
     label: 'Candidatos',
     path: '/talent-pool',
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
         <circle cx="5" cy="5" r="2.25" stroke="currentColor" strokeWidth="1.3" />
         <circle cx="11" cy="5" r="2.25" stroke="currentColor" strokeWidth="1.3" />
         <path d="M1.75 13c0-1.9 1.56-3.45 3.5-3.45h1.5c1.94 0 3.5 1.55 3.5 3.45" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -65,7 +65,7 @@ export function Sidebar() {
       className="hidden lg:flex fixed left-0 bottom-0 bg-white border-r border-[var(--border)] flex-col pt-4 pb-4 z-20"
     >
       <nav className="flex-1 px-2">
-        <p className="px-3 mb-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+        <p className="px-3 mb-2 text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider">
           Principal
         </p>
         <div className="space-y-0.5">
@@ -93,7 +93,7 @@ export function Sidebar() {
 
       <div className="px-4 mt-2 border-t border-[var(--border)] pt-4 space-y-3">
         <div>
-          <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+          <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
             Hardware
           </p>
           <div className="space-y-1">
@@ -106,7 +106,7 @@ export function Sidebar() {
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-0.5">OCR</p>
+          <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-0.5">OCR</p>
           <p className="text-xs text-stone-400">Gemini 2.5 Flash</p>
         </div>
       </div>

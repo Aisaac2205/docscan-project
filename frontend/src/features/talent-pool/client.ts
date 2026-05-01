@@ -1,5 +1,6 @@
 import { api } from '@/shared/api/client';
 import type {
+  TalentPoolClearHistoryResult,
   TalentPoolHistoryItem,
   TalentPoolRankPayload,
   TalentPoolRankResult,
@@ -23,6 +24,11 @@ export const talentPoolClient = {
     const res = await api.patch<TalentPoolRunMeta>(`/api/talent-pool/history/${runId}/pin`, {
       isPinned,
     });
+    return res.data;
+  },
+
+  async clearHistory(): Promise<TalentPoolClearHistoryResult> {
+    const res = await api.delete<TalentPoolClearHistoryResult>('/api/talent-pool/history');
     return res.data;
   },
 };

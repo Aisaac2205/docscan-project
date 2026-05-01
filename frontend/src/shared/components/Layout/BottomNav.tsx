@@ -42,7 +42,7 @@ const tabs = [
   },
   {
     id: 'talent-pool',
-    label: 'Bolsa',
+    label: 'Talentos',
     path: '/talent-pool',
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">

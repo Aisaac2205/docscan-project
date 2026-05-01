@@ -58,6 +58,10 @@ export type TalentPoolRunMeta = {
   createdAt: string;
 };
 
+export type TalentPoolClearHistoryResult = {
+  deletedCount: number;
+};
+
 export type TalentPoolHistoryItem = {
   id: string;
   puesto: string;
