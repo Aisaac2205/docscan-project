@@ -17,6 +17,17 @@ const tabs = [
     ),
   },
   {
+    id: 'persons',
+    label: 'Personas',
+    path: '/persons',
+    icon: (
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="5.25" r="2.5" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M2.5 14c0-2.5 2.46-4.5 5.5-4.5s5.5 2 5.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     id: 'scan',
     label: 'Escanear',
     path: '/scan',
@@ -25,6 +36,18 @@ const tabs = [
         <rect x="1" y="1" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M1 5h14" stroke="currentColor" strokeWidth="1.3"/>
         <path d="M5 11v4M8 11v4M11 11v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'inbox',
+    label: 'Bandeja de entrada',
+    path: '/inbox',
+    icon: (
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M2 8.5V13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+        <path d="M2 8.5L4 3h8l2 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+        <path d="M5 8.5h2l1 1.5h0l1-1.5h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
@@ -50,6 +73,17 @@ const tabs = [
         <circle cx="11" cy="5" r="2.25" stroke="currentColor" strokeWidth="1.3" />
         <path d="M1.75 13c0-1.9 1.56-3.45 3.5-3.45h1.5c1.94 0 3.5 1.55 3.5 3.45" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
         <path d="M7.75 13c0-1.55 1.27-2.8 2.85-2.8h.8c1.57 0 2.85 1.25 2.85 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'health-absences',
+    label: 'Salud y Ausencias',
+    path: '/health-absences',
+    icon: (
+      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M8 5v6M5 8h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
   },
