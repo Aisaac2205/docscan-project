@@ -10,8 +10,9 @@ type DocumentsState = {
   addDocument: (doc: Document) => void;
   updateDocument: (id: string, patch: Partial<Document>) => void;
   fetchDocuments: () => Promise<void>;
-  uploadDocument: (file: File, onProgress?: (p: number) => void) => Promise<Document | null>;
+  uploadDocument: (file: File, onProgress?: (p: number) => void, personId?: string) => Promise<Document | null>;
   deleteDocument: (id: string) => Promise<void>;
+  assignToPerson: (documentId: string, personId: string | null) => Promise<void>;
 };
 
 export const useDocumentStore = create<DocumentsState>((set, get) => ({
@@ -19,7 +20,15 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
   loading: false,
   error: null,
   setDocuments: (d) => set({ documents: d }),
-  addDocument: (doc) => set((s) => ({ documents: [doc, ...s.documents] })),
+  addDocument: (doc) =>
+    set((s) => {
+      if (s.documents.some((d) => d.id === doc.id)) {
+        return {
+          documents: s.documents.map((d) => (d.id === doc.id ? { ...d, ...doc } : d)),
+        };
+      }
+      return { documents: [doc, ...s.documents] };
+    }),
   updateDocument: (id, patch) =>
     set((s) => ({
       documents: s.documents.map((d) => (d.id === id ? { ...d, ...patch } : d)),
@@ -36,11 +45,18 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
       set({ loading: false });
     }
   },
-  uploadDocument: async (file: File) => {
+  uploadDocument: async (file: File, _onProgress?: (p: number) => void, personId?: string) => {
     set({ loading: true, error: null });
     try {
-      const doc = await documentsClient.upload(file);
-      set((s) => ({ documents: [doc, ...s.documents] }));
+      const doc = await documentsClient.upload(file, _onProgress, personId);
+      set((s) => {
+        if (s.documents.some((d) => d.id === doc.id)) {
+          return {
+            documents: s.documents.map((d) => (d.id === doc.id ? { ...d, ...doc } : d)),
+          };
+        }
+        return { documents: [doc, ...s.documents] };
+      });
       return doc;
     } catch (err: unknown) {
       set({ error: err instanceof Error ? err.message : 'Error uploading' });
@@ -58,6 +74,16 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
       set({ error: err instanceof Error ? err.message : 'Error deleting' });
     } finally {
       set({ loading: false });
+    }
+  },
+  assignToPerson: async (documentId: string, personId: string | null) => {
+    try {
+      const updated = await documentsClient.assignPerson(documentId, personId);
+      set((s) => ({
+        documents: s.documents.map((d) => (d.id === documentId ? { ...d, ...updated } : d)),
+      }));
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : 'Error assigning' });
     }
   },
 }));

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDocuments } from '@/shared/hooks/useDocuments';
+import { useScannerStore } from '@/features/scanner/store';
 
 export const ACCEPT_TYPES = 'image/*,.pdf';
 export const MAX_SIZE_MB = 20;
@@ -54,7 +55,8 @@ export function useDocumentUpload({ onUploadComplete }: UseDocumentUploadOptions
 
   const handleUpload = async () => {
     if (!selectedFile) return;
-    const result = await uploadDocument(selectedFile);
+    const personId = useScannerStore.getState().targetPersonId ?? undefined;
+    const result = await uploadDocument(selectedFile, undefined, personId);
     if (result) {
       setUploadedDoc(result);
       onUploadComplete?.(result.id);

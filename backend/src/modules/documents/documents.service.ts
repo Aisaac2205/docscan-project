@@ -14,11 +14,23 @@ export class DocumentsService {
       mimeType: dto.mimeType,
       filePath: dto.filePath,
       documentType: dto.documentType || 'document',
+      personId: dto.personId ?? null,
     });
   }
 
-  async getDocuments(userId: string) {
-    return this.repository.findByUserId(userId);
+  async getDocuments(
+    userId: string,
+    filters?: { personId?: string; unassigned?: boolean; type?: string; status?: string },
+  ) {
+    return this.repository.findByUserIdFiltered(userId, filters ?? {});
+  }
+
+  async assignToPerson(id: string, userId: string, personId: string | null) {
+    const document = await this.repository.findByIdAndUserId(id, userId);
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+    return this.repository.update(id, { personId });
   }
 
   async getDocumentsByType(userId: string, documentType: string) {

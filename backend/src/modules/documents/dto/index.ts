@@ -15,6 +15,10 @@ export class CreateDocumentDto {
   @IsString()
   @IsIn(['invoice', 'document'])
   documentType?: string;
+
+  @IsOptional()
+  @IsString()
+  personId?: string;
 }
 
 export class UpdateDocumentDto {

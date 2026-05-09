@@ -1,9 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Param,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -28,8 +31,19 @@ export class DocumentsController {
   ) {}
 
   @Get()
-  async getAll(@CurrentUser() user: { id: string }) {
-    return this.documentsService.getDocuments(user.id);
+  async getAll(
+    @CurrentUser() user: { id: string },
+    @Query('personId') personId?: string,
+    @Query('unassigned') unassigned?: string,
+    @Query('type') type?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.documentsService.getDocuments(user.id, {
+      personId,
+      unassigned: unassigned === 'true',
+      type,
+      status,
+    });
   }
 
   @Get(':id')
@@ -59,6 +73,7 @@ export class DocumentsController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: { id: string },
+    @Body() body: { personId?: string },
   ) {
     // 1) Upload optimized image to Bunny via StorageService
     const uploaded = await this.storageService.uploadFile(file);
@@ -70,7 +85,17 @@ export class DocumentsController {
       originalName: file.originalname,
       mimeType: storedMimeType,
       filePath: uploaded.url,
+      personId: body.personId,
     });
+  }
+
+  @Patch(':id/assign')
+  async assignPerson(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+    @Body() body: { personId: string | null },
+  ) {
+    return this.documentsService.assignToPerson(id, user.id, body.personId);
   }
 
   @Delete(':id')

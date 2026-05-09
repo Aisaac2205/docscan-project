@@ -20,6 +20,7 @@ export class DocumentsRepository {
     mimeType: string;
     filePath: string;
     documentType?: string;
+    personId?: string | null;
   }) {
     return this.prisma.document.create({
       data,
@@ -35,6 +36,21 @@ export class DocumentsRepository {
   async findByUserId(userId: string) {
     return this.prisma.document.findMany({
       where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findByUserIdFiltered(
+    userId: string,
+    filters: { personId?: string; unassigned?: boolean; type?: string; status?: string },
+  ) {
+    const where: Prisma.DocumentWhereInput = { userId };
+    if (filters.unassigned) where.personId = null;
+    else if (filters.personId) where.personId = filters.personId;
+    if (filters.type) where.documentType = filters.type;
+    if (filters.status) where.status = filters.status;
+    return this.prisma.document.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -61,6 +77,7 @@ export class DocumentsRepository {
     extractedData?: Prisma.InputJsonValue;
     documentType?: string;
     filePath?: string;
+    personId?: string | null;
   }) {
     return this.prisma.document.update({
       where: { id },
