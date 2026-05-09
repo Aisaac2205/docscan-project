@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import "./globals.css";
 import { AuthWrapper } from '@/features/auth/components/AuthWrapper';
 import { ToastContainer } from '../shared/ui/toast/ToastContainer';
@@ -23,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
         <AuthWrapper>{children}</AuthWrapper>
         <ToastContainer />

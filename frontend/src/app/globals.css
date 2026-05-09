@@ -1,137 +1,336 @@
-@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+/* ============================================================================
+   DocScan Design System — globals.css
+   Tailwind v4 · light mode only (dark mode preparado, no implementado)
+   ============================================================================ */
+
 @import "tailwindcss";
 
+/* ----------------------------------------------------------------------------
+   1. RAW COLORS — rampas. Source of truth de hex.
+   Componentes consumen tokens semánticos (sección 2), NO estos directamente.
+   ---------------------------------------------------------------------------- */
 @theme {
-  --font-sans: 'Albert Sans', system-ui, sans-serif;
+  /* brand-ink · ancla #112B3C en stop 700. Texto/headers oscuros. */
+  --color-brand-ink-50:  #ECF0F4;
+  --color-brand-ink-100: #D5DEE5;
+  --color-brand-ink-200: #ADBCC8;
+  --color-brand-ink-400: #5A7383;
+  --color-brand-ink-600: #1E3A4E;
+  --color-brand-ink-700: #112B3C;
+  --color-brand-ink-900: #06121A;
 
-  --breakpoint-xs: 480px;
+  /* brand · ancla #205375 en stop 500. "El azul" — links, focus, info. */
+  --color-brand-50:  #EEF4F9;
+  --color-brand-100: #D4E2EC;
+  --color-brand-200: #A6C2D5;
+  --color-brand-400: #3B7AA1;
+  --color-brand-500: #205375;
+  --color-brand-600: #1B4763;
+  --color-brand-700: #163A52;
+  --color-brand-900: #0C2435;
 
-  --color-stone-25: #FAFAF8;
-  --color-stone-50: #F7F5F2;
-  --color-stone-75: #F2EFE9;
-  --color-stone-100: #E8E4DD;
-  --color-stone-200: #D5CFC6;
-  --color-stone-300: #B8B0A5;
-  --color-stone-400: #9A9189;
-  --color-stone-500: #78716C;
-  --color-stone-600: #57534E;
-  --color-stone-700: #44403C;
-  --color-stone-800: #292524;
-  --color-stone-900: #1C1917;
-  --color-stone-950: #0C0A09;
+  /* accent · ancla #F66B0E. Uso restringido (1-2 elementos / pantalla). */
+  --color-accent-50:  #FEF3E8;
+  --color-accent-100: #FCE0C5;
+  --color-accent-200: #F9C28A;
+  --color-accent-400: #F88130;
+  --color-accent-500: #F66B0E;
+  --color-accent-600: #DC5C08;
+  --color-accent-700: #B14906;
+  --color-accent-900: #5C2603;
 
-  --color-accent-50: #EFF6FF;
-  --color-accent-100: #DBEAFE;
-  --color-accent-500: #3B82F6;
-  --color-accent-600: #2563EB;
-  --color-accent-700: #1D4ED8;
+  /* neutral · slate frío (hue ~215, sat ~10%). Ancla #EEF0F2 en stop 100. */
+  --color-neutral-0:   #FFFFFF;
+  --color-neutral-50:  #F6F8FA;
+  --color-neutral-100: #EEF0F2;
+  --color-neutral-200: #DFE3E8;
+  --color-neutral-300: #C4CBD3;
+  --color-neutral-400: #97A1AC;
+  --color-neutral-500: #69727D;
+  --color-neutral-600: #475059;
+  --color-neutral-700: #2D343C;
+  --color-neutral-900: #11161C;
 
-  --radius: 6px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-2xl: 20px;
+  /* Semánticos · triple bg/fg/border. Info reusa brand (sección 2). */
+  --color-success-bg:     #ECFDF3;
+  --color-success-fg:     #036B43;
+  --color-success-border: #A8E0C2;
 
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-modal: 0 20px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
+  --color-danger-bg:      #FEF1F2;
+  --color-danger-fg:      #9F1239;
+  --color-danger-border:  #FBC0C7;
+
+  --color-warning-bg:     #FFF7E6;
+  --color-warning-fg:     #8A4B00;
+  --color-warning-border: #F4D08A;
+
+  /* Charts · 6 derivados de brand+teal+neutral. accent es token APARTE. */
+  --color-chart-1: #205375;  /* brand-500       — serie principal */
+  --color-chart-2: #5A7383;  /* brand-ink-400   — comparación */
+  --color-chart-3: #6E8FA3;  /* teal frío       — tercera categoría */
+  --color-chart-4: #3B7AA1;  /* brand-400       — cuarta */
+  --color-chart-5: #69727D;  /* neutral-500     — quinta */
+  --color-chart-6: #A6C2D5;  /* brand-200       — sexta */
+
+  --color-chart-1-muted: #A6C2D5;
+  --color-chart-2-muted: #ADBCC8;
+  --color-chart-3-muted: #B6C7D2;
+  --color-chart-4-muted: #BBD0DE;
+  --color-chart-5-muted: #C4CBD3;
+  --color-chart-6-muted: #D4E2EC;
+
+  --color-chart-accent:       #F66B0E;
+  --color-chart-accent-muted: #F9C28A;
 }
 
-/* ===== Keyframes — fuera de @layer para máxima compatibilidad ===== */
-@keyframes fadeSlideUp {
-  from { transform: translateY(6px); opacity: 0; }
-  to   { transform: translateY(0);   opacity: 1; }
-}
-@keyframes slideUp {
-  from { transform: translateY(8px); opacity: 0; }
-  to   { transform: translateY(0);   opacity: 1; }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes toastIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
+/* ----------------------------------------------------------------------------
+   2. SEMANTIC TOKENS — los que consumen los componentes.
+   El día que metamos dark mode, solo cambia este bloque.
+   ---------------------------------------------------------------------------- */
+@theme {
+  /* Surfaces */
+  --color-surface-page:     var(--color-neutral-50);
+  --color-surface-card:     var(--color-neutral-0);
+  --color-surface-elevated: var(--color-neutral-0);
+  --color-surface-sunken:   var(--color-neutral-100);
+  --color-surface-overlay:  rgb(6 18 26 / 0.5);   /* brand-ink-900 @ 50% */
+
+  /* Borders · "border" sin sufijo = utility .border default */
+  --color-border:        var(--color-neutral-200);
+  --color-border-subtle: var(--color-neutral-100);
+  --color-border-strong: var(--color-neutral-300);
+  --color-border-focus:  var(--color-brand-500);
+
+  /* Foregrounds · `fg-*` evita la utility horrible `.text-text-primary` */
+  --color-fg-primary:   var(--color-brand-ink-700);
+  --color-fg-secondary: var(--color-neutral-600);
+  --color-fg-tertiary:  var(--color-neutral-500);
+  --color-fg-disabled:  var(--color-neutral-400);
+  --color-fg-inverse:   var(--color-neutral-0);
+  --color-fg-link:      var(--color-brand-500);
+  --color-fg-accent:    var(--color-accent-700);
+
+  /* Info · alias de brand */
+  --color-info-bg:     var(--color-brand-50);
+  --color-info-fg:     var(--color-brand-700);
+  --color-info-border: var(--color-brand-200);
 }
 
-/* ===== Base styles — dentro de @layer base para que utilities las overrideen ===== */
-@layer base {
+/* ----------------------------------------------------------------------------
+   3. TYPOGRAPHY — pesos solo 400 / 500
+   ---------------------------------------------------------------------------- */
+@theme {
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Display */
+  --text-display-lg: 2rem;
+  --text-display-lg--line-height: 2.5rem;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 500;
+
+  /* Headings */
+  --text-h1: 1.5rem;
+  --text-h1--line-height: 1.875rem;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h1--font-weight: 500;
+
+  --text-h2: 1.25rem;
+  --text-h2--line-height: 1.625rem;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h2--font-weight: 500;
+
+  --text-h3: 1rem;
+  --text-h3--line-height: 1.375rem;
+  --text-h3--letter-spacing: -0.005em;
+  --text-h3--font-weight: 500;
+
+  --text-h4: 0.875rem;
+  --text-h4--line-height: 1.25rem;
+  --text-h4--letter-spacing: 0;
+  --text-h4--font-weight: 500;
+
+  /* Body */
+  --text-body-lg: 1rem;
+  --text-body-lg--line-height: 1.5rem;
+  --text-body-lg--letter-spacing: 0;
+  --text-body-lg--font-weight: 400;
+
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.3125rem;
+  --text-body--letter-spacing: 0;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-sm--letter-spacing: 0;
+  --text-body-sm--font-weight: 400;
+
+  /* Caption + Overline */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.0625rem;
+  --text-caption--letter-spacing: 0.005em;
+  --text-caption--font-weight: 500;
+
+  --text-overline: 0.6875rem;
+  --text-overline--line-height: 0.875rem;
+  --text-overline--letter-spacing: 0.08em;
+  --text-overline--font-weight: 500;
+  /* Aplicar uppercase via .text-overline-uppercase (sección 10). */
+
+  /* Buttons · line-height: 1 (sin descenders relevantes) */
+  --text-button-sm: 0.8125rem;
+  --text-button-sm--line-height: 1;
+  --text-button-sm--letter-spacing: 0;
+  --text-button-sm--font-weight: 500;
+
+  --text-button: 0.875rem;
+  --text-button--line-height: 1;
+  --text-button--letter-spacing: 0;
+  --text-button--font-weight: 500;
+
+  --text-button-lg: 0.9375rem;
+  --text-button-lg--line-height: 1;
+  --text-button-lg--letter-spacing: 0;
+  --text-button-lg--font-weight: 500;
+}
+
+/* ----------------------------------------------------------------------------
+   4. RADII — máximo 12px
+   ---------------------------------------------------------------------------- */
+@theme {
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-full: 9999px;
+}
+
+/* ----------------------------------------------------------------------------
+   5. SHADOWS — tinte brand-ink (no negro puro), alpha bajo
+   ---------------------------------------------------------------------------- */
+@theme {
+  --shadow-xs: 0 0 0 1px rgb(17 43 60 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(17 43 60 / 0.06), 0 1px 3px rgb(17 43 60 / 0.04);
+  --shadow-md: 0 4px 12px rgb(17 43 60 / 0.08), 0 2px 4px rgb(17 43 60 / 0.04);
+}
+
+/* ----------------------------------------------------------------------------
+   6. Z-INDEX
+   ---------------------------------------------------------------------------- */
+@theme {
+  --z-base:    0;
+  --z-sticky:  10;
+  --z-sidebar: 20;
+  --z-header:  30;
+  --z-overlay: 40;
+  --z-modal:   50;
+  --z-toast:   60;
+  --z-tooltip: 70;
+}
+
+/* ----------------------------------------------------------------------------
+   7. LAYOUT VARS — runtime, breakpoint-dependent.
+   NO van en @theme: cambian con media queries.
+   ---------------------------------------------------------------------------- */
+:root {
+  --sidebar-width: 0px;
+  --header-height: 56px;
+  --bottom-nav-height: 60px;
+}
+
+@media (min-width: 1024px) {
   :root {
-    --bg: #F7F5F2;
-    --surface: #FFFFFF;
-    --border: #E5E1DC;
-    --border-strong: #CEC9C1;
-    --text-1: #1C1917;
-    --text-2: #78716C;
-    --text-3: #A8A29E;
-    --accent: #2563EB;
-    --accent-hover: #1D4ED8;
-    --accent-subtle: #EFF6FF;
-    --success: #15803D;
-    --success-bg: #F0FDF4;
-    --success-border: #BBF7D0;
-    --error: #DC2626;
-    --error-bg: #FEF2F2;
-    --error-border: #FECACA;
-    --warning: #D97706;
-    --warning-bg: #FFFBEB;
-    --warning-border: #FDE68A;
-    --info: #2563EB;
-    --info-bg: #EFF6FF;
-    --info-border: #BFDBFE;
-    --sidebar-width: 0px;
-    --header-height: 56px;
-    --bottom-nav-height: 60px;
-    --radius: 6px;
-    --radius-lg: 10px;
-    --shadow-card: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-elevated: 0 2px 8px rgba(0,0,0,0.04);
-
-    /* Fluid typography */
-    --text-heading-xl: clamp(1.25rem, 0.8rem + 2vw, 1.5rem);
-    --text-heading-lg: clamp(1.125rem, 0.8rem + 1.5vw, 1.25rem);
-    --text-body: clamp(0.875rem, 0.8rem + 0.5vw, 0.9375rem);
-    --text-label: clamp(0.625rem, 0.55rem + 0.35vw, 0.75rem);
-
-    /* Fluid spacing */
-    --space-page: clamp(1rem, 0.75rem + 1.25vw, 1.5rem);
-    --space-card: clamp(1rem, 0.75rem + 1vw, 1.5rem);
-
-    /* Layout component sizing tokens */
-    --sidebar-icon-size: 16px;
-    --sidebar-label-size: 0.6875rem;
-    --sidebar-sublabel-size: 0.625rem;
-    --header-logo-size: 26px;
-    --header-avatar-size: 28px;
+    --sidebar-width: 260px;
+    --header-height: 64px;
+    --bottom-nav-height: 0px;
   }
+}
 
-  @media (min-width: 1024px) {
-    :root {
-      font-size: 16px;
-      --sidebar-width: 260px;
-      --header-height: 64px;
-      --bottom-nav-height: 0px;
+/* ----------------------------------------------------------------------------
+   8. LEGACY COMPAT — todos los aliases marcados @deprecated. Inventario
+   completo en docs/legacy-tokens-inventory.md. Removido archivo-por-archivo
+   durante Fase 6. NO USAR EN CÓDIGO NUEVO.
+   ---------------------------------------------------------------------------- */
+:root {
+  /* @deprecated remove in Phase 6 — use var(--color-surface-page) instead */
+  --bg: var(--color-surface-page);
+  /* @deprecated remove in Phase 6 — use var(--color-surface-card) instead */
+  --surface: var(--color-surface-card);
+  /* @deprecated remove in Phase 6 — use var(--color-border) instead */
+  --border: var(--color-border);
+  /* @deprecated remove in Phase 6 — use var(--color-border-strong) instead */
+  --border-strong: var(--color-border-strong);
+  /* @deprecated remove in Phase 6 — use var(--color-fg-primary) instead */
+  --text-1: var(--color-fg-primary);
+  /* @deprecated remove in Phase 6 — use var(--color-fg-secondary) instead */
+  --text-2: var(--color-fg-secondary);
+  /* @deprecated remove in Phase 6 — use var(--color-fg-tertiary) instead */
+  --text-3: var(--color-fg-tertiary);
+  /* @deprecated remove in Phase 6 — use var(--color-brand-500) instead */
+  --accent: var(--color-brand-500);
+  /* @deprecated remove in Phase 6 — use var(--color-brand-600) instead */
+  --accent-hover: var(--color-brand-600);
+  /* @deprecated remove in Phase 6 — use var(--color-brand-50) instead */
+  --accent-subtle: var(--color-brand-50);
+  /* @deprecated remove in Phase 6 — use var(--color-success-fg) instead */
+  --success: var(--color-success-fg);
+  /* @deprecated remove in Phase 6 — use var(--color-success-bg) instead */
+  --success-bg: var(--color-success-bg);
+  /* @deprecated remove in Phase 6 — use var(--color-success-border) instead */
+  --success-border: var(--color-success-border);
+  /* @deprecated remove in Phase 6 — use var(--color-danger-fg) instead */
+  --error: var(--color-danger-fg);
+  /* @deprecated remove in Phase 6 — use var(--color-danger-bg) instead */
+  --error-bg: var(--color-danger-bg);
+  /* @deprecated remove in Phase 6 — use var(--color-danger-border) instead */
+  --error-border: var(--color-danger-border);
+  /* @deprecated remove in Phase 6 — use var(--color-warning-fg) instead */
+  --warning: var(--color-warning-fg);
+  /* @deprecated remove in Phase 6 — use var(--color-warning-bg) instead */
+  --warning-bg: var(--color-warning-bg);
+  /* @deprecated remove in Phase 6 — use var(--color-warning-border) instead */
+  --warning-border: var(--color-warning-border);
+  /* @deprecated remove in Phase 6 — use var(--color-info-fg) instead */
+  --info: var(--color-info-fg);
+  /* @deprecated remove in Phase 6 — use var(--color-info-bg) instead */
+  --info-bg: var(--color-info-bg);
+  /* @deprecated remove in Phase 6 — use var(--color-info-border) instead */
+  --info-border: var(--color-info-border);
+}
 
-      --text-heading-xl: clamp(1.5rem, 0.8rem + 2.5vw, 2.25rem);
-      --text-heading-lg: clamp(1.25rem, 0.8rem + 2vw, 1.75rem);
-      --text-body: clamp(0.9375rem, 0.85rem + 0.5vw, 1.0625rem);
-      --text-label: clamp(0.6875rem, 0.6rem + 0.5vw, 0.8125rem);
-      --space-page: clamp(1.5rem, 1rem + 1.5vw, 2rem);
-      --space-card: clamp(1.25rem, 0.75rem + 1.25vw, 1.75rem);
+/* Override de la rampa stone default de Tailwind v4 → mapea a neutral-*.
+   Mantiene utility classes `text-stone-*`/`bg-stone-*`/`border-stone-*`
+   funcionales hasta que cada archivo se migre. */
+@theme {
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-50) instead */
+  --color-stone-50:  var(--color-neutral-50);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-100) instead */
+  --color-stone-100: var(--color-neutral-100);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-200) instead */
+  --color-stone-200: var(--color-neutral-200);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-300) instead */
+  --color-stone-300: var(--color-neutral-300);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-400) instead */
+  --color-stone-400: var(--color-neutral-400);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-500) instead */
+  --color-stone-500: var(--color-neutral-500);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-600) instead */
+  --color-stone-600: var(--color-neutral-600);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-700) instead */
+  --color-stone-700: var(--color-neutral-700);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-700) instead */
+  --color-stone-800: var(--color-neutral-700);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-900) instead */
+  --color-stone-900: var(--color-neutral-900);
+  /* @deprecated remove in Phase 6 — use var(--color-neutral-900) instead */
+  --color-stone-950: var(--color-neutral-900);
+}
 
-      --sidebar-icon-size: 20px;
-      --sidebar-label-size: 0.75rem;
-      --sidebar-sublabel-size: 0.6875rem;
-      --header-logo-size: 30px;
-      --header-avatar-size: 32px;
-    }
-  }
-
+/* ----------------------------------------------------------------------------
+   9. BASE STYLES
+   ---------------------------------------------------------------------------- */
+@layer base {
   *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -139,38 +338,44 @@
   }
 
   html {
-    font-size: 15px;
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
-    font-family: 'Albert Sans', system-ui, sans-serif;
-    background-color: var(--bg);
-    color: var(--text-1);
-    line-height: 1.5;
+    font-family: var(--font-sans);
+    background-color: var(--color-surface-page);
+    color: var(--color-fg-primary);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
   }
 
   input, button, select, textarea {
     font-family: inherit;
     font-size: inherit;
+    color: inherit;
   }
 
   button { cursor: pointer; }
 
   pre, code {
-    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;
   }
 
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-fg-tertiary); }
 
   @media print {
     .no-print { display: none !important; }
@@ -179,49 +384,49 @@
   }
 }
 
-/* ===== Custom utilities ===== */
+/* ----------------------------------------------------------------------------
+   10. CUSTOM UTILITIES — solo lo estrictamente necesario
+   ---------------------------------------------------------------------------- */
 @layer utilities {
+  /* Overline uppercase · uso restringido a eyebrows / nav section labels */
+  .text-overline-uppercase { text-transform: uppercase; }
+
   .text-balance { text-wrap: balance; }
 
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-  /* Card hover micro-interaction */
-  .card-interactive {
-    transition: box-shadow 200ms ease, transform 200ms ease;
+  .sidebar-icon { width: 16px; height: 16px; }
+  @media (min-width: 1024px) {
+    .sidebar-icon { width: 20px; height: 20px; }
   }
-  .card-interactive:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
-    transform: translateY(-1px);
-  }
-  .card-interactive:active {
-    transform: scale(0.99);
-  }
+}
 
-  /* Focus ring compatible con Tailwind 4 */
-  .input-focus {
-    outline: none;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-  }
-  .input-focus:focus {
-    border-color: #78716C;
-    box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.06);
-  }
-  .input-focus-accent:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
+/* ----------------------------------------------------------------------------
+   11. ANIMATIONS — preservadas, sin cambios funcionales
+   ---------------------------------------------------------------------------- */
+@keyframes fadeSlideUp {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
 
-  /* Animations */
-  .animate-slide-up   { animation: slideUp  0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-  .animate-fade-in    { animation: fadeIn   0.18s ease-out; }
-  .animate-spin-slow  { animation: spin     1.2s linear infinite; }
-  .animate-toast-in   { animation: toastIn  0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+@layer utilities {
+  .animate-slide-up  { animation: slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .animate-fade-in   { animation: fadeIn  180ms ease-out; }
+  .animate-spin-slow { animation: spin    1.2s linear infinite; }
+  .animate-toast-in  { animation: toastIn 250ms cubic-bezier(0.16, 1, 0.3, 1); }
 
-  /* Stagger reveal for grids */
   .stagger-children > * {
-    animation: fadeSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fadeSlideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .stagger-children > *:nth-child(1) { animation-delay:   0ms; }
   .stagger-children > *:nth-child(2) { animation-delay:  60ms; }
@@ -229,10 +434,17 @@
   .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
   .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
   .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
-
-  /* Sidebar icon responsive sizing via CSS custom properties */
-  .sidebar-icon {
-    width: var(--sidebar-icon-size);
-    height: var(--sidebar-icon-size);
-  }
 }
+
+/* ----------------------------------------------------------------------------
+   12. DARK MODE — TODO. Estrategia preparada (no implementada).
+   Cuando se active, override de tokens semánticos en :root.dark, sin tocar
+   raw colors. Ej:
+     :root.dark {
+       --color-surface-page: var(--color-neutral-900);
+       --color-surface-card: var(--color-neutral-700);
+       --color-fg-primary:   var(--color-neutral-50);
+       --color-border:       var(--color-neutral-700);
+       ...
+     }
+   ---------------------------------------------------------------------------- */
