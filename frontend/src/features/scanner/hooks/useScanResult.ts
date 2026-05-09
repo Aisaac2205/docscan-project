@@ -17,7 +17,7 @@ export function useScanResult() {
     lastResult, analysisResult, queryHistory,
     analyzing, querying,
   } = useOCRStore();
-  const { addDocument } = useDocumentStore();
+  const { addDocument, updateDocument } = useDocumentStore();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export function useScanResult() {
 
   const goToDocumentResult = (id: string) => {
     clearPendingRedirect();
-    router.push(`/documents?open=${encodeURIComponent(id)}`);
+    router.push(`/documents/${id}`);
   };
 
   const openPendingResultNow = () => {
@@ -160,6 +160,10 @@ export function useScanResult() {
 
       const result = await processDocument(documentIdRef.current, mode, customFieldsArr, selectedProvider, selectedModel);
       if (result) {
+        updateDocument(documentIdRef.current, {
+          status: 'completed',
+          extractedData: result.extractedData,
+        });
         toast.success('Datos extraídos correctamente');
         if (autoOpenResult) {
           scheduleRedirectToDocument(documentIdRef.current);
