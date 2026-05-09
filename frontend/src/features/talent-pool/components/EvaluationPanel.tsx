@@ -39,38 +39,24 @@ export function EvaluationPanel({
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              onClick={() => {
-                const models = providers.find((p) => p.id === 'lmstudio')?.models ?? [];
-                onProviderSelect('lmstudio', models[0]?.id);
-              }}
-              className={`rounded-lg border px-3 lg:px-4 py-2.5 lg:py-3 text-left transition-colors ${
-                selectedProvider === 'lmstudio'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white border-[var(--border)] text-stone-700 hover:bg-stone-50'
-              }`}
-            >
-              <p className="text-[12px] lg:text-sm font-semibold">Local (Privado)</p>
-              <p className={`text-[11px] lg:text-xs mt-0.5 ${selectedProvider === 'lmstudio' ? 'text-white/75' : 'text-stone-400'}`}>
-                Usa IA local en tu entorno.
-              </p>
-            </button>
-            <button
-              onClick={() => {
-                const models = providers.find((p) => p.id === 'gemini')?.models ?? [];
-                onProviderSelect('gemini', models[0]?.id);
-              }}
-              className={`rounded-lg border px-3 lg:px-4 py-2.5 lg:py-3 text-left transition-colors ${
-                selectedProvider === 'gemini'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white border-[var(--border)] text-stone-700 hover:bg-stone-50'
-              }`}
-            >
-              <p className="text-[12px] lg:text-sm font-semibold">Nube (Rápido)</p>
-              <p className={`text-[11px] lg:text-xs mt-0.5 ${selectedProvider === 'gemini' ? 'text-white/75' : 'text-stone-400'}`}>
-                Usa IA en la nube para respuestas ágiles.
-              </p>
-            </button>
+            {providers.filter((p) => p.available).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  onProviderSelect(p.id, p.models[0]?.id);
+                }}
+                className={`rounded-lg border px-3 lg:px-4 py-2.5 lg:py-3 text-left transition-colors ${
+                  selectedProvider === p.id
+                    ? 'bg-stone-900 text-white border-stone-900'
+                    : 'bg-white border-[var(--border)] text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <p className="text-[12px] lg:text-sm font-semibold">{p.displayName}</p>
+                <p className={`text-[11px] lg:text-xs mt-0.5 ${selectedProvider === p.id ? 'text-white/75' : 'text-stone-400'}`}>
+                  {p.id === 'lmstudio' ? 'Usa IA local en tu entorno.' : 'Usa IA en la nube para respuestas ágiles.'}
+                </p>
+              </button>
+            ))}
           </div>
 
           {providers.length > 0 && (

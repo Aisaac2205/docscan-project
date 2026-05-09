@@ -29,6 +29,23 @@ export class OcrService {
     private readonly registry: OcrProviderRegistry,
   ) {}
 
+  /**
+   * Safely update document status, swallowing P2025 (record not found)
+   * which happens when the user deletes the document during processing.
+   */
+  private async safeUpdateStatus(documentId: string, status: string): Promise<void> {
+    try {
+      await this.documentsRepository.update(documentId, { status });
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'P2025') {
+        console.warn(`[OCR] Documento ${documentId} fue eliminado durante el procesamiento, omitiendo update de status.`);
+        return;
+      }
+      throw err;
+    }
+  }
+
   private sanitizeFieldName(field: string): string {
     return field.replace(/[^\w\s]/g, '').trim().slice(0, 100);
   }
@@ -303,20 +320,29 @@ case ExtractionMode.FISCAL_SOCIAL:
       }
       const extractedData = (validation.success ? validation.data : rawData) as ExtractedDataByMode[M];
 
-      await this.documentsRepository.update(documentId, {
-        extractedData: extractedData as unknown as Prisma.InputJsonValue,
-        status: 'completed',
-        documentType: mode,
-        ...(confidence !== undefined && { confidence }),
-      });
+      try {
+        await this.documentsRepository.update(documentId, {
+          extractedData: extractedData as unknown as Prisma.InputJsonValue,
+          status: 'completed',
+          documentType: mode,
+          ...(confidence !== undefined && { confidence }),
+        });
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code;
+        if (code === 'P2025') {
+          console.warn(`[OCR] Documento ${documentId} fue eliminado antes de guardar resultados.`);
+        } else {
+          throw err;
+        }
+      }
       return extractedData;
     } catch (error) {
       if (error instanceof InternalServerErrorException) {
-        await this.documentsRepository.update(documentId, { status: 'failed' }).catch(console.error);
+        await this.safeUpdateStatus(documentId, 'failed');
         throw error;
       }
       console.error('Error inesperado al procesar OCR:', error);
-      await this.documentsRepository.update(documentId, { status: 'failed' }).catch(console.error);
+      await this.safeUpdateStatus(documentId, 'failed');
       throw new InternalServerErrorException('Falló la extracción de datos del documento');
     }
   }

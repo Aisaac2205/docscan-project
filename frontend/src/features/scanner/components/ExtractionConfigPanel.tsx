@@ -46,8 +46,9 @@ export function ExtractionConfigPanel({
   providers, selectedProvider, selectedModel, onProviderChange, onModelChange,
 }: ExtractionConfigPanelProps) {
   const activeProvider = providers.find((p) => p.id === selectedProvider);
-  const analyzeLabel = activeProvider?.id === 'lmstudio' ? 'Procesamiento Local' : 'Google Gemini';
+  const analyzeLabel = activeProvider?.displayName ?? 'IA';
   const activeModels = activeProvider?.models ?? [];
+  const activeModelName = activeModels.find((m) => m.id === selectedModel)?.name ?? activeModels[0]?.name;
   return (
     <div className="flex-1 flex flex-col gap-4 p-3 lg:p-4 sm:p-5 overflow-y-auto">
 
@@ -188,13 +189,13 @@ export function ExtractionConfigPanel({
                     : 'bg-white text-stone-500 border-[var(--border)] hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
-                {p.id === 'gemini' ? 'Nube' : 'Local'}
+                {p.displayName}
               </button>
             ))}
           </div>
 
-          {/* Dropdown de modelos — solo si el provider local tiene modelos */}
-          {selectedProvider === 'lmstudio' && activeModels.length > 0 && (
+          {/* Dropdown de modelos — si el provider activo tiene modelos */}
+          {activeModels.length > 0 && (
             <div>
               <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
                 Modelo
@@ -226,7 +227,7 @@ export function ExtractionConfigPanel({
         className="h-10 lg:h-11 w-full flex items-center justify-center gap-2 bg-stone-900 text-white text-sm lg:text-base font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         {processingOcr
-          ? <><SpinnerIcon className="text-white/60" />Procesando con Gemini…</>
+          ? <><SpinnerIcon className="text-white/60" />Procesando{activeModelName ? ` con ${activeModelName}` : '…'}</>
           : <><OcrIcon />Extraer datos con OCR</>}
       </button>
     </div>

@@ -3,93 +3,91 @@ import { ExtractionMode } from '../dto/ocr.dto';
 
 // ─── Per-mode schemas ────────────────────────────────────────────────────────
 // Each schema reflects exactly what the system prompt asks Gemini to return.
-// Fields are optional because Gemini may omit them when the document lacks data.
-// `.catchall(z.unknown())` preserves any extra fields Gemini adds without
-// breaking validation.
+// Fields use .nullable().optional() because Gemini returns null for missing
+// fields, not undefined. `.catchall(z.unknown())` preserves extra fields.
+
+const nullableString = z.string().nullable().optional();
+const nullableNumber = z.number().nullable().optional();
+const nullableBoolean = z.boolean().nullable().optional();
 
 export const CvDataSchema = z.record(z.string(), z.unknown());
 
 export const IdCardDataSchema = z
   .object({
-    primer_nombre: z.string().optional(),
-    otros_nombres: z.string().optional(),
-    primer_apellido: z.string().optional(),
-    segundo_apellido: z.string().optional(),
-    cui: z.string().optional(),
-    fecha_nacimiento: z.string().optional(),
-    fecha_emision: z.string().optional(),
-    fecha_vencimiento: z.string().optional(),
-    genero: z.string().optional(),
-    estado_civil: z.string().optional(),
-    municipio_vecindad: z.string().optional(),
-    departamento_vecindad: z.string().optional(),
+    primer_nombre: nullableString,
+    otros_nombres: nullableString,
+    primer_apellido: nullableString,
+    segundo_apellido: nullableString,
+    cui: nullableString,
+    fecha_nacimiento: nullableString,
+    fecha_emision: nullableString,
+    fecha_vencimiento: nullableString,
+    genero: nullableString,
+    estado_civil: nullableString,
+    municipio_vecindad: nullableString,
+    departamento_vecindad: nullableString,
   })
   .catchall(z.unknown());
 
 export const FiscalSocialDataSchema = z
   .object({
-    // SAT / RTU
-    nit: z.string().optional(),
-    nombre_razon_social: z.string().optional(),
-    estado_contribuyente: z.string().optional(), // Activo, Suspendido, etc.
-    regimen_fiscal: z.string().optional(),
-    direccion_fiscal: z.string().optional(),
-    // IGSS
-    numero_igss: z.string().optional(),
-    numero_patronal: z.string().optional(),
+    nit: nullableString,
+    nombre_razon_social: nullableString,
+    estado_contribuyente: nullableString,
+    regimen_fiscal: nullableString,
+    direccion_fiscal: nullableString,
+    numero_igss: nullableString,
+    numero_patronal: nullableString,
   })
   .catchall(z.unknown());
 
 export const MedicalCertDataSchema = z
   .object({
-    // Paciente
-    nombre_paciente: z.string().optional(),
-    // Médico
-    nombre_medico: z.string().optional(),
-    numero_colegiado: z.string().optional(), // Colegio de Médicos y Cirujanos de Guatemala
-    tiene_sello: z.boolean().optional(),
-    tiene_firma: z.boolean().optional(),
-    // Diagnóstico y reposo
-    diagnostico: z.string().optional(),
-    fecha_emision: z.string().optional(),
-    fecha_inicio_reposo: z.string().optional(),
-    fecha_fin_reposo: z.string().optional(),
-    dias_reposo: z.number().optional(),
+    nombre_paciente: nullableString,
+    nombre_medico: nullableString,
+    numero_colegiado: nullableString,
+    tiene_sello: nullableBoolean,
+    tiene_firma: nullableBoolean,
+    diagnostico: nullableString,
+    fecha_emision: nullableString,
+    fecha_inicio_reposo: nullableString,
+    fecha_fin_reposo: nullableString,
+    dias_reposo: nullableNumber,
   })
   .catchall(z.unknown());
 
 export const BackgroundCheckDataSchema = z
   .object({
-    tipo_documento: z.string().optional(),
+    tipo_documento: nullableString,
     datos_ciudadano: z.object({
-      nombre_completo: z.string().optional(),
-      cui_dpi: z.string().optional(),
+      nombre_completo: nullableString,
+      cui_dpi: nullableString,
     }).optional(),
     resultado: z.object({
-      tiene_antecedentes: z.boolean().optional(),
-      delito_indicado: z.union([z.string(), z.null()]).optional(),
+      tiene_antecedentes: nullableBoolean,
+      delito_indicado: nullableString,
     }).optional(),
     validacion: z.object({
-      fecha_emision: z.string().optional(),
-      numero_boleta_o_recibo: z.union([z.string(), z.null()]).optional(),
-      codigo_validacion: z.union([z.string(), z.null()]).optional(),
+      fecha_emision: nullableString,
+      numero_boleta_o_recibo: nullableString,
+      codigo_validacion: nullableString,
     }).optional(),
     _metadata: z.object({
-      confidence_score: z.number().optional(),
-      requiere_revision_manual: z.boolean().optional(),
+      confidence_score: nullableNumber,
+      requiere_revision_manual: nullableBoolean,
     }).optional(),
   })
   .catchall(z.unknown());
 
 export const GeneralDataSchema = z
   .object({
-    tipo_documento: z.string().optional(),
-    idioma: z.string().optional(),
-    fecha: z.string().optional(),
-    partes_involucradas: z.array(z.string()).optional(),
-    resumen: z.string().optional(),
-    campos_clave: z.record(z.string(), z.unknown()).optional(),
-    texto_completo: z.string().optional(),
+    tipo_documento: nullableString,
+    idioma: nullableString,
+    fecha: nullableString,
+    partes_involucradas: z.array(z.string()).nullable().optional(),
+    resumen: nullableString,
+    campos_clave: z.record(z.string(), z.unknown()).nullable().optional(),
+    texto_completo: nullableString,
   })
   .catchall(z.unknown());
 
