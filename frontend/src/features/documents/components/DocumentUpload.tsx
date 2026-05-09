@@ -1,6 +1,6 @@
 'use client';
 
-import { useDocumentUpload, formatSize } from './useDocumentUpload';
+import { useDocumentUpload, formatSize } from '../hooks/useDocumentUpload';
 import { CheckIcon, UploadIcon, ImageIcon, PdfIcon, FileIcon, CloseIcon, SpinnerIcon, SaveIcon } from '@/shared/ui/icons';
 
 interface DocumentUploadProps {

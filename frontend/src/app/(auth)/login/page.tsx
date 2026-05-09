@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { Button, Input, Label } from '@/shared/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,17 +25,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] flex">
+    <div className="min-h-screen bg-surface-page flex">
       {/* Left panel */}
-      <div className="hidden lg:flex lg:w-[480px] bg-stone-900 flex-col justify-between p-12 flex-shrink-0">
+      <div className="hidden lg:flex lg:w-[480px] bg-brand-ink-700 flex-col justify-between p-12 flex-shrink-0">
         <div>
           <div className="flex items-center gap-2.5">
             <DocScanIcon />
-            <span className="text-white font-semibold text-lg tracking-tight">DocScan</span>
+            <span className="text-fg-inverse text-h4 tracking-tight">DocScan</span>
           </div>
         </div>
         <div>
-          <blockquote className="text-stone-300 text-xl font-light leading-relaxed mb-8">
+          <blockquote className="text-brand-ink-200 text-h2 font-normal leading-relaxed mb-8">
             &ldquo;Digitaliza, organiza y extrae datos de tus documentos con precisión mediante inteligencia artificial.&rdquo;
           </blockquote>
           <div className="grid grid-cols-3 gap-4">
@@ -43,14 +44,14 @@ export default function LoginPage() {
               { label: 'Formatos', value: 'PDF + Imagen' },
               { label: 'Motor IA', value: 'Gemini' },
             ].map((stat) => (
-              <div key={stat.label} className="border border-stone-700 rounded-lg p-4">
-                <div className="text-white font-semibold text-lg">{stat.value}</div>
-                <div className="text-stone-500 text-xs mt-0.5">{stat.label}</div>
+              <div key={stat.label} className="border border-brand-ink-600 rounded-lg p-4">
+                <div className="text-fg-inverse text-h4">{stat.value}</div>
+                <div className="text-brand-ink-400 text-caption mt-0.5">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
-        <div className="text-stone-600 text-sm">
+        <div className="text-brand-ink-400 text-body-sm">
           &copy; {new Date().getFullYear()} DocScan. Todos los derechos reservados.
         </div>
       </div>
@@ -61,68 +62,55 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-10 lg:hidden">
             <DocScanIcon dark />
-            <span className="font-semibold text-lg tracking-tight">DocScan</span>
+            <span className="text-h4 tracking-tight">DocScan</span>
           </div>
 
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-1">Bienvenido de vuelta</h1>
-            <p className="text-stone-500 text-sm">Ingresa tus credenciales para continuar</p>
+            <h1 className="text-h1 mb-1">Bienvenido de vuelta</h1>
+            <p className="text-fg-secondary text-body-sm">Ingresa tus credenciales para continuar</p>
           </div>
 
           {error && (
-            <div className="mb-5 px-4 py-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-sm">
+            <div className="mb-5 px-4 py-3 bg-danger-bg border border-danger-border rounded-md text-danger-fg text-body-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                Correo electrónico
-              </label>
-              <input
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="login-email">Correo electrónico</Label>
+              <Input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nombre@empresa.com"
-                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 input-focus input-focus-accent transition-all"
                 required
                 autoComplete="email"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                Contraseña
-              </label>
-              <input
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="login-password">Contraseña</Label>
+              <Input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-10 px-3 border border-[var(--border)] rounded-md bg-white text-stone-900 placeholder:text-stone-400 input-focus input-focus-accent transition-all"
                 required
                 autoComplete="current-password"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-10 mt-1 bg-stone-900 text-white text-sm font-medium rounded-md hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <SpinnerIcon />
-                  Iniciando sesión...
-                </>
-              ) : 'Iniciar sesión'}
-            </button>
+            <Button type="submit" loading={loading} className="w-full mt-1">
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            </Button>
           </form>
 
-          <p className="mt-6 text-center text-stone-500 text-sm">
+          <p className="mt-6 text-center text-fg-secondary text-body-sm">
             ¿No tienes cuenta?{' '}
-            <a href="/register" className="text-accent-600 hover:text-accent-700 font-medium transition-colors">
+            <a href="/register" className="text-fg-link hover:underline font-medium transition-colors">
               Regístrate gratis
             </a>
           </p>
@@ -142,14 +130,5 @@ function DocScanIcon({ dark }: { dark?: boolean }) {
       className={dark ? undefined : 'invert'}
       priority
     />
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2" />
-      <path d="M7 1.5A5.5 5.5 0 0 1 12.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
   );
 }
