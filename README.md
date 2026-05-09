@@ -26,15 +26,15 @@ Este flujo se mantiene como **demo sólida para operación local**.
 
 ## Tecnologías
 
-| Capa | Tecnología |
-|------|------------|
-| Backend | NestJS + TypeScript |
-| Frontend | Next.js (App Router) + React |
-| OCR / IA | Google Gemini / LM Studio |
-| Almacenamiento | Bunny CDN + Sharp |
-| Scanner físico (on-prem) | NAPS2 CLI + Scanner Agent |
-| Base de datos | PostgreSQL + Prisma |
-| Estado global | Zustand |
+| Capa                     | Tecnología                   |
+| ------------------------ | ---------------------------- |
+| Backend                  | NestJS + TypeScript          |
+| Frontend                 | Next.js (App Router) + React |
+| OCR / IA                 | Google Gemini / LM Studio    |
+| Almacenamiento           | Bunny CDN + Sharp            |
+| Scanner físico (on-prem) | NAPS2 CLI + Scanner Agent    |
+| Base de datos            | PostgreSQL + Prisma          |
+| Estado global            | Zustand                      |
 
 ---
 
@@ -74,9 +74,9 @@ docker-compose up -d postgres
 ### 4) Sincronizar schema
 
 ```bash
-npm run db:push
-# o
-npm run db:migrate
+cd backend
+npx prisma db push
+npx prisma generate
 ```
 
 ### 5) Levantar app
