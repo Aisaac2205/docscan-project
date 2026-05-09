@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOCRStore } from '@/features/ocr/store';
 import { useDocumentStore } from '@/features/documents/store';
-import { ocrClient } from '@/features/ocr/client';
+import { useOCRProviders } from '@/features/ocr/hooks/useOCRProviders';
 import { toast } from '@/shared/ui/toast/store';
-import type { ExtractionMode, ProviderInfo, ProviderId } from '@/features/ocr/types/ocr.types';
+import type { ExtractionMode, ProviderId } from '@/features/ocr/types/ocr.types';
 import type { CaptureResult } from '../types/scanner.types';
 
 const AUTO_OPEN_RESULT_KEY = 'docscan_scan_auto_open_result';
@@ -26,7 +26,7 @@ export function useScanResult() {
   const [customFields, setCustomFields] = useState('');
   const documentIdRef = useRef<string | null>(null);
 
-  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const { providers } = useOCRProviders();
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | undefined>(undefined);
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
   const [autoOpenResult, setAutoOpenResultState] = useState(true);
@@ -78,17 +78,12 @@ export function useScanResult() {
   };
 
   useEffect(() => {
-    ocrClient.getProviders()
-      .then((list) => {
-        const available = list.filter((p) => p.available);
-        setProviders(available);
-        if (available.length > 1) {
-          setSelectedProvider(available[0].id);
-          setSelectedModel(available[0].models[0]?.id);
-        }
-      })
-      .catch(() => {});
-  }, []);
+    const available = providers.filter((p) => p.available);
+    if (available.length > 0 && !selectedProvider) {
+      setSelectedProvider(available[0].id);
+      setSelectedModel(available[0].models[0]?.id);
+    }
+  }, [providers, selectedProvider]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
