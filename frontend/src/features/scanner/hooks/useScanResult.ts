@@ -127,6 +127,7 @@ export function useScanResult() {
       confidence: null,
       status: 'pending',
       extractedData: null,
+      personId: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
