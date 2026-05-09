@@ -41,7 +41,7 @@ export default function LoginPage() {
             {[
               { label: 'Modos OCR', value: '5' },
               { label: 'Formatos', value: 'PDF + Imagen' },
-              { label: 'Motor IA', value: 'Gemini 2.5' },
+              { label: 'Motor IA', value: 'Gemini' },
             ].map((stat) => (
               <div key={stat.label} className="border border-stone-700 rounded-lg p-4">
                 <div className="text-white font-semibold text-lg">{stat.value}</div>
