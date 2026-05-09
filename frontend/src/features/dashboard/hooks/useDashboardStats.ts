@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useDocumentStore } from '../../documents/store';
+import type { Document } from '@/features/documents/types/document.types';
 import { dashboardApi, type DashboardStats } from '../api/dashboardApi';
 
 interface UseDashboardStatsResult {
   firstName: string;
   loading: boolean;
-  recentDocuments: ReturnType<typeof useDocumentStore>['documents'];
+  recentDocuments: Document[];
   stats: DashboardStats | null;
   statsLoading: boolean;
   statsError: string | null;
