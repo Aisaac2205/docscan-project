@@ -8,6 +8,11 @@ import { ScannerModule } from './modules/scanner/scanner.module';
 import { HealthModule } from './modules/health/health.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { TalentPoolModule } from './modules/talent-pool/talent-pool.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AbsencesModule } from './modules/absences/absences.module';
+import { ComplianceModule } from './modules/compliance/compliance.module';
+import { PersonsModule } from './modules/persons/persons.module';
+import { EvaluationsModule } from './modules/evaluations/evaluations.module';
 import { PrismaModule } from './config/prisma.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { appConfig } from './config/app.config';
@@ -31,6 +36,11 @@ import { appConfig } from './config/app.config';
     DocumentsModule,
     OcrModule,
     TalentPoolModule,
+    DashboardModule,
+    AbsencesModule,
+    ComplianceModule,
+    PersonsModule,
+    EvaluationsModule,
     ScannerModule,
     HealthModule,
     StorageModule,
