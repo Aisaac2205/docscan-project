@@ -8,12 +8,14 @@ Inventario completo de aliases deprecados introducidos en Fase 2 (sección 8 de 
 
 Conteos agregados con `grep` (no inventados):
 
-| Métrica | Baseline (antes Wave 1) | Después Wave 1 | Delta |
-|---|---|---|---|
-| Total usos `*-stone-*` (`text-`/`bg-`/`border-`/`hover:`) | 641 | 614 | **−27** |
-| Archivos con `*-stone-*` | 70 | 67 | **−3** |
-| Archivos con `var(--bg\|--border\|--text-*\|--accent\|--success\|--error\|--warning\|--info)` | 33 | 30 | **−3** |
-| Archivos en `Layout/` con stone o legacy var | 3 | 0 | **−3 ✅** |
+| Métrica | Baseline | Wave 1 | Wave 2 | Delta total |
+|---|---|---|---|---|
+| Total usos `*-stone-*` (`text-`/`bg-`/`border-`/`hover:`) | 641 | 614 | 588 | **−53** |
+| Archivos con `*-stone-*` | 70 | 67 | 62 | **−8** |
+| Archivos con `var(--bg\|--border\|--text-*\|--accent\|--success\|--error\|--warning\|--info)` | 33 | 30 | 28 | **−5** |
+| Archivos en `Layout/` con stone o legacy var | 3 | 0 | 0 | **✅ Wave 1** |
+| Archivos huerfanos / componentes legacy compartidos pendientes | 5 | 5 | 0 | **✅ Wave 2** |
+| Lint problems totales | 16 | 16 | 15 | **−1** |
 
 **Definition of done por wave**: el conteo agregado disminuye + los archivos del scope quedan en 0 usos de stone/legacy.
 
@@ -57,6 +59,13 @@ Conteos por alias hechos con `grep -rn "patron" frontend/src --include="*.tsx" -
 *Aliases con `0*` baseline = no había usos directos en el código (`var(--bg)` etc no aparecía como inline). Estaban definidos en globals.css pero nadie los referenciaba. Ya están "Listo para eliminar" desde el día uno — no se removieron en Wave 10 porque la decisión es removerlos todos juntos al final del cleanup.
 
 **Wave 1 resultado para `--border`:** 8 → 5 (3 menos = los del Layout). Los 5 restantes están repartidos entre Scanner, Documents y otros features que se migran en waves 4-9.
+
+**Wave 2 resultado:** eliminó 5 archivos del scope de migración:
+- `frontend/src/features/dashboard/components/StatCard.tsx` — DELETED (huérfano)
+- `frontend/src/features/dashboard/components/KPICard.tsx` — DELETED (reemplazado por nuevo `StatCard` en design system)
+- `frontend/src/features/documents/components/StatusBadge.tsx` — refactor a wrapper sobre `Badge` (3 stones eliminados)
+- `frontend/src/features/persons/components/PersonStatusBadge.tsx` — refactor a wrappers sobre `Badge` (6 stones eliminados)
+- `frontend/src/shared/ui/toast/ToastContainer.tsx` — migración completa a tokens (4 stones, 3 hex en SVG, var(--success-border|--error-border|--info-border) eliminados)
 
 **Notas de mapeo:**
 
