@@ -3,45 +3,39 @@
 import type { ReactElement } from 'react';
 import { useToastStore, type ToastType } from './store';
 
-const toastConfig: Record<ToastType, { bg: string; border: string; text: string; icon: ReactElement }> = {
+const toastConfig: Record<ToastType, { border: string; icon: ReactElement }> = {
   success: {
-    bg: 'bg-white',
-    border: 'border-[var(--success-border)]',
-    text: 'text-stone-800',
+    border: 'border-success-border',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" fill="#DCFCE7" stroke="#BBF7D0" strokeWidth="1"/>
-        <path d="M5 8l2.5 2.5L11 5.5" stroke="#15803D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="8" cy="8" r="7" fill="var(--color-success-bg)" stroke="var(--color-success-border)" strokeWidth="1"/>
+        <path d="M5 8l2.5 2.5L11 5.5" stroke="var(--color-success-fg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
   error: {
-    bg: 'bg-white',
-    border: 'border-[var(--error-border)]',
-    text: 'text-stone-800',
+    border: 'border-danger-border',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" fill="#FEE2E2" stroke="#FECACA" strokeWidth="1"/>
-        <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="8" cy="8" r="7" fill="var(--color-danger-bg)" stroke="var(--color-danger-border)" strokeWidth="1"/>
+        <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--color-danger-fg)" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
     ),
   },
   info: {
-    bg: 'bg-white',
-    border: 'border-[var(--info-border)]',
-    text: 'text-stone-800',
+    border: 'border-info-border',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" fill="#DBEAFE" stroke="#BFDBFE" strokeWidth="1"/>
-        <path d="M8 7v4" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="8" cy="5" r="0.75" fill="#2563EB"/>
+        <circle cx="8" cy="8" r="7" fill="var(--color-info-bg)" stroke="var(--color-info-border)" strokeWidth="1"/>
+        <path d="M8 7v4" stroke="var(--color-info-fg)" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="8" cy="5" r="0.75" fill="var(--color-info-fg)"/>
       </svg>
     ),
   },
 };
 
 function ToastItem({
-  id, message, type, onClose,
+  message, type, onClose,
 }: {
   id: string; message: string; type: ToastType; onClose: () => void;
 }) {
@@ -49,13 +43,13 @@ function ToastItem({
 
   return (
     <div
-      className={`${config.bg} ${config.border} border rounded-lg shadow-[var(--shadow-elevated)] flex items-start gap-3 px-4 py-3 min-w-[280px] max-w-[360px] animate-toast-in`}
+      className={`bg-surface-card ${config.border} border rounded-lg shadow-md flex items-start gap-3 px-4 py-3 min-w-[280px] max-w-[360px] animate-toast-in`}
     >
       <div className="flex-shrink-0 mt-0.5">{config.icon}</div>
-      <p className={`flex-1 text-sm font-medium ${config.text} leading-snug`}>{message}</p>
+      <p className="flex-1 text-body-sm font-medium text-fg-primary leading-snug">{message}</p>
       <button
         onClick={onClose}
-        className="flex-shrink-0 text-stone-300 hover:text-stone-500 transition-colors mt-0.5"
+        className="flex-shrink-0 text-fg-tertiary hover:text-fg-secondary transition-colors mt-0.5"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
