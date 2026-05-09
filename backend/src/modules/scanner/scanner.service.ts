@@ -61,6 +61,7 @@ export class ScannerService {
   async saveCapturedImage(
     imageData: string,
     userId: string,
+    personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
@@ -92,6 +93,7 @@ export class ScannerService {
       originalName: fileName,
       mimeType: 'image/webp',
       filePath: uploaded.url,
+      personId,
     });
 
     return { documentId: created.id, url: uploaded.url, originalName: fileName };
@@ -101,6 +103,7 @@ export class ScannerService {
     ipAddress: string,
     port: number,
     userId: string,
+    personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
     const baseUrl = `http://${ipAddress}:${port}/eSCL`;
 
@@ -187,6 +190,7 @@ export class ScannerService {
       originalName: fileName,
       mimeType: 'image/webp',
       filePath: uploaded.url,
+      personId,
     });
 
     return { documentId: created.id, url: uploaded.url, originalName: fileName };

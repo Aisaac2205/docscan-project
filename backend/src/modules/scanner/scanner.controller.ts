@@ -11,18 +11,18 @@ export class ScannerController {
 
   @Post('capture')
   async capture(
-    @Body() body: { imageData: string },
+    @Body() body: { imageData: string; personId?: string },
     @CurrentUser() user: { id: string },
   ) {
-    return this.scannerService.saveCapturedImage(body.imageData, user.id);
+    return this.scannerService.saveCapturedImage(body.imageData, user.id, body.personId);
   }
 
   @Post('network-scan')
   async networkScan(
-    @Body() body: { ipAddress: string; port?: number },
+    @Body() body: { ipAddress: string; port?: number; personId?: string },
     @CurrentUser() user: { id: string },
   ) {
-    return this.scannerService.scanFromNetwork(body.ipAddress, body.port ?? 80, user.id);
+    return this.scannerService.scanFromNetwork(body.ipAddress, body.port ?? 80, user.id, body.personId);
   }
 
   /* ── Scanner configs ── */

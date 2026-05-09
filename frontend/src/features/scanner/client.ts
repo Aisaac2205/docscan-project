@@ -4,16 +4,18 @@ import type { ScannerConfig } from './types/scanner.types';
 export const scannerClient = {
   async captureFromCamera(
     base64: string,
+    personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
-    const res = await api.post('/api/scanner/capture', { imageData: base64 });
+    const res = await api.post('/api/scanner/capture', { imageData: base64, personId });
     return res.data;
   },
 
   async captureFromNetwork(
     ipAddress: string,
     port = 80,
+    personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
-    const res = await api.post('/api/scanner/network-scan', { ipAddress, port });
+    const res = await api.post('/api/scanner/network-scan', { ipAddress, port, personId });
     return res.data;
   },
 

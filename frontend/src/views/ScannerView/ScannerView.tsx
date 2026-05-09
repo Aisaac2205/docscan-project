@@ -1,20 +1,50 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useScannerStore } from '@/features/scanner/store';
 import { useScanResult } from '@/features/scanner/hooks/useScanResult';
 import { useCameraCapture } from '@/features/scanner/hooks/useCameraCapture';
 import { useWifiScanner } from '@/features/scanner/hooks/useWifiScanner';
-import { useUsbImport } from '@/features/scanner/hooks/useUsbImport';
 import { printDocument } from '@/features/scanner/utils/print';
+import { personsApi } from '@/features/persons/api/personsApi';
+import { ScannerMetricsBar } from '@/features/scanner/components/ScannerMetricsBar';
+import { ScannerDropZone } from '@/features/scanner/components/ScannerDropZone';
+import { RecentScansFeed } from '@/features/scanner/components/RecentScansFeed';
 import { CameraModal } from '@/features/scanner/components/CameraModal';
 import { WifiModal } from '@/features/scanner/components/WifiModal';
 import { SourceCard } from '@/features/scanner/components/SourceCard';
 import { ResultPanel } from '@/features/scanner/components/ResultPanel';
 import { ScanResultBar } from '@/features/scanner/components/ScanResultBar';
-import { CameraIcon, WifiIcon, UsbIcon } from '@/shared/ui/icons';
+import { CameraIcon, WifiIcon } from '@/shared/ui/icons';
 
 export function ScannerView() {
-  const { scanning, error, cameraError } = useScannerStore();
+  const searchParams = useSearchParams();
+  const personIdFromUrl = searchParams.get('personId');
+  const { scanning, error, cameraError, targetPersonId, targetPersonName, setTargetPerson } = useScannerStore();
+
+  // Sincroniza la persona desde la URL al store la primera vez que cambia el query param.
+  useEffect(() => {
+    if (!personIdFromUrl) {
+      setTargetPerson(null, null);
+      return;
+    }
+    if (personIdFromUrl === targetPersonId) return;
+    let cancelled = false;
+    personsApi.getOne(personIdFromUrl)
+      .then((p) => { if (!cancelled) setTargetPerson(p.id, p.fullName); })
+      .catch(() => { if (!cancelled) setTargetPerson(personIdFromUrl, null); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personIdFromUrl]);
+
+  // Limpia la persona al desmontar la vista para no contaminar otras subidas.
+  useEffect(() => {
+    return () => { setTargetPerson(null, null); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const {
     previewUrl, documentId, processingOcr,
     analyzing, querying,
@@ -28,17 +58,51 @@ export function ScannerView() {
 
   const camera = useCameraCapture(applyResult);
   const wifi = useWifiScanner(applyResult);
-  const usb = useUsbImport(applyResult);
   const handlePrint = () => printDocument(previewUrl, ocrResult);
 
   return (
     <div>
+      {/* ── KPI metrics bar ── */}
+      <ScannerMetricsBar />
+
       <div className="mb-4 md:mb-6">
         <h2 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Captura de documentos</h2>
         <p className="text-sm lg:text-base text-stone-400 mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>
       </div>
+
+      {/* Banner contextual: persona pre-seleccionada */}
+      {targetPersonId && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-5 flex items-start justify-between gap-3 px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl"
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+              Asignación automática
+            </p>
+            <p className="text-sm text-stone-800">
+              Los documentos que proceses se van a asociar a{' '}
+              <Link
+                href={`/persons/${targetPersonId}`}
+                className="font-semibold underline hover:text-stone-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+              >
+                {targetPersonName ?? 'esta persona'}
+              </Link>
+              .
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTargetPerson(null, null)}
+            className="flex-shrink-0 text-xs text-stone-500 hover:text-stone-900 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+          >
+            Quitar
+          </button>
+        </div>
+      )}
 
       {camera.cameraMode && (
         <CameraModal
@@ -72,7 +136,14 @@ export function ScannerView() {
         />
       )}
 
-      <div className="mb-3">
+      <div className="flex items-center gap-3 mb-3 mt-5">
+        <span className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
+          Fuentes de captura
+        </span>
+        <div className="flex-1 h-px bg-[var(--border)]" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <SourceCard
           variant="featured"
           icon={<CameraIcon />}
@@ -81,23 +152,6 @@ export function ScannerView() {
           description="Usa la cámara de tu equipo o móvil para fotografiar el documento. Funciona en cualquier navegador moderno."
           action={{ label: <><CameraIcon />Abrir cámara</>, onClick: camera.openCamera, disabled: scanning }}
         />
-      </div>
-
-      <div className="flex items-center gap-3 mb-3 mt-5">
-        <span className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
-          Escáneres físicos
-        </span>
-        <div className="flex-1 h-px bg-[var(--border)]" />
-      </div>
-
-      <input
-        ref={usb.fileInputRef} // eslint-disable-line react-hooks/refs -- false positive: pasar ref object a prop ref es el patrón correcto
-        type="file"
-        accept="image/*,application/pdf"
-        onChange={usb.handleUsbFile} // eslint-disable-line react-hooks/refs -- false positive: handleUsbFile es un event handler, no accede a .current en render
-        className="hidden"
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
         <SourceCard
           icon={<WifiIcon />}
           title="Escáner en red"
@@ -105,18 +159,15 @@ export function ScannerView() {
           description="Conecta con cualquier escáner o multifunción en tu red local mediante el protocolo AirScan."
           action={{ label: <><WifiIcon size={14} />Conectar escáner WiFi</>, onClick: wifi.openWifiModal }}
         />
-        <SourceCard
-          icon={<UsbIcon />}
-          title="Importar archivo"
-          subtitle="USB · Imagen o PDF"
-          description="Importa una imagen o PDF desde tu dispositivo. Soporta archivos JPEG, PNG y PDF generados por cualquier escáner."
-          action={{
-            label: <><UsbIcon size={14} />Seleccionar archivo</>,
-            onClick: () => usb.fileInputRef.current?.click(),
-            disabled: scanning,
-          }}
-        />
       </div>
+
+      {/* Drag & drop import zone */}
+      <div className="mb-5">
+        <ScannerDropZone applyResult={applyResult} />
+      </div>
+
+      {/* Recent scans feed */}
+      <RecentScansFeed />
 
       {(error || cameraError) && (
         <div className="mb-5 px-4 py-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-sm">

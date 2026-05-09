@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { scannerClient } from '../client';
+import { useScannerStore } from '../store';
 import { toast } from '@/shared/ui/toast/store';
 import type { WifiStatus, ScannerConfig } from '../types/scanner.types';
 
@@ -62,10 +63,11 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
   }, [wifiModal, configs, pingAll]);
 
   const handleScanFromConfig = async (config: ScannerConfig) => {
+    const personId = useScannerStore.getState().targetPersonId ?? undefined;
     setWifiStatus('scanning');
     setWifiError(null);
     try {
-      const res = await scannerClient.captureFromNetwork(config.ip, config.port);
+      const res = await scannerClient.captureFromNetwork(config.ip, config.port, personId);
       if (applyResult(res)) {
         toast.success(`Documento escaneado desde ${config.name}`);
         closeWifiModal();
@@ -79,10 +81,11 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
   const handleNetworkScan = async () => {
     const ip = wifiIp.trim();
     if (!ip) { setWifiError('Ingresa la dirección IP del escáner'); return; }
+    const personId = useScannerStore.getState().targetPersonId ?? undefined;
     setWifiStatus('scanning');
     setWifiError(null);
     try {
-      const res = await scannerClient.captureFromNetwork(ip);
+      const res = await scannerClient.captureFromNetwork(ip, 80, personId);
       if (applyResult(res)) {
         toast.success('Documento escaneado desde la red');
         closeWifiModal();
