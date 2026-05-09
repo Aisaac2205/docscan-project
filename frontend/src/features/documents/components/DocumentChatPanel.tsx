@@ -1,5 +1,6 @@
 import React from 'react';
 import { SparkleIcon, SpinnerIcon, SendIcon } from '@/shared/ui/icons';
+import { MarkdownRenderer } from '@/shared/components/MarkdownRenderer/MarkdownRenderer';
 import type { useDocumentChat } from '../hooks/useDocumentChat';
 
 interface DocumentChatPanelProps {
@@ -32,11 +33,12 @@ export function DocumentChatPanel({ chat, compact = false }: DocumentChatPanelPr
   const maxHeight = compact ? 'max-h-40' : 'max-h-[calc(100%-120px)]';
   const availableProviders = providers.filter((p) => p.available);
   const hasProviderChoice = availableProviders.length > 1;
-  const showModelSelector = selectedProvider === 'lmstudio' && (activeProvider?.models?.length ?? 0) > 0;
+  const showModelSelector = (activeProvider?.models?.length ?? 0) > 0;
 
   const effectiveProvider = selectedProvider ?? providers[0]?.id;
+  const effectiveProviderInfo = providers.find((p) => p.id === effectiveProvider);
 
-  const providerLabel = effectiveProvider === 'lmstudio' ? 'Asistente local' : 'Asistente en nube';
+  const providerLabel = effectiveProviderInfo?.displayName ?? 'Asistente';
   const providerHelp = effectiveProvider === 'lmstudio'
     ? 'Se ejecuta en tu equipo. Ideal para información sensible.'
     : 'Más capacidad de comprensión para preguntas abiertas.';
@@ -59,28 +61,20 @@ export function DocumentChatPanel({ chat, compact = false }: DocumentChatPanelPr
           </p>
 
           <div className="grid grid-cols-2 gap-1.5">
-            <button
-              onClick={() => handleProviderChange('lmstudio')}
-              disabled={!providers.find((p) => p.id === 'lmstudio')?.available}
-              className={`h-8 lg:h-9 px-3 lg:px-4 rounded-lg border text-xs lg:text-sm font-medium transition-colors ${
-                selectedProvider === 'lmstudio'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-600 border-[var(--border)] hover:bg-stone-50'
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              Local
-            </button>
-            <button
-              onClick={() => handleProviderChange('gemini')}
-              disabled={!providers.find((p) => p.id === 'gemini')?.available}
-              className={`h-8 lg:h-9 px-3 lg:px-4 rounded-lg border text-xs lg:text-sm font-medium transition-colors ${
-                selectedProvider === 'gemini'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-600 border-[var(--border)] hover:bg-stone-50'
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              Nube
-            </button>
+            {providers.filter((p) => p.available).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handleProviderChange(p.id)}
+                disabled={!p.available}
+                className={`h-8 lg:h-9 px-3 lg:px-4 rounded-lg border text-xs lg:text-sm font-medium transition-colors ${
+                  selectedProvider === p.id
+                    ? 'bg-stone-900 text-white border-stone-900'
+                    : 'bg-white text-stone-600 border-[var(--border)] hover:bg-stone-50'
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                {p.displayName}
+              </button>
+            ))}
           </div>
 
           <div className="mt-2 rounded-lg bg-stone-50 border border-[var(--border)] px-3 lg:px-4 py-2">
@@ -91,7 +85,7 @@ export function DocumentChatPanel({ chat, compact = false }: DocumentChatPanelPr
           {showModelSelector && (
             <div className="mt-2">
               <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
-                Perfil local
+                Modelo
               </p>
               {(activeProvider?.models?.length ?? 0) === 1 ? (
                 <p className="text-[12px] lg:text-sm text-stone-600 px-3 lg:px-4 py-2 bg-stone-50 rounded-lg border border-[var(--border)] truncate">
@@ -124,8 +118,8 @@ export function DocumentChatPanel({ chat, compact = false }: DocumentChatPanelPr
               </div>
               {item.a ? (
                 <div className="flex justify-start">
-                  <div className="max-w-[85%] bg-white border border-[var(--border)] text-stone-700 text-xs lg:text-sm px-3 lg:px-4 py-1.5 rounded-xl rounded-tl-sm leading-relaxed whitespace-pre-wrap">
-                    {item.a}
+                  <div className="max-w-[85%] bg-white border border-[var(--border)] text-stone-700 text-xs lg:text-sm px-3 lg:px-4 py-2 rounded-xl rounded-tl-sm leading-relaxed">
+                    <MarkdownRenderer text={item.a} />
                   </div>
                 </div>
               ) : isSending && (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { SparkleIcon, SendIcon, ChatIcon } from '@/shared/ui/icons';
+import { MarkdownRenderer } from '@/shared/components/MarkdownRenderer/MarkdownRenderer';
 
 interface QueryHistoryItem {
   id: string;
@@ -67,7 +68,7 @@ export function OCRChatPanel({
                   <SparkleIcon size={11} className="text-stone-500" />
                 </div>
                 <div className="max-w-[85%] bg-stone-50 border border-[var(--border)] text-stone-800 text-[12px] px-3.5 py-2.5 rounded-2xl rounded-tl-sm leading-relaxed">
-                  {item.answer}
+                  <MarkdownRenderer text={item.answer} />
                 </div>
               </div>
             </div>
