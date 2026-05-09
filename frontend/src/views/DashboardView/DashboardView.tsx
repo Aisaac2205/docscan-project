@@ -8,7 +8,8 @@ import { ActionCard } from '@/features/dashboard/components/ActionCard';
 import { UploadZone } from '@/features/dashboard/components/UploadZone';
 import { RecentDocumentCard } from '@/features/dashboard/components/RecentDocumentCard';
 import { DashboardFooter } from '@/features/dashboard/components/DashboardFooter';
-import { KPICard } from '@/features/dashboard/components/KPICard';
+import { StatCard } from '@/shared/components/data-display';
+import { Skeleton } from '@/shared/components/ui';
 import { RecentActivity } from '@/features/dashboard/components/RecentActivity';
 
 export function DashboardView() {
@@ -52,38 +53,37 @@ export function DashboardView() {
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger-children">
-          <KPICard
-            tone="neutral"
-            icon={<PersonsIcon />}
-            label="Personas activas"
-            value={String(stats?.activePersons ?? 0)}
-            hint={stats ? `${stats.totalPersons} personas en total` : 'Cargando...'}
-            loading={statsLoading}
-          />
-          <KPICard
-            tone="neutral"
-            icon={<InboxIcon />}
-            label="Sin asignar"
-            value={String(stats?.unassignedDocuments ?? 0)}
-            hint="Documentos pendientes de asociar a una persona"
-            loading={statsLoading}
-          />
-          <KPICard
-            tone="neutral"
-            icon={<HealthIcon />}
-            label="Constancias pendientes"
-            value={String(stats?.pendingHealthRecords ?? 0)}
-            hint="Salud y ausencias por validar"
-            loading={statsLoading}
-          />
-          <KPICard
-            tone="neutral"
-            icon={<DocumentIcon />}
-            label="Total registrados"
-            value={String(stats?.totalPersons ?? 0)}
-            hint="Candidatos y empleados en el sistema"
-            loading={statsLoading}
-          />
+          {statsLoading ? (
+            <>
+              <Skeleton className="h-28" />
+              <Skeleton className="h-28" />
+              <Skeleton className="h-28" />
+              <Skeleton className="h-28" />
+            </>
+          ) : (
+            <>
+              <StatCard
+                icon={<PersonsIcon />}
+                label="Personas activas"
+                value={String(stats?.activePersons ?? 0)}
+              />
+              <StatCard
+                icon={<InboxIcon />}
+                label="Sin asignar"
+                value={String(stats?.unassignedDocuments ?? 0)}
+              />
+              <StatCard
+                icon={<HealthIcon />}
+                label="Constancias pendientes"
+                value={String(stats?.pendingHealthRecords ?? 0)}
+              />
+              <StatCard
+                icon={<DocumentIcon />}
+                label="Total registrados"
+                value={String(stats?.totalPersons ?? 0)}
+              />
+            </>
+          )}
         </div>
       </section>
 
