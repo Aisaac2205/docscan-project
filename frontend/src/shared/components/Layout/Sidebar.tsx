@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useOCRProviders, getGeminiModelFromProviders } from '@/features/ocr/hooks/useOCRProviders';
 
 const tabs = [
   {
@@ -92,6 +93,8 @@ const tabs = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { providers } = useOCRProviders();
+  const geminiModel = getGeminiModelFromProviders(providers);
 
   return (
     <aside
@@ -141,7 +144,7 @@ export function Sidebar() {
         </div>
         <div>
           <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-0.5">OCR</p>
-          <p className="text-xs text-stone-400">Gemini 2.5 Flash</p>
+          <p className="text-xs text-stone-400">{geminiModel ?? 'Gemini'}</p>
         </div>
       </div>
     </aside>
