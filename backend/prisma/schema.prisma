@@ -14,6 +14,7 @@ model User {
   documents      Document[]
   scannerConfigs ScannerConfig[]
   talentPoolRuns TalentPoolRun[]
+  persons        Person[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -32,10 +33,34 @@ model ScannerConfig {
   @@index([userId])
 }
 
+model Person {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  cui              String?
+  email            String?
+  phone            String?
+  role             String   @default("candidate")
+  status           String   @default("active")
+  notes            String?  @db.Text
+  profileOverrides Json?
+  documents        Document[]
+  evaluations      PersonEvaluation[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, cui])
+  @@index([userId, fullName])
+  @@index([userId, status])
+}
+
 model Document {
   id            String          @id @default(cuid())
   userId        String
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personId      String?
+  person        Person?         @relation(fields: [personId], references: [id], onDelete: SetNull)
   originalName  String
   mimeType      String
   filePath      String
@@ -44,11 +69,13 @@ model Document {
   extractedData Json?
   confidence    Float?
   status        String          @default("pending")
+  retainOriginal Boolean        @default(true)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   queries       DocumentQuery[]
 
   @@index([userId])
+  @@index([personId])
   @@index([status])
   @@index([documentType])
   @@index([userId, documentType])
@@ -63,6 +90,21 @@ model DocumentQuery {
   createdAt  DateTime @default(now())
 
   @@index([documentId])
+}
+
+model PersonEvaluation {
+  id        String   @id @default(cuid())
+  personId  String
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  provider  String
+  model     String?
+  prompt    String   @db.Text
+  result    String   @db.Text
+  score     Float?
+  createdAt DateTime @default(now())
+
+  @@index([personId])
+  @@index([personId, createdAt])
 }
 
 model TalentPoolRun {
