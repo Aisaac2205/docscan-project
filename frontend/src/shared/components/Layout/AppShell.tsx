@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
         className="min-h-screen"
       >
-        <div className="p-4 md:p-6 max-w-5xl mx-auto">
+        <div className="p-4 md:p-6 lg:p-8 xl:p-10 max-w-full mx-auto">
           {children}
         </div>
       </main>
