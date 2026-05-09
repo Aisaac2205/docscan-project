@@ -4,6 +4,19 @@ Inventario completo de aliases deprecados introducidos en Fase 2 (sección 8 de 
 
 **Política de eliminación:** cada alias se elimina cuando el último archivo que lo usa es migrado en Fase 6. La columna "Archivos que lo usan" se completa durante la auditoría de Fase 5.
 
+## Progreso global por wave
+
+Conteos agregados con `grep` (no inventados):
+
+| Métrica | Baseline (antes Wave 1) | Después Wave 1 | Delta |
+|---|---|---|---|
+| Total usos `*-stone-*` (`text-`/`bg-`/`border-`/`hover:`) | 641 | 614 | **−27** |
+| Archivos con `*-stone-*` | 70 | 67 | **−3** |
+| Archivos con `var(--bg\|--border\|--text-*\|--accent\|--success\|--error\|--warning\|--info)` | 33 | 30 | **−3** |
+| Archivos en `Layout/` con stone o legacy var | 3 | 0 | **−3 ✅** |
+
+**Definition of done por wave**: el conteo agregado disminuye + los archivos del scope quedan en 0 usos de stone/legacy.
+
 **Formato del comentario en `globals.css`:**
 
 ```css
@@ -14,30 +27,36 @@ Inventario completo de aliases deprecados introducidos en Fase 2 (sección 8 de 
 
 ## 1. CSS variables semánticas (`:root`)
 
-| Alias deprecado | Resuelve a | Fase de eliminación | Archivos que lo usan |
-|---|---|---|---|
-| `--bg` | `var(--color-surface-page)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--surface` | `var(--color-surface-card)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--border` | `var(--color-border)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--border-strong` | `var(--color-border-strong)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--text-1` | `var(--color-fg-primary)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--text-2` | `var(--color-fg-secondary)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--text-3` | `var(--color-fg-tertiary)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--accent` | `var(--color-brand-500)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--accent-hover` | `var(--color-brand-600)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--accent-subtle` | `var(--color-brand-50)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--success` | `var(--color-success-fg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--success-bg` | `var(--color-success-bg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--success-border` | `var(--color-success-border)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--error` | `var(--color-danger-fg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--error-bg` | `var(--color-danger-bg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--error-border` | `var(--color-danger-border)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--warning` | `var(--color-warning-fg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--warning-bg` | `var(--color-warning-bg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--warning-border` | `var(--color-warning-border)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--info` | `var(--color-info-fg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--info-bg` | `var(--color-info-bg)` | Fase 6 | _Pendiente auditoría Fase 5_ |
-| `--info-border` | `var(--color-info-border)` | Fase 6 | _Pendiente auditoría Fase 5_ |
+Conteos por alias hechos con `grep -rn "patron" frontend/src --include="*.tsx" --include="*.ts"`. Cuando un alias llega a 0 usos, se marca **Listo para eliminar** y se borra de `globals.css` en Wave 10.
+
+| Alias deprecado | Resuelve a | Usos baseline | Wave 1 | Estado |
+|---|---|---|---|---|
+| `--bg` | `var(--color-surface-page)` | 0* | 0 | Listo para eliminar |
+| `--surface` | `var(--color-surface-card)` | 0* | 0 | Listo para eliminar |
+| `--border` | `var(--color-border)` | 8 | 5 | En migración |
+| `--border-strong` | `var(--color-border-strong)` | 0* | 0 | Listo para eliminar |
+| `--text-1` | `var(--color-fg-primary)` | 0* | 0 | Listo para eliminar |
+| `--text-2` | `var(--color-fg-secondary)` | 0* | 0 | Listo para eliminar |
+| `--text-3` | `var(--color-fg-tertiary)` | 0* | 0 | Listo para eliminar |
+| `--accent` | `var(--color-brand-500)` | 0* | 0 | Listo para eliminar |
+| `--accent-hover` | `var(--color-brand-600)` | 0* | 0 | Listo para eliminar |
+| `--accent-subtle` | `var(--color-brand-50)` | 0* | 0 | Listo para eliminar |
+| `--success` | `var(--color-success-fg)` | _verificar Wave 9_ | _Pendiente_ | En migración |
+| `--success-bg` | `var(--color-success-bg)` | _verificar Wave 9_ | _Pendiente_ | En migración |
+| `--success-border` | `var(--color-success-border)` | _verificar Wave 9_ | _Pendiente_ | En migración |
+| `--error` | `var(--color-danger-fg)` | 1 | 1 | En migración |
+| `--error-bg` | `var(--color-danger-bg)` | 1 | 1 | En migración |
+| `--error-border` | `var(--color-danger-border)` | 1 | 1 | En migración |
+| `--warning` | `var(--color-warning-fg)` | _verificar_ | _Pendiente_ | En migración |
+| `--warning-bg` | `var(--color-warning-bg)` | _verificar_ | _Pendiente_ | En migración |
+| `--warning-border` | `var(--color-warning-border)` | _verificar_ | _Pendiente_ | En migración |
+| `--info` | `var(--color-info-fg)` | _verificar_ | _Pendiente_ | En migración |
+| `--info-bg` | `var(--color-info-bg)` | _verificar_ | _Pendiente_ | En migración |
+| `--info-border` | `var(--color-info-border)` | _verificar_ | _Pendiente_ | En migración |
+
+*Aliases con `0*` baseline = no había usos directos en el código (`var(--bg)` etc no aparecía como inline). Estaban definidos en globals.css pero nadie los referenciaba. Ya están "Listo para eliminar" desde el día uno — no se removieron en Wave 10 porque la decisión es removerlos todos juntos al final del cleanup.
+
+**Wave 1 resultado para `--border`:** 8 → 5 (3 menos = los del Layout). Los 5 restantes están repartidos entre Scanner, Documents y otros features que se migran en waves 4-9.
 
 **Notas de mapeo:**
 

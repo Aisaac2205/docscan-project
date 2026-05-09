@@ -62,7 +62,7 @@ export function BottomNav() {
   return (
     <nav
       style={{ height: 'var(--bottom-nav-height)' }}
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-[var(--border)] flex items-center justify-around px-2 safe-bottom"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-card border-t border-border flex items-center justify-around px-2 safe-bottom"
     >
       {tabs.map((tab) => {
         const active = pathname === tab.path;
@@ -71,16 +71,16 @@ export function BottomNav() {
             key={tab.id}
             onClick={() => router.push(tab.path)}
             className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors min-h-[44px] ${
-              active ? 'text-stone-900' : 'text-stone-400 active:text-stone-600'
+              active ? 'text-fg-primary' : 'text-fg-tertiary active:text-fg-secondary'
             }`}
           >
             {active && (
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-stone-900 rounded-full" />
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-fg-primary rounded-full" />
             )}
-            <span className={active ? 'text-stone-700' : 'text-stone-400'}>
+            <span className={active ? 'text-fg-primary' : 'text-fg-tertiary'}>
               {tab.icon}
             </span>
-            <span className={`text-[10px] font-medium ${active ? 'text-stone-900' : 'text-stone-400'}`}>
+            <span className={`text-overline ${active ? 'text-fg-primary' : 'text-fg-tertiary'}`}>
               {tab.label}
             </span>
           </button>

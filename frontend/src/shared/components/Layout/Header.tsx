@@ -22,15 +22,15 @@ export function Header() {
   return (
     <header
       style={{ height: 'var(--header-height)' }}
-      className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-[var(--border)] flex items-center"
+      className="fixed top-0 left-0 right-0 z-30 bg-surface-card border-b border-border flex items-center"
     >
       <div
-        className="flex items-center h-full px-4 lg:px-5 lg:border-r lg:border-[var(--border)]"
+        className="flex items-center h-full px-4 lg:px-5 lg:border-r lg:border-border"
         style={{ width: 'var(--sidebar-width)', minWidth: 'auto' }}
       >
         <Link href="/" className="flex items-center gap-2 group">
           <DocScanLogo />
-          <span className="font-semibold text-stone-900 text-base tracking-tight">DocScan</span>
+          <span className="text-h4 text-fg-primary tracking-tight">DocScan</span>
         </Link>
       </div>
 
@@ -38,18 +38,18 @@ export function Header() {
         {user && (
           <>
             <div className="hidden sm:flex items-center gap-2.5">
-              <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-stone-100 border border-[var(--border)] flex items-center justify-center text-xs font-semibold text-stone-600">
+              <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-surface-sunken border border-border flex items-center justify-center text-caption text-fg-secondary">
                 {initials}
               </div>
-              <div className="text-sm">
-                <span className="text-stone-700 font-medium">{user.name}</span>
-                <span className="text-stone-400 ml-1.5 text-xs hidden md:inline">{user.email}</span>
+              <div className="text-body-sm">
+                <span className="text-fg-primary font-medium">{user.name}</span>
+                <span className="text-fg-tertiary ml-1.5 text-caption hidden md:inline">{user.email}</span>
               </div>
             </div>
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-md transition-all border border-transparent hover:border-[var(--border)] min-h-[44px]"
+              className="flex items-center gap-1.5 px-3 h-8 text-button-sm text-fg-secondary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-all border border-transparent hover:border-border min-h-[44px]"
             >
               <LogoutIcon />
               <span className="hidden sm:inline">Salir</span>
@@ -76,4 +76,3 @@ function LogoutIcon() {
     </svg>
   );
 }
-

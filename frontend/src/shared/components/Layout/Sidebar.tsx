@@ -99,10 +99,10 @@ export function Sidebar() {
   return (
     <aside
       style={{ width: 'var(--sidebar-width)', top: 'var(--header-height)' }}
-      className="hidden lg:flex fixed left-0 bottom-0 bg-white border-r border-[var(--border)] flex-col pt-4 pb-4 z-20"
+      className="hidden lg:flex fixed left-0 bottom-0 bg-surface-card border-r border-border flex-col pt-4 pb-4 z-20"
     >
       <nav className="flex-1 px-2">
-        <p className="px-3 mb-2 text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider">
+        <p className="px-3 mb-2 text-overline text-overline-uppercase text-fg-tertiary">
           Principal
         </p>
         <div className="space-y-0.5">
@@ -112,13 +112,13 @@ export function Sidebar() {
               <button
                 key={tab.id}
                 onClick={() => router.push(tab.path)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-left transition-all ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-button-sm text-left transition-all ${
                   active
-                    ? 'bg-stone-100 text-stone-900'
-                    : 'text-stone-500 hover:bg-stone-50 hover:text-stone-800'
+                    ? 'bg-surface-sunken text-fg-primary'
+                    : 'text-fg-secondary hover:bg-surface-sunken hover:text-fg-primary'
                 }`}
               >
-                <span className={active ? 'text-stone-700' : 'text-stone-400'}>
+                <span className={active ? 'text-fg-primary' : 'text-fg-tertiary'}>
                   {tab.icon}
                 </span>
                 {tab.label}
@@ -128,23 +128,23 @@ export function Sidebar() {
         </div>
       </nav>
 
-      <div className="px-4 mt-2 border-t border-[var(--border)] pt-4 space-y-3">
+      <div className="px-4 mt-2 border-t border-border pt-4 space-y-3">
         <div>
-          <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
             Hardware
           </p>
           <div className="space-y-1">
             {['Escáner en red', 'Cámara', 'Impresora'].map((label) => (
               <div key={label} className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full flex-shrink-0 bg-stone-300" />
-                <span className="text-xs text-stone-400">{label}</span>
+                <span className="w-1 h-1 rounded-full flex-shrink-0 bg-border-strong" />
+                <span className="text-caption text-fg-tertiary">{label}</span>
               </div>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-0.5">OCR</p>
-          <p className="text-xs text-stone-400">{geminiModel ?? 'Gemini'}</p>
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">OCR</p>
+          <p className="text-caption text-fg-tertiary">{geminiModel ?? 'Gemini'}</p>
         </div>
       </div>
     </aside>
