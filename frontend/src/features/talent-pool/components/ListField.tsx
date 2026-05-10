@@ -44,8 +44,8 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
 
   return (
     <div className="space-y-1.5">
-      <label className="text-[12px] font-semibold text-stone-700">{label}</label>
-      <p className="text-[11px] text-stone-400">{helper}</p>
+      <label className="text-overline text-overline-uppercase text-fg-tertiary">{label}</label>
+      <p className="text-caption text-fg-tertiary">{helper}</p>
       <div className="flex gap-2">
         <input
           value={draft}
@@ -57,32 +57,32 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
             }
           }}
           placeholder={placeholder}
-          className="w-full h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-sm text-stone-800 input-focus"
+          className="w-full h-10 rounded-md border border-border bg-surface-card px-3 text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
         />
         <button
           type="button"
           onClick={addDraftItem}
-          className="h-10 px-3 rounded-lg border border-[var(--border)] bg-white text-xs font-semibold text-stone-700 hover:bg-stone-50"
+          className="h-10 px-3 rounded-md border border-border bg-surface-card text-button-sm text-fg-secondary hover:bg-surface-sunken"
         >
           Agregar
         </button>
       </div>
-      <p className="text-[11px] text-stone-400">Presioná Enter o coma para agregar. No se guardan espacios vacíos.</p>
+      <p className="text-caption text-fg-tertiary">Presioná Enter o coma para agregar. No se guardan espacios vacíos.</p>
 
       {value.length > 0 && (
         <div className="space-y-1.5 pt-1">
           {value.map((item, index) => (
             <div
               key={`${item}-${index}`}
-              className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-stone-50 px-2 py-1.5"
+              className="flex items-center justify-between gap-2 rounded-md border border-border bg-surface-sunken px-2 py-1.5"
             >
-              <span className="text-[12px] text-stone-700 break-words">{item}</span>
+              <span className="text-body-sm text-fg-primary break-words">{item}</span>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => moveItem(index, -1)}
                   disabled={index === 0}
-                  className="h-6 w-6 rounded border border-[var(--border)] bg-white text-[11px] text-stone-600 disabled:opacity-30"
+                  className="h-6 w-6 rounded border border-border bg-surface-card text-caption text-fg-secondary disabled:opacity-30"
                   title="Subir"
                 >
                   ↑
@@ -91,7 +91,7 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
                   type="button"
                   onClick={() => moveItem(index, 1)}
                   disabled={index === value.length - 1}
-                  className="h-6 w-6 rounded border border-[var(--border)] bg-white text-[11px] text-stone-600 disabled:opacity-30"
+                  className="h-6 w-6 rounded border border-border bg-surface-card text-caption text-fg-secondary disabled:opacity-30"
                   title="Bajar"
                 >
                   ↓
@@ -99,7 +99,7 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="h-6 px-2 rounded border border-[var(--border)] bg-white text-[11px] text-stone-600 hover:text-rose-600"
+                  className="h-6 px-2 rounded border border-border bg-surface-card text-caption text-fg-secondary hover:text-danger-fg"
                   title="Quitar"
                 >
                   Quitar

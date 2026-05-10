@@ -184,8 +184,8 @@ export function TalentPoolView() {
   return (
     <div className="space-y-4 md:space-y-6">
       <header className="space-y-1">
-        <h1 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Bolsa de talento</h1>
-        <p className="text-[length:var(--text-body)] text-stone-500 max-w-3xl">
+        <h1 className="text-h1">Bolsa de talento</h1>
+        <p className="text-body-sm text-fg-secondary max-w-3xl">
           Compará candidatos de forma clara para RRHH. Cargás criterios, pegás CVs y obtenés un ranking con recomendaciones simples.
         </p>
       </header>
@@ -207,16 +207,16 @@ export function TalentPoolView() {
         />
       </section>
 
-      <section className="rounded-xl border border-[var(--border)] bg-white p-4 md:p-5 space-y-4">
+      <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-sm font-semibold text-stone-800">Candidatos a comparar</h2>
-            <p className="text-xs text-stone-400">Pegá el resumen o CV de cada persona. Máximo 7000 caracteres por candidato.</p>
+            <h2 className="text-h4 text-fg-primary">Candidatos a comparar</h2>
+            <p className="text-caption text-fg-tertiary">Pegá el resumen o CV de cada persona. Máximo 7000 caracteres por candidato.</p>
           </div>
           <button
             onClick={addCandidate}
             disabled={candidatos.length >= 25}
-            className="h-9 px-3 rounded-lg border border-[var(--border)] bg-white text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="h-9 px-3 rounded-md border border-border bg-surface-card text-button-sm text-fg-secondary hover:bg-surface-sunken disabled:opacity-40 disabled:cursor-not-allowed"
           >
             + Agregar candidato manual
           </button>
@@ -247,30 +247,30 @@ export function TalentPoolView() {
           <button
             onClick={handleEvaluate}
             disabled={evaluando}
-            className="h-10 px-5 rounded-lg bg-stone-900 text-white text-sm font-semibold hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+            className="h-10 px-5 rounded-md bg-fg-primary text-fg-inverse text-button hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
           >
-            {evaluando ? <><SpinnerIcon className="text-white/70" /> Evaluando candidatos…</> : 'Evaluar y ordenar candidatos'}
+            {evaluando ? <><SpinnerIcon /> Evaluando candidatos…</> : 'Evaluar y ordenar candidatos'}
           </button>
-          <p className="text-xs text-stone-400">
+          <p className="text-caption text-fg-tertiary">
             Cada evaluación se guarda en historial para seguimiento del proceso.
           </p>
         </div>
 
         {error && (
-          <div className="rounded-lg border border-[var(--error-border)] bg-[var(--error-bg)] px-3 py-2 text-sm text-[var(--error)]">
+          <div className="rounded-md border border-danger-border bg-danger-bg px-3 py-2 text-body-sm text-danger-fg">
             {error}
           </div>
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--border)] bg-white p-4 md:p-5 space-y-4">
+      <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-stone-800">Resultado actual</h2>
-          <p className="text-xs text-stone-400">Priorizamos la última corrida para decidir rápido, y debajo queda el historial.</p>
+          <h2 className="text-h4 text-fg-primary">Resultado actual</h2>
+          <p className="text-caption text-fg-tertiary">Priorizamos la última corrida para decidir rápido, y debajo queda el historial.</p>
         </div>
 
         {!resultado ? (
-          <div className="rounded-lg border border-dashed border-[var(--border)] bg-stone-50 px-4 py-8 text-center text-sm text-stone-400">
+          <div className="rounded-md border border-dashed border-border bg-surface-sunken px-4 py-8 text-center text-body-sm text-fg-tertiary">
             Cuando evalúes los candidatos, acá vas a ver el ranking actual con explicación y alertas.
           </div>
         ) : (
