@@ -30,13 +30,13 @@ export function AssignPersonButton({
     setOpen(true);
   };
 
-  const triggerClass = `inline-flex items-center gap-1.5 ${compact ? 'text-xs' : 'text-sm'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm`;
+  const triggerClass = `inline-flex items-center gap-1.5 ${compact ? 'text-caption' : 'text-body-sm'} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm`;
 
   const trigger = currentPersonId && currentPersonName ? (
     <button
       type="button"
       onClick={handleClick}
-      className={`${triggerClass} text-stone-700 hover:text-stone-900 underline-offset-2 hover:underline`}
+      className={`${triggerClass} text-fg-secondary hover:text-fg-primary underline-offset-2 hover:underline`}
       aria-label={`Cambiar persona asignada (actual: ${currentPersonName})`}
     >
       <PersonIcon />
@@ -46,7 +46,7 @@ export function AssignPersonButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`${triggerClass} text-stone-500 hover:text-stone-900`}
+      className={`${triggerClass} text-fg-tertiary hover:text-fg-primary`}
       aria-label="Asignar este documento a una persona"
     >
       <PersonIcon />

@@ -16,7 +16,7 @@ export function DocumentsView() {
 
   if (loading && documents.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-stone-400 text-sm">
+      <div className="flex items-center justify-center h-48 text-fg-tertiary text-body-sm">
         Cargando documentos...
       </div>
     );
@@ -25,8 +25,8 @@ export function DocumentsView() {
   if (!loading && documents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 gap-2">
-        <p className="text-stone-500 text-sm">No hay documentos aún.</p>
-        <p className="text-stone-400 text-xs">Sube o escanea uno para comenzar.</p>
+        <p className="text-fg-secondary text-body-sm">No hay documentos aún.</p>
+        <p className="text-fg-tertiary text-caption">Sube o escanea uno para comenzar.</p>
       </div>
     );
   }
@@ -35,8 +35,8 @@ export function DocumentsView() {
     <div>
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h1 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Documentos</h1>
-          <p className="text-sm lg:text-base text-stone-400 mt-0.5">
+          <h1 className="text-h1">Documentos</h1>
+          <p className="text-body-sm text-fg-tertiary mt-0.5">
             {documents.length} documento{documents.length !== 1 ? 's' : ''} en tu biblioteca
           </p>
         </div>

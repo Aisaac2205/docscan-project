@@ -31,7 +31,6 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
   const isPdf = doc.filePath?.toLowerCase().endsWith('.pdf');
   const [previewOpen, setPreviewOpen] = useState(true);
 
-  // Refrescar documento al montar para obtener datos extraídos actualizados
   useEffect(() => {
     documentsClient.get(initialDoc.id)
       .then((fresh) => {
@@ -52,27 +51,28 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 lg:py-4 border-b border-[var(--border)] bg-white flex-shrink-0">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 lg:py-4 border-b border-border bg-surface-card flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.push('/documents')}
-            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors flex-shrink-0"
+            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors flex-shrink-0"
             title="Volver"
           >
             <ArrowLeftIcon size={16} />
           </button>
-          <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg bg-stone-100 border border-[var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-md bg-surface-sunken border border-border flex items-center justify-center flex-shrink-0 overflow-hidden text-fg-tertiary">
             {isImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={doc.filePath} alt="" className="w-full h-full object-cover" />
             ) : (
               <FileIcon size={13} />
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm lg:text-base font-semibold text-stone-800 truncate">{doc.originalName}</p>
+            <p className="text-body-sm font-medium text-fg-primary truncate">{doc.originalName}</p>
             <div className="flex items-center gap-2">
               <StatusBadge status={doc.status} />
-              <span className="text-[10px] lg:text-xs text-stone-400">
+              <span className="text-caption text-fg-tertiary">
                 {new Date(doc.createdAt).toLocaleDateString('es-GT', { day: '2-digit', month: 'short', year: 'numeric' })}
               </span>
             </div>
@@ -85,14 +85,14 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
               <button
                 onClick={() => documentAction.handleSmartExtract()}
                 disabled={doc.status === 'processing'}
-                className="h-8 lg:h-9 px-3 text-xs lg:text-sm font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                className="h-9 px-3 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
               >
                 <SparkleIcon size={12} />Extraer con IA
               </button>
               <button
                 onClick={() => documentAction.handleExtract()}
                 disabled={doc.status === 'processing'}
-                className="h-8 lg:h-9 px-3 text-xs lg:text-sm font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1.5"
+                className="h-9 px-3 text-button-sm font-medium border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken transition-colors flex items-center gap-1.5"
               >
                 <OcrIcon size={12} />OCR
               </button>
@@ -100,14 +100,14 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
           )}
           <button
             onClick={() => printDocument(doc)}
-            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
             title="Imprimir"
           >
             <PrintIcon size={14} />
           </button>
           <button
             onClick={handleDelete}
-            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg rounded-md transition-colors"
             title="Eliminar"
           >
             <TrashIcon size={14} />
@@ -118,19 +118,18 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* Data panel — PRIMARY, larger */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-surface-card">
           <div className="max-w-3xl mx-auto">
-            {/* Section header */}
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-lg lg:text-xl font-semibold text-stone-900">Datos extraídos</h2>
+                <h2 className="text-h2">Datos extraídos</h2>
                 {renderedFields.length > 0 && (
-                  <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">
+                  <span className="text-caption font-medium text-fg-tertiary bg-surface-sunken px-2 py-0.5 rounded-full">
                     {renderedFields.length} campo{renderedFields.length !== 1 ? 's' : ''}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-stone-400">
+              <p className="text-body-sm text-fg-tertiary">
                 {isCompleted && renderedFields.length > 0
                   ? 'Información estructurada extraída del documento'
                   : 'Aún no se han extraído datos de este documento'}
@@ -140,13 +139,13 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
             {isCompleted && renderedFields.length > 0 ? (
               <ExtractedFieldsPanel fields={renderedFields} />
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-stone-400 gap-3">
+              <div className="flex flex-col items-center justify-center py-16 text-fg-tertiary gap-3">
                 <OcrIcon size={40} />
-                <p className="text-sm lg:text-base">{!isCompleted ? 'Procesando documento…' : 'No hay datos extraídos'}</p>
+                <p className="text-body">{!isCompleted ? 'Procesando documento…' : 'No hay datos extraídos'}</p>
                 {!isCompleted && doc.status !== 'processing' && (
                   <button
                     onClick={() => documentAction.handleSmartExtract()}
-                    className="mt-2 h-9 px-4 text-xs lg:text-sm font-medium bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors flex items-center gap-1.5"
+                    className="mt-2 h-9 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 transition-colors flex items-center gap-1.5"
                   >
                     <SparkleIcon size={12} />Extraer con IA
                   </button>
@@ -157,33 +156,34 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
         </div>
 
         {/* Preview panel — reference, smaller */}
-        <div className="lg:w-[380px] xl:w-[420px] lg:border-l border-t lg:border-t-0 border-[var(--border)] bg-stone-50 flex-shrink-0 flex flex-col">
+        <div className="lg:w-[380px] xl:w-[420px] lg:border-l border-t lg:border-t-0 border-border bg-surface-page flex-shrink-0 flex flex-col">
           <button
             onClick={() => setPreviewOpen(!previewOpen)}
-            className="flex items-center justify-between px-4 py-3 lg:px-5 lg:py-4 border-b border-[var(--border)] bg-white"
+            className="flex items-center justify-between px-4 py-3 lg:px-5 lg:py-4 border-b border-border bg-surface-card"
           >
-            <span className="text-xs lg:text-sm font-semibold text-stone-700">Vista previa del documento</span>
-            <span className="text-stone-400 text-sm">{previewOpen ? '−' : '+'}</span>
+            <span className="text-body-sm font-medium text-fg-primary">Vista previa del documento</span>
+            <span className="text-fg-tertiary">{previewOpen ? '−' : '+'}</span>
           </button>
 
           {previewOpen && (
             <div className="flex-1 overflow-auto p-3 lg:p-4 flex items-center justify-center">
               {isImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={doc.filePath}
                   alt={doc.originalName}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                  className="max-w-full max-h-full object-contain rounded-md shadow-sm"
                 />
               ) : isPdf ? (
                 <iframe
                   src={doc.filePath}
                   title={doc.originalName}
-                  className="w-full h-[300px] lg:h-full rounded-lg border border-[var(--border)] bg-white"
+                  className="w-full h-[300px] lg:h-full rounded-md border border-border bg-surface-card"
                 />
               ) : (
-                <div className="flex flex-col items-center gap-2 text-stone-400">
+                <div className="flex flex-col items-center gap-2 text-fg-tertiary">
                   <FileIcon size={32} />
-                  <p className="text-xs">Sin vista previa</p>
+                  <p className="text-caption">Sin vista previa</p>
                 </div>
               )}
             </div>
@@ -192,7 +192,7 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
       </div>
 
       {/* Chat — collapsible */}
-      <div className="border-t border-[var(--border)] bg-white flex-shrink-0">
+      <div className="border-t border-border bg-surface-card flex-shrink-0">
         <DocumentChatPanel chat={documentChat} compact={false} />
       </div>
     </div>

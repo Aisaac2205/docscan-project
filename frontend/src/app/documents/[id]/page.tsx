@@ -26,7 +26,7 @@ export default function Page() {
 
   if (loading && !doc) {
     return (
-      <div className="flex items-center justify-center h-96 text-stone-400 text-sm">
+      <div className="flex items-center justify-center h-96 text-fg-tertiary text-body-sm">
         Cargando documento…
       </div>
     );

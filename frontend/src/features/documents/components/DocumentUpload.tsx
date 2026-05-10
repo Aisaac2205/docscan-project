@@ -20,8 +20,8 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-stone-900">Subir documento</h2>
-        <p className="text-sm text-stone-400 mt-0.5">
+        <h2 className="text-h2">Subir documento</h2>
+        <p className="text-body-sm text-fg-tertiary mt-0.5">
           Arrastra un archivo o haz clic para seleccionarlo
         </p>
       </div>
@@ -32,8 +32,8 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             dragActive
               ? 'border-accent-500 bg-accent-50'
               : uploadedDoc
-              ? 'border-[var(--success-border)] bg-[var(--success-bg)]'
-              : 'border-[var(--border)] bg-white hover:border-stone-300 hover:bg-stone-50'
+              ? 'border-success-border bg-success-bg'
+              : 'border-border bg-surface-card hover:border-border-strong hover:bg-surface-sunken'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -52,56 +52,56 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
 
           {uploadedDoc ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-[var(--success-bg)] border border-[var(--success-border)] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-success-bg border border-success-border flex items-center justify-center text-success-fg">
                 <CheckIcon />
               </div>
-              <p className="text-sm font-medium text-[var(--success)]">Documento guardado</p>
+              <p className="text-body-sm font-medium text-success-fg">Documento guardado</p>
               <button
                 onClick={(e) => { e.stopPropagation(); resetUpload(); }}
-                className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                className="text-caption text-fg-tertiary hover:text-fg-secondary transition-colors"
               >
                 Subir otro
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                dragActive ? 'bg-accent-100' : 'bg-stone-100'
+              <div className={`w-12 h-12 rounded-md flex items-center justify-center transition-colors ${
+                dragActive ? 'bg-accent-100 text-accent-700' : 'bg-surface-sunken text-fg-tertiary'
               }`}>
                 <UploadIcon active={dragActive} />
               </div>
               <div>
-                <p className="text-sm font-medium text-stone-700">
+                <p className="text-body-sm font-medium text-fg-primary">
                   {dragActive ? 'Suelta el archivo aquí' : 'Arrastra tu archivo aquí'}
                 </p>
-                <p className="text-xs text-stone-400 mt-1">
+                <p className="text-caption text-fg-tertiary mt-1">
                   o{' '}
-                  <span className="text-accent-600 font-medium">haz clic para explorar</span>
+                  <span className="text-fg-link font-medium">haz clic para explorar</span>
                 </p>
               </div>
-              <p className="text-xs text-stone-300">JPG, PNG, PDF · Máx. {MAX_SIZE_MB} MB</p>
+              <p className="text-caption text-fg-disabled">JPG, PNG, PDF · Máx. {MAX_SIZE_MB} MB</p>
             </div>
           )}
         </div>
 
         {sizeError && (
-          <div className="mt-3 px-4 py-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-sm">
+          <div className="mt-3 px-4 py-3 bg-danger-bg border border-danger-border rounded-md text-danger-fg text-body-sm">
             El archivo supera el límite de {MAX_SIZE_MB} MB.
           </div>
         )}
 
         {selectedFile && !uploadedDoc && (
-          <div className="mt-4 flex items-center gap-3 p-3 bg-white border border-[var(--border)] rounded-lg shadow-[var(--shadow-card)]">
-            <div className="w-9 h-9 rounded-md bg-stone-50 border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+          <div className="mt-4 flex items-center gap-3 p-3 bg-surface-card border border-border rounded-md shadow-sm">
+            <div className="w-9 h-9 rounded-md bg-surface-sunken border border-border flex items-center justify-center flex-shrink-0 text-fg-tertiary">
               {isImage ? <ImageIcon /> : isPdf ? <PdfIcon /> : <FileIcon />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-stone-800 truncate">{selectedFile.name}</p>
-              <p className="text-xs text-stone-400 mt-0.5">{formatSize(selectedFile.size)}</p>
+              <p className="text-body-sm font-medium text-fg-primary truncate">{selectedFile.name}</p>
+              <p className="text-caption text-fg-tertiary mt-0.5">{formatSize(selectedFile.size)}</p>
             </div>
             <button
               onClick={() => clearSelectedFile()}
-              className="p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded transition-colors flex-shrink-0"
+              className="p-1.5 text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors flex-shrink-0"
             >
               <CloseIcon />
             </button>
@@ -112,7 +112,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
           <button
             onClick={handleUpload}
             disabled={loading}
-            className="w-full mt-3 h-10 flex items-center justify-center gap-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full mt-3 h-10 flex items-center justify-center gap-2 bg-fg-primary text-fg-inverse text-button rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <><SpinnerIcon />Guardando...</>

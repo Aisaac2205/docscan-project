@@ -37,11 +37,11 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpen(); }}
       role="button"
       tabIndex={0}
-      className="group w-full text-left bg-white border border-[var(--border)] rounded-xl overflow-hidden hover:border-stone-300 hover:shadow-sm transition-all duration-200 cursor-pointer"
+      className="group w-full text-left bg-surface-card border border-border rounded-lg overflow-hidden hover:border-border-strong hover:shadow-sm transition-all duration-200 cursor-pointer"
     >
       {/* Thumbnail bar */}
       <div className="flex items-stretch">
-        <div className={`flex items-center justify-center flex-shrink-0 ${isPdf ? 'w-14 lg:w-16 bg-stone-50' : 'w-14 lg:w-16 bg-stone-100'}`}>
+        <div className={`flex items-center justify-center flex-shrink-0 w-14 lg:w-16 ${isPdf ? 'bg-surface-page' : 'bg-surface-sunken'}`}>
           {isImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -51,26 +51,26 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
-            <FileIcon className={isPdf ? 'text-stone-400' : 'text-stone-300'} />
+            <FileIcon className={isPdf ? 'text-fg-tertiary' : 'text-fg-disabled'} />
           )}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0 px-3 lg:px-4 py-2.5 lg:py-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm lg:text-base font-medium text-stone-800 truncate group-hover:text-stone-900 transition-colors">
+            <p className="text-body-sm font-medium text-fg-primary truncate transition-colors">
               {doc.originalName}
             </p>
             <StatusBadge status={doc.status} />
           </div>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
-            <p className="text-xs lg:text-sm text-stone-400">
+            <p className="text-caption text-fg-tertiary">
               {new Date(doc.createdAt).toLocaleDateString('es-GT', {
                 day: '2-digit', month: 'short', year: 'numeric',
               })}
             </p>
             {doc.confidence !== null && doc.confidence !== undefined && (
-              <span className="text-[10px] lg:text-xs text-stone-400">
+              <span className="text-caption text-fg-tertiary">
                 {Math.round(doc.confidence * 100)}% confianza
               </span>
             )}
@@ -94,14 +94,14 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
           <button
             onClick={(e) => { e.stopPropagation(); onPrint(doc); }}
             title="Imprimir"
-            className="h-7 w-7 lg:h-8 lg:w-8 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+            className="h-7 w-7 lg:h-8 lg:w-8 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
           >
             <PrintIcon size={13} className="lg:w-3.5 lg:h-3.5" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
             title="Eliminar"
-            className="h-7 w-7 lg:h-8 lg:w-8 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            className="h-7 w-7 lg:h-8 lg:w-8 flex items-center justify-center text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg rounded-md transition-colors"
           >
             <TrashIcon size={13} className="lg:w-3.5 lg:h-3.5" />
           </button>

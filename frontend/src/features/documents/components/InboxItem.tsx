@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import type { Document } from '../types/document.types';
 import { AssignPersonButton } from './AssignPersonButton';
-import { useDocumentStore } from '../store';
 
 interface InboxItemProps {
   doc: Document;
@@ -69,42 +67,42 @@ export function InboxItem({ doc, onAssigned }: InboxItemProps) {
   const docType = DOC_TYPE_LABEL[doc.documentType ?? 'general'] ?? doc.documentType ?? 'Documento';
 
   return (
-    <article className="bg-white border border-stone-200 rounded-xl p-4 md:p-5">
+    <article className="bg-surface-card border border-border rounded-lg p-4 md:p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0 flex-1">
           <Link
             href={`/documents/${doc.id}`}
-            className="text-sm md:text-base font-semibold text-stone-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm truncate block"
+            className="text-h4 text-fg-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm truncate block"
           >
             {doc.originalName}
           </Link>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-caption text-fg-secondary mt-0.5">
             {docType}
-            <span className="mx-1.5 text-stone-300">·</span>
+            <span className="mx-1.5 text-fg-tertiary">·</span>
             {formatDate(doc.createdAt)}
-            <span className="mx-1.5 text-stone-300">·</span>
+            <span className="mx-1.5 text-fg-tertiary">·</span>
             {STATUS_LABEL[doc.status] ?? doc.status}
           </p>
         </div>
       </div>
 
       {(nameHint || cuiHint) && (
-        <div className="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 mb-3">
-          <p className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-1">
+        <div className="bg-surface-sunken border border-border rounded-md px-3 py-2 mb-3">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-1">
             Datos detectados en el documento
           </p>
-          <div className="text-xs text-stone-700 space-y-0.5">
-            {nameHint && <p>Nombre: <span className="font-medium">{nameHint}</span></p>}
-            {cuiHint && <p>CUI: <span className="font-mono">{cuiHint}</span></p>}
+          <div className="text-caption text-fg-secondary space-y-0.5">
+            {nameHint && <p>Nombre: <span className="font-medium text-fg-primary">{nameHint}</span></p>}
+            {cuiHint && <p>CUI: <span className="font-mono text-fg-primary">{cuiHint}</span></p>}
           </div>
-          <p className="text-[11px] text-stone-400 mt-1.5">
+          <p className="text-overline text-fg-tertiary mt-1.5">
             Verificá si corresponde antes de asignar.
           </p>
         </div>
       )}
 
       <div>
-        <p className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-1.5">
+        <p className="text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
           Asignar a
         </p>
         <div className="max-w-sm">

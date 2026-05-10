@@ -84,25 +84,25 @@ export function AssignPersonModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="assign-person-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay p-4 animate-fade-in"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div className="w-full max-w-lg bg-surface-card rounded-xl shadow-md overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <header className="px-5 py-4 border-b border-stone-100">
-          <p className="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+        <header className="px-5 py-4 border-b border-border-subtle">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             Asignar a una persona
           </p>
-          <h2 id="assign-person-modal-title" className="text-base font-semibold text-stone-900 truncate">
+          <h2 id="assign-person-modal-title" className="text-h4 text-fg-primary truncate">
             {documentName ?? 'Documento'}
           </h2>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-caption text-fg-secondary mt-1">
             Buscá por nombre o CUI. Si no existe, creala primero desde la sección Personas.
           </p>
         </header>
 
         {/* Search */}
-        <div className="px-5 py-3 border-b border-stone-100">
+        <div className="px-5 py-3 border-b border-border-subtle">
           <input
             ref={inputRef}
             type="search"
@@ -110,14 +110,14 @@ export function AssignPersonModal({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar persona..."
             aria-label="Buscar persona"
-            className="w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm text-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+            className="w-full h-10 px-3 rounded-md border border-border bg-surface-card text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
           />
         </div>
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto">
           {error && (
-            <div role="alert" className="m-4 px-3 py-2 bg-stone-100 border border-stone-300 rounded-lg text-sm text-stone-800">
+            <div role="alert" className="m-4 px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg">
               {error}
             </div>
           )}
@@ -125,11 +125,11 @@ export function AssignPersonModal({
           {loading ? (
             <div aria-busy="true" className="p-4 space-y-2">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-12 rounded-lg bg-stone-100 animate-pulse" />
+                <div key={i} className="h-12 rounded-md bg-surface-sunken animate-pulse" />
               ))}
             </div>
           ) : persons.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-stone-400">
+            <p className="px-5 py-8 text-center text-body-sm text-fg-tertiary">
               {query.trim() ? 'No se encontraron personas con ese criterio.' : 'Aún no hay personas registradas.'}
             </p>
           ) : (
@@ -144,18 +144,18 @@ export function AssignPersonModal({
                       aria-selected={isCurrent}
                       disabled={busy}
                       onClick={() => handleSelect(p.id)}
-                      className="w-full text-left px-5 py-3 hover:bg-stone-50 focus-visible:bg-stone-50 focus-visible:outline-none border-b border-stone-100 last:border-b-0 disabled:opacity-50"
+                      className="w-full text-left px-5 py-3 hover:bg-surface-sunken focus-visible:bg-surface-sunken focus-visible:outline-none border-b border-border-subtle last:border-b-0 disabled:opacity-50"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-stone-900 truncate">{p.fullName}</p>
-                          <p className="text-xs text-stone-500 mt-0.5">
+                          <p className="text-body-sm font-medium text-fg-primary truncate">{p.fullName}</p>
+                          <p className="text-caption text-fg-secondary mt-0.5">
                             {p.cui ? <span className="font-mono">{p.cui}</span> : 'Sin CUI registrado'}
                             {p.email && <span className="ml-2">{p.email}</span>}
                           </p>
                         </div>
                         {isCurrent && (
-                          <span className="flex-shrink-0 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+                          <span className="flex-shrink-0 text-overline text-overline-uppercase text-fg-secondary">
                             Actual
                           </span>
                         )}
@@ -169,13 +169,13 @@ export function AssignPersonModal({
         </div>
 
         {/* Footer */}
-        <footer className="flex items-center justify-between px-5 py-3 border-t border-stone-100 bg-stone-50">
+        <footer className="flex items-center justify-between px-5 py-3 border-t border-border-subtle bg-surface-sunken">
           {currentPersonId ? (
             <button
               type="button"
               disabled={busy}
               onClick={() => handleSelect(null)}
-              className="text-xs text-stone-600 hover:text-stone-900 underline disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+              className="text-caption text-fg-secondary hover:text-fg-primary underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
             >
               Quitar asignación actual
             </button>
@@ -184,7 +184,7 @@ export function AssignPersonModal({
             type="button"
             disabled={busy}
             onClick={onClose}
-            className="px-3 py-1.5 text-sm font-medium text-stone-700 hover:text-stone-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+            className="px-3 py-1.5 text-button-sm font-medium text-fg-secondary hover:text-fg-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
           >
             Cerrar
           </button>
