@@ -19,15 +19,15 @@ function AuthBadge({ ok, label }: { ok: boolean | null; label: string }) {
   if (ok === null) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border ${
+      className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${
         ok
-          ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-          : 'text-rose-700 bg-rose-50 border-rose-200'
+          ? 'text-success-fg bg-success-bg border-success-border'
+          : 'text-danger-fg bg-danger-bg border-danger-border'
       }`}
     >
       <span
         aria-hidden="true"
-        className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-emerald-500' : 'bg-rose-500'}`}
+        className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-success-fg' : 'bg-danger-fg'}`}
       />
       {ok ? label : `Sin ${label.toLowerCase()}`}
     </span>
@@ -37,10 +37,10 @@ function AuthBadge({ ok, label }: { ok: boolean | null; label: string }) {
 function Field({ label, value }: { label: string; value: string | number | null }) {
   return (
     <div>
-      <p className="text-[10px] md:text-xs uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+      <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
         {label}
       </p>
-      <p className="text-sm text-stone-800">{value ?? '—'}</p>
+      <p className="text-body-sm text-fg-primary">{value ?? '—'}</p>
     </div>
   );
 }
@@ -54,34 +54,34 @@ export function HealthRecordCard({ record }: HealthRecordCardProps) {
   return (
     <article
       aria-label={`Constancia medica: ${record.nombre_paciente ?? record.originalName}`}
-      className="bg-white border border-stone-200 rounded-xl p-4 md:p-5"
+      className="bg-surface-card border border-border rounded-md p-4 md:p-5"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             Constancia medica
           </p>
-          <h3 className="text-base md:text-lg font-semibold text-stone-900 leading-tight">
+          <h3 className="text-h4 text-fg-primary leading-tight">
             {record.personName ?? record.nombre_paciente ?? record.originalName}
           </h3>
           {record.personId ? (
             <Link
               href={`/persons/${record.personId}`}
-              className="text-xs text-stone-600 hover:text-stone-900 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+              className="text-caption text-fg-link hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
             >
               Ver perfil de la persona
             </Link>
           ) : (
-            <p className="text-xs text-stone-400 italic mt-0.5">Sin persona asignada</p>
+            <p className="text-caption text-fg-tertiary italic mt-0.5">Sin persona asignada</p>
           )}
           {record.institucion_emisora && (
-            <p className="text-xs text-stone-500 mt-0.5">{record.institucion_emisora}</p>
+            <p className="text-caption text-fg-secondary mt-0.5">{record.institucion_emisora}</p>
           )}
         </div>
         <Link
           href={`/documents/${record.id}`}
-          className="flex-shrink-0 text-xs text-stone-500 hover:text-stone-900 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+          className="flex-shrink-0 text-caption text-fg-link hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
         >
           Ver documento
         </Link>

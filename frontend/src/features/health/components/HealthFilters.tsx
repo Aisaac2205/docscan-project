@@ -27,10 +27,10 @@ export function HealthFilters({ active, onChange }: HealthFiltersProps) {
             key={value}
             onClick={() => onChange(value)}
             aria-pressed={isActive}
-            className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-medium border transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 ${
+            className={`px-3 py-1.5 rounded-full text-button-sm border transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] ${
               isActive
-                ? 'bg-stone-900 text-white border-stone-900'
-                : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-900'
+                ? 'bg-fg-primary text-fg-inverse border-fg-primary'
+                : 'bg-surface-card text-fg-secondary border-border hover:border-border-strong hover:text-fg-primary'
             }`}
           >
             {label}

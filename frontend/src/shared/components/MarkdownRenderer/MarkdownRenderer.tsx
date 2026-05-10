@@ -9,7 +9,7 @@ function parseMarkdownToElements(text: string): React.ReactNode[] {
   const flushList = () => {
     if (currentList.length === 0) return;
     elements.push(
-      <ul key={`list-${key++}`} className="list-disc list-inside space-y-1 my-2 text-stone-700">
+      <ul key={`list-${key++}`} className="list-disc list-inside space-y-1 my-2 text-fg-primary">
         {currentList.map((item, i) => (
           <li key={i} className="leading-relaxed">
             <InlineMarkdown text={item} />
@@ -55,7 +55,7 @@ function InlineMarkdown({ text }: { text: string }) {
     <>
       {parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={i} className="font-semibold text-stone-900">{part.slice(2, -2)}</strong>;
+          return <strong key={i} className="font-semibold text-fg-primary">{part.slice(2, -2)}</strong>;
         }
         return <span key={i}>{part}</span>;
       })}

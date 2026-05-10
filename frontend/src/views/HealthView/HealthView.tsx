@@ -12,12 +12,12 @@ function SkeletonCard() {
   return (
     <div
       aria-hidden="true"
-      className="bg-white border border-stone-200 rounded-xl p-4 md:p-5 space-y-3 animate-pulse"
+      className="bg-surface-card border border-border rounded-md p-4 md:p-5 space-y-3 animate-pulse"
     >
-      <div className="h-3 w-24 rounded bg-stone-100" />
-      <div className="h-5 w-48 rounded bg-stone-100" />
+      <div className="h-3 w-24 rounded bg-surface-sunken" />
+      <div className="h-5 w-48 rounded bg-surface-sunken" />
       <div className="grid grid-cols-3 gap-3 mt-3">
-        {[0, 1, 2].map((i) => <div key={i} className="h-8 rounded bg-stone-100" />)}
+        {[0, 1, 2].map((i) => <div key={i} className="h-8 rounded bg-surface-sunken" />)}
       </div>
     </div>
   );
@@ -42,10 +42,10 @@ export function HealthView() {
       {/* Header */}
       <div className="flex items-start justify-between mb-5 md:mb-7">
         <div>
-          <p className="text-xs text-stone-400 uppercase tracking-wider font-semibold mb-0.5">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             RRHH
           </p>
-          <h1 className="text-xl md:text-2xl font-semibold text-stone-900">
+          <h1 className="text-h1">
             Gestion de Salud y Ausencias
           </h1>
         </div>
@@ -55,7 +55,7 @@ export function HealthView() {
       {error && (
         <div
           role="alert"
-          className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700"
+          className="mb-4 px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg"
         >
           {error}
         </div>
@@ -71,13 +71,13 @@ export function HealthView() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-sm font-medium text-stone-500 mb-1">
+          <p className="text-body-sm font-medium text-fg-secondary mb-1">
             {records.length === 0
               ? 'Todavia no hay constancias medicas.'
               : 'No hay registros para este filtro.'}
           </p>
           {records.length === 0 && (
-            <p className="text-xs text-stone-400">
+            <p className="text-caption text-fg-tertiary">
               Procesa un documento con el modo &quot;Constancia medica&quot; en el escaner.
             </p>
           )}

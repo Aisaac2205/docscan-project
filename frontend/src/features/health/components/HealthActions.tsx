@@ -17,10 +17,10 @@ const STATUS_LABELS: Record<HealthStatus, string> = {
 };
 
 const STATUS_COLORS: Record<HealthStatus, string> = {
-  pending: 'text-amber-700 bg-amber-50 border-amber-200',
-  validated: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-  registered: 'text-stone-700 bg-stone-100 border-stone-200',
-  rejected: 'text-rose-700 bg-rose-50 border-rose-200',
+  pending: 'text-warning-fg bg-warning-bg border-warning-border',
+  validated: 'text-success-fg bg-success-bg border-success-border',
+  registered: 'text-fg-secondary bg-surface-sunken border-border',
+  rejected: 'text-danger-fg bg-danger-bg border-danger-border',
 };
 
 export function HealthActions({ id, currentStatus }: HealthActionsProps) {
@@ -34,12 +34,12 @@ export function HealthActions({ id, currentStatus }: HealthActionsProps) {
   };
 
   const btnBase =
-    'px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium border transition-all disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700';
+    'px-3 py-1.5 rounded-md text-button-sm border transition-all disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]';
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-stone-100">
+    <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-border-subtle">
       <span
-        className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[currentStatus]}`}
+        className={`px-2.5 py-1 rounded-full text-caption font-medium border ${STATUS_COLORS[currentStatus]}`}
       >
         {STATUS_LABELS[currentStatus]}
       </span>
@@ -49,14 +49,14 @@ export function HealthActions({ id, currentStatus }: HealthActionsProps) {
           <button
             disabled={busy}
             onClick={() => handle('validated')}
-            className={`${btnBase} bg-white border-stone-200 text-stone-700 hover:border-emerald-400 hover:text-emerald-700`}
+            className={`${btnBase} bg-surface-card border-border text-fg-secondary hover:border-success-border hover:text-success-fg`}
           >
             Validar
           </button>
           <button
             disabled={busy}
             onClick={() => handle('rejected')}
-            className={`${btnBase} bg-white border-stone-200 text-stone-700 hover:border-rose-400 hover:text-rose-700`}
+            className={`${btnBase} bg-surface-card border-border text-fg-secondary hover:border-danger-border hover:text-danger-fg`}
           >
             Rechazar
           </button>
@@ -67,21 +67,21 @@ export function HealthActions({ id, currentStatus }: HealthActionsProps) {
         <button
           disabled={busy}
           onClick={() => handle('registered')}
-          className={`${btnBase} bg-stone-900 border-stone-900 text-white hover:bg-stone-700`}
+          className={`${btnBase} bg-fg-primary border-fg-primary text-fg-inverse hover:opacity-90`}
         >
           Registrar en nomina
         </button>
       )}
 
       {currentStatus === 'registered' && (
-        <span className="text-xs text-stone-500">Registrado en nomina</span>
+        <span className="text-caption text-fg-tertiary">Registrado en nomina</span>
       )}
 
       {currentStatus === 'rejected' && (
         <button
           disabled={busy}
           onClick={() => handle('pending')}
-          className={`${btnBase} bg-white border-stone-200 text-stone-600 hover:border-stone-400`}
+          className={`${btnBase} bg-surface-card border-border text-fg-secondary hover:border-border-strong`}
         >
           Reabrir
         </button>
