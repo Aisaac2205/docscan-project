@@ -63,7 +63,7 @@ export function Header() {
 
 function DocScanLogo() {
   return (
-    <Image src="/logo.png" alt="DocScan" width={30} height={30} priority style={{ width: 'var(--header-logo-size)', height: 'var(--header-logo-size)' }} />
+    <Image src="/logo.png" alt="DocScan" width={30} height={30} priority className="w-[26px] h-[26px] lg:w-[30px] lg:h-[30px]" />
   );
 }
 
