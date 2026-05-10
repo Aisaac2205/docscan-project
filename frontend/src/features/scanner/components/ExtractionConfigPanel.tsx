@@ -12,9 +12,9 @@ const MODES: ExtractionMode[] = [
 ];
 
 function confidenceBadge(c: number): string {
-  if (c >= 0.85) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-  if (c >= 0.65) return 'text-amber-700 bg-amber-50 border-amber-200';
-  return 'text-red-700 bg-red-50 border-red-200';
+  if (c >= 0.85) return 'text-success-fg bg-success-bg border-success-border';
+  if (c >= 0.65) return 'text-warning-fg bg-warning-bg border-warning-border';
+  return 'text-danger-fg bg-danger-bg border-danger-border';
 }
 
 interface ExtractionConfigPanelProps {
@@ -53,15 +53,15 @@ export function ExtractionConfigPanel({
     <div className="flex-1 flex flex-col gap-4 p-3 lg:p-4 sm:p-5 overflow-y-auto">
 
       {/* Smart analyze card */}
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden">
-        <div className="px-4 pt-4 pb-3 bg-white">
+      <div className="rounded-md border border-border overflow-hidden">
+        <div className="px-4 pt-4 pb-3 bg-surface-card">
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg bg-stone-900 flex items-center justify-center flex-shrink-0">
-              <SparkleIcon size={14} className="text-white" />
+            <div className="w-9 h-9 rounded-md bg-fg-primary flex items-center justify-center flex-shrink-0">
+              <SparkleIcon size={14} className="text-fg-inverse" />
             </div>
             <div>
-              <p className="text-[13px] lg:text-sm font-semibold text-stone-800">Análisis inteligente</p>
-              <p className="text-[11px] lg:text-xs text-stone-400 mt-0.5 leading-relaxed">
+              <p className="text-body-sm font-medium text-fg-primary">Análisis inteligente</p>
+              <p className="text-caption text-fg-tertiary mt-0.5 leading-relaxed">
                 {analyzeLabel} detecta el tipo de documento y sugiere qué campos extraer
               </p>
             </div>
@@ -69,33 +69,33 @@ export function ExtractionConfigPanel({
           <button
             onClick={onAnalyze}
             disabled={!documentId || analyzing}
-            className="h-9 lg:h-10 w-full flex items-center justify-center gap-2 bg-stone-900 text-white text-xs lg:text-sm font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="h-10 w-full flex items-center justify-center gap-2 bg-fg-primary text-fg-inverse text-button rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {analyzing
-              ? <><SpinnerIcon className="text-white/60" size={13} />Analizando documento…</>
+              ? <><SpinnerIcon size={13} />Analizando documento…</>
               : <><SparkleIcon size={13} />Analizar con IA</>}
           </button>
         </div>
 
         {analysisResult && (
-          <div className="border-t border-[var(--border)] bg-white px-4 py-3 animate-slide-up">
+          <div className="border-t border-border bg-surface-card px-4 py-3 animate-slide-up">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[13px] lg:text-sm font-semibold text-stone-800">
+              <span className="text-body-sm font-medium text-fg-primary">
                 {analysisResult.detectedTypeLabel}
               </span>
-              <span className={`text-[10px] lg:text-[11px] font-bold px-1.5 py-0.5 rounded-full border ${confidenceBadge(analysisResult.confidence)}`}>
+              <span className={`text-overline font-medium px-1.5 py-0.5 rounded-full border ${confidenceBadge(analysisResult.confidence)}`}>
                 {Math.round(analysisResult.confidence * 100)}% confianza
               </span>
             </div>
-            <p className="text-[11px] lg:text-xs text-stone-500 mb-3 leading-relaxed">{analysisResult.description}</p>
+            <p className="text-caption text-fg-secondary mb-3 leading-relaxed">{analysisResult.description}</p>
 
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+              <p className="text-overline text-overline-uppercase text-fg-tertiary">
                 Campos sugeridos — {analysisResult.suggestedFields.length} detectados
               </p>
               <button
                 onClick={toggleAllFields}
-                className="text-[10px] lg:text-[11px] text-stone-400 hover:text-stone-700 underline transition-colors"
+                className="text-overline text-fg-tertiary hover:text-fg-primary underline transition-colors"
               >
                 {selectedFields.size === analysisResult.suggestedFields.length ? 'Ninguno' : 'Todos'}
               </button>
@@ -107,17 +107,17 @@ export function ExtractionConfigPanel({
                   key={f.key}
                   onClick={() => toggleField(f.key)}
                   title={f.description}
-                  className={`px-2.5 py-1 rounded-full text-[11px] lg:text-xs font-medium border transition-all ${
+                  className={`px-2.5 py-1 rounded-full text-caption font-medium border transition-all ${
                     selectedFields.has(f.key)
-                      ? 'bg-stone-900 text-white border-stone-900'
-                      : 'bg-white text-stone-500 border-[var(--border)] hover:border-stone-400'
+                      ? 'bg-fg-primary text-fg-inverse border-fg-primary'
+                      : 'bg-surface-card text-fg-tertiary border-border hover:border-border-strong'
                   }`}
                 >
                   {selectedFields.has(f.key) ? '✓ ' : ''}{f.label}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] lg:text-[11px] text-stone-400">
+            <p className="text-overline text-fg-tertiary">
               {selectedFields.size} campo{selectedFields.size !== 1 ? 's' : ''} seleccionado{selectedFields.size !== 1 ? 's' : ''}
             </p>
           </div>
@@ -126,16 +126,16 @@ export function ExtractionConfigPanel({
 
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-[var(--border)]" />
-        <span className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-overline text-overline-uppercase text-fg-tertiary whitespace-nowrap">
           o elige manualmente
         </span>
-        <div className="flex-1 h-px bg-[var(--border)]" />
+        <div className="flex-1 h-px bg-border" />
       </div>
 
       {/* Mode selector */}
       <div>
-        <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+        <p className="text-overline text-overline-uppercase text-fg-tertiary mb-2">
           Tipo de extracción
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
@@ -143,10 +143,10 @@ export function ExtractionConfigPanel({
             <button
               key={mode}
               onClick={() => setOcrMode(mode)}
-              className={`px-3 lg:px-4 py-2 rounded-lg text-[12px] lg:text-sm font-medium border text-left transition-colors ${
+              className={`px-3 py-2 rounded-md text-button-sm border text-left transition-colors ${
                 !analysisResult && ocrMode === mode
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-600 border-[var(--border)] hover:bg-stone-50 hover:border-stone-300'
+                  ? 'bg-fg-primary text-fg-inverse border-fg-primary'
+                  : 'bg-surface-card text-fg-secondary border-border hover:bg-surface-sunken hover:border-border-strong'
               }`}
             >
               {EXTRACTION_MODE_LABELS[mode]}
@@ -155,7 +155,7 @@ export function ExtractionConfigPanel({
         </div>
         {ocrMode === 'custom' && !analysisResult && (
           <div className="mt-3">
-            <label className="block text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
               Campos <span className="normal-case font-normal">(separados por coma)</span>
             </label>
             <input
@@ -163,30 +163,29 @@ export function ExtractionConfigPanel({
               value={customFields}
               onChange={(e) => setCustomFields(e.target.value)}
               placeholder="nombre_completo, cui, cargo, fecha_inicio…"
-              className="w-full h-9 lg:h-10 px-3 lg:px-4 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-sm lg:text-base input-focus"
+              className="w-full h-10 px-3 border border-border rounded-md bg-surface-card text-fg-primary text-body-sm placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
             />
           </div>
         )}
       </div>
 
-      {/* Provider + model selector — solo visible si hay más de un provider disponible */}
+      {/* Provider + model selector */}
       {providers.length > 1 && (
         <div className="flex flex-col gap-2">
-          <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider">
+          <p className="text-overline text-overline-uppercase text-fg-tertiary">
             Procesamiento
           </p>
 
-          {/* Toggle provider */}
           <div className="flex gap-1.5">
             {providers.map((p) => (
               <button
                 key={p.id}
                 onClick={() => onProviderChange(p.id)}
                 title={p.displayName}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 rounded-lg text-[12px] lg:text-sm font-medium border transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-button-sm border transition-colors ${
                   selectedProvider === p.id
-                    ? 'bg-stone-900 text-white border-stone-900'
-                    : 'bg-white text-stone-500 border-[var(--border)] hover:bg-stone-50 hover:border-stone-300'
+                    ? 'bg-fg-primary text-fg-inverse border-fg-primary'
+                    : 'bg-surface-card text-fg-tertiary border-border hover:bg-surface-sunken hover:border-border-strong'
                 }`}
               >
                 {p.displayName}
@@ -194,21 +193,20 @@ export function ExtractionConfigPanel({
             ))}
           </div>
 
-          {/* Dropdown de modelos — si el provider activo tiene modelos */}
           {activeModels.length > 0 && (
             <div>
-              <p className="text-[10px] lg:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+              <p className="text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
                 Modelo
               </p>
               {activeModels.length === 1 ? (
-                <p className="text-[12px] lg:text-sm text-stone-600 px-3 lg:px-4 py-2 bg-stone-50 rounded-lg border border-[var(--border)] truncate">
+                <p className="text-body-sm text-fg-secondary px-3 py-2 bg-surface-sunken rounded-md border border-border truncate">
                   {activeModels[0].name}
                 </p>
               ) : (
                 <select
                   value={selectedModel ?? ''}
                   onChange={(e) => onModelChange(e.target.value)}
-                  className="w-full h-9 lg:h-10 px-3 lg:px-4 border border-[var(--border)] rounded-lg bg-white text-stone-800 text-[12px] lg:text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  className="w-full h-10 px-3 border border-border rounded-md bg-surface-card text-fg-primary text-body-sm cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
                 >
                   {activeModels.map((m) => (
                     <option key={m.id} value={m.id}>{m.name}</option>
@@ -224,10 +222,10 @@ export function ExtractionConfigPanel({
       <button
         onClick={handleExtract}
         disabled={!documentId || processingOcr || (analysisResult !== null && selectedFields.size === 0)}
-        className="h-10 lg:h-11 w-full flex items-center justify-center gap-2 bg-stone-900 text-white text-sm lg:text-base font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="h-11 w-full flex items-center justify-center gap-2 bg-fg-primary text-fg-inverse text-button-lg rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         {processingOcr
-          ? <><SpinnerIcon className="text-white/60" />Procesando{activeModelName ? ` con ${activeModelName}` : '…'}</>
+          ? <><SpinnerIcon />Procesando{activeModelName ? ` con ${activeModelName}` : '…'}</>
           : <><OcrIcon />Extraer datos con OCR</>}
       </button>
     </div>

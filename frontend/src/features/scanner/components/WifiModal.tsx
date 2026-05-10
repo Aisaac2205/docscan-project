@@ -10,7 +10,6 @@ interface WifiModalProps {
   onIpChange: (ip: string) => void;
   onScan: () => void;
   onClose: () => void;
-  // configs
   configs: ScannerConfig[];
   pingStatus: Record<string, boolean | null>;
   showAddForm: boolean;
@@ -25,10 +24,10 @@ interface WifiModalProps {
 
 function PingDot({ status }: { status: boolean | null | undefined }) {
   if (status === null || status === undefined) {
-    return <span className="w-1.5 h-1.5 rounded-full bg-stone-300 inline-block animate-pulse" />;
+    return <span className="w-1.5 h-1.5 rounded-full bg-border-strong inline-block animate-pulse" />;
   }
   return (
-    <span className={`w-1.5 h-1.5 rounded-full inline-block ${status ? 'bg-green-500' : 'bg-red-400'}`} />
+    <span className={`w-1.5 h-1.5 rounded-full inline-block ${status ? 'bg-success-fg' : 'bg-danger-fg'}`} />
   );
 }
 
@@ -42,16 +41,16 @@ export function WifiModal({
   const isScanning = wifiStatus === 'scanning';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay">
+      <div className="bg-surface-card rounded-xl shadow-md w-full max-w-md mx-4 overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <WifiIcon className="text-stone-500" />
-            <p className="text-sm lg:text-base font-semibold text-stone-800">Escáner en red</p>
+            <WifiIcon className="text-fg-tertiary" />
+            <p className="text-h4 text-fg-primary">Escáner en red</p>
           </div>
-          <button onClick={onClose} className="w-7 h-7 lg:w-8 lg:h-8 lg:h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken transition-colors">
             <CloseIcon />
           </button>
         </div>
@@ -61,31 +60,31 @@ export function WifiModal({
           {/* Saved scanners */}
           {configs.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider">
+              <p className="text-overline text-overline-uppercase text-fg-tertiary">
                 Escáneres guardados
               </p>
               {configs.map((config) => (
                 <div
                   key={config.id}
-                  className="flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 border border-[var(--border)] rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors"
+                  className="flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 border border-border rounded-md bg-surface-sunken hover:bg-neutral-200 transition-colors"
                 >
                   <PingDot status={pingStatus[config.id]} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm lg:text-base font-medium text-stone-800 truncate">{config.name}</p>
-                    <p className="text-xs lg:text-sm text-stone-400 font-mono">{config.ip}</p>
+                    <p className="text-body-sm font-medium text-fg-primary truncate">{config.name}</p>
+                    <p className="text-caption text-fg-tertiary font-mono">{config.ip}</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => onScanFromConfig(config)}
                       disabled={isScanning || pingStatus[config.id] === false}
-                      className="h-7 lg:h-8 px-2.5 flex items-center gap-1.5 bg-stone-900 text-white text-xs lg:text-sm font-medium rounded-md hover:bg-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="h-8 px-2.5 flex items-center gap-1.5 bg-fg-primary text-fg-inverse text-button-sm rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {isScanning ? <SpinnerIcon /> : <ScanIcon size={12} />}
                       Escanear
                     </button>
                     <button
                       onClick={() => onDeleteConfig(config.id)}
-                      className="w-7 h-7 lg:w-8 lg:h-8 lg:h-8 flex items-center justify-center rounded-md text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg transition-colors"
                     >
                       <TrashIcon size={13} />
                     </button>
@@ -99,7 +98,7 @@ export function WifiModal({
           {!showAddForm ? (
             <button
               onClick={() => onShowAddForm(true)}
-              className="w-full h-9 lg:h-10 flex items-center justify-center gap-2 border border-dashed border-[var(--border)] rounded-lg text-xs lg:text-sm font-medium text-stone-400 hover:text-stone-700 hover:border-stone-400 transition-colors"
+              className="w-full h-10 flex items-center justify-center gap-2 border border-dashed border-border rounded-md text-button-sm text-fg-tertiary hover:text-fg-primary hover:border-border-strong transition-colors"
             >
               + Agregar escáner
             </button>
@@ -107,14 +106,14 @@ export function WifiModal({
             <div className="space-y-3 pt-1">
               {configs.length > 0 && (
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-[var(--border)]" />
-                  <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">Nuevo escáner</p>
-                  <div className="flex-1 h-px bg-[var(--border)]" />
+                  <div className="flex-1 h-px bg-border" />
+                  <p className="text-overline text-overline-uppercase text-fg-tertiary whitespace-nowrap">Nuevo escáner</p>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
               )}
 
               <div>
-                <label className="block text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
                   Nombre
                 </label>
                 <input
@@ -122,12 +121,12 @@ export function WifiModal({
                   value={saveName}
                   onChange={(e) => onSaveNameChange(e.target.value)}
                   placeholder="Ej: Escáner oficina"
-                  className="w-full h-9 lg:h-10 px-3 lg:px-4 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm lg:text-base input-focus"
+                  className="w-full h-10 px-3 border border-border rounded-md bg-surface-card text-fg-primary text-body-sm placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-overline text-overline-uppercase text-fg-tertiary mb-1.5">
                   Dirección IP
                 </label>
                 <input
@@ -135,43 +134,43 @@ export function WifiModal({
                   value={wifiIp}
                   onChange={(e) => onIpChange(e.target.value)}
                   placeholder="192.168.1.100"
-                  className="w-full h-9 lg:h-10 px-3 lg:px-4 border border-[var(--border)] rounded-md bg-white text-stone-800 text-sm lg:text-base font-mono input-focus"
+                  className="w-full h-10 px-3 border border-border rounded-md bg-surface-card text-fg-primary text-body-sm font-mono placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
                 />
               </div>
 
               {wifiStatus === 'error' && wifiError && (
-                <div className="flex items-center gap-2 px-3 lg:px-4 py-2 rounded-md text-xs lg:text-sm font-medium bg-[var(--error-bg)] border border-[var(--error-border)] text-[var(--error)]">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-md text-body-sm font-medium bg-danger-bg border border-danger-border text-danger-fg">
                   <span>✕</span>
                   <span>{wifiError}</span>
                 </div>
               )}
 
-              <div className="bg-stone-50 border border-[var(--border)] rounded-lg px-3 lg:px-4 py-3 space-y-1.5">
-                <p className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider">Cómo encontrar la IP</p>
-                <p className="text-xs lg:text-sm text-stone-500">1. Imprime una hoja de configuración de red desde el escáner.</p>
-                <p className="text-xs lg:text-sm text-stone-500">2. O revisá el panel → Red → Dirección IP.</p>
-                <p className="text-xs lg:text-sm text-stone-500">3. Asegurate de estar en la misma red WiFi.</p>
+              <div className="bg-surface-sunken border border-border rounded-md px-3 py-3 space-y-1.5">
+                <p className="text-overline text-overline-uppercase text-fg-tertiary">Cómo encontrar la IP</p>
+                <p className="text-body-sm text-fg-secondary">1. Imprime una hoja de configuración de red desde el escáner.</p>
+                <p className="text-body-sm text-fg-secondary">2. O revisá el panel → Red → Dirección IP.</p>
+                <p className="text-body-sm text-fg-secondary">3. Asegurate de estar en la misma red WiFi.</p>
               </div>
 
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={onSaveConfig}
                   disabled={saving || !wifiIp.trim() || !saveName.trim()}
-                  className="flex-1 h-9 lg:h-10 flex items-center justify-center gap-2 bg-stone-900 text-white text-sm lg:text-base font-medium rounded-lg hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 h-10 flex items-center justify-center gap-2 bg-fg-primary text-fg-inverse text-button rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {saving ? <><SpinnerIcon />Guardando...</> : 'Guardar escáner'}
                 </button>
                 <button
                   onClick={onScan}
                   disabled={isScanning || !wifiIp.trim()}
-                  className="h-9 lg:h-10 px-3 lg:px-4 flex items-center gap-1.5 border border-[var(--border)] text-stone-600 bg-white text-sm lg:text-base font-medium rounded-lg hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="h-10 px-4 flex items-center gap-1.5 border border-border text-fg-secondary bg-surface-card text-button rounded-md hover:bg-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isScanning ? <SpinnerIcon /> : <ScanIcon size={13} />}
                   Probar
                 </button>
                 <button
                   onClick={() => onShowAddForm(false)}
-                  className="h-9 lg:h-10 px-3 lg:px-4 text-sm lg:text-base font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors"
+                  className="h-10 px-4 text-button border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken transition-colors"
                 >
                   Cancelar
                 </button>
@@ -181,10 +180,10 @@ export function WifiModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-[var(--border)] flex justify-end">
+        <div className="px-5 py-3 border-t border-border flex justify-end">
           <button
             onClick={onClose}
-            className="h-9 lg:h-10 px-4 text-sm lg:text-base font-medium border border-[var(--border)] text-stone-600 bg-white rounded-lg hover:bg-stone-50 transition-colors"
+            className="h-10 px-4 text-button border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken transition-colors"
           >
             Cerrar
           </button>

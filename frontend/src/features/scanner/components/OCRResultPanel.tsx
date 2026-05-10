@@ -98,35 +98,35 @@ function CollapsibleComplexField({
   const preview = value.length > 140 ? `${value.slice(0, 140)}…` : value;
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-white overflow-hidden">
+    <div className="rounded-md border border-border bg-surface-card overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full px-3 py-2.5 bg-stone-50 border-b border-[var(--border)] text-left hover:bg-stone-100 transition-colors"
+        className="w-full px-3 py-2.5 bg-surface-sunken border-b border-border text-left hover:bg-neutral-200 transition-colors"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">{label}</p>
+            <p className="text-overline text-overline-uppercase text-fg-tertiary">{label}</p>
             {!expanded && (
-              <p className="text-[12px] text-stone-500 truncate mt-1">{preview}</p>
+              <p className="text-caption text-fg-tertiary truncate mt-1">{preview}</p>
             )}
           </div>
-          <span className="text-[11px] font-medium text-stone-500 flex-shrink-0">{expanded ? 'Ocultar' : 'Ver'}</span>
+          <span className="text-caption font-medium text-fg-tertiary flex-shrink-0">{expanded ? 'Ocultar' : 'Ver'}</span>
         </div>
       </button>
 
       {expanded && (
         <div className="p-3 max-h-72 overflow-y-auto">
           <div className="flex items-start justify-between gap-2">
-            <pre className="text-[12px] text-stone-700 whitespace-pre-wrap break-words font-sans leading-relaxed flex-1">
+            <pre className="text-caption text-fg-secondary whitespace-pre-wrap break-words font-sans leading-relaxed flex-1">
               {value}
             </pre>
             <button
               onClick={() => copyField(copyId, value)}
               title="Copiar valor"
-              className="flex-shrink-0 h-5 w-5 flex items-center justify-center text-stone-400 hover:text-stone-700 rounded"
+              className="flex-shrink-0 h-5 w-5 flex items-center justify-center text-fg-tertiary hover:text-fg-primary rounded"
             >
               {copied
-                ? <CheckSmallIcon size={12} className="text-emerald-500" />
+                ? <CheckSmallIcon size={12} className="text-success-fg" />
                 : <CopyIcon size={12} />}
             </button>
           </div>
@@ -142,16 +142,16 @@ export function OCRResultPanel({
   if (!ocrResult?.extractedData) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-2">
-        <div className="w-12 h-12 rounded-lg bg-stone-100 flex items-center justify-center mb-1">
-          <OcrIcon size={20} className="text-stone-400" />
+        <div className="w-12 h-12 rounded-md bg-surface-sunken flex items-center justify-center mb-1">
+          <OcrIcon size={20} className="text-fg-tertiary" />
         </div>
-        <p className="text-sm font-medium text-stone-600">Sin datos extraídos aún</p>
-        <p className="text-xs text-stone-400 max-w-[200px] leading-relaxed">
+        <p className="text-body-sm font-medium text-fg-secondary">Sin datos extraídos aún</p>
+        <p className="text-caption text-fg-tertiary max-w-[200px] leading-relaxed">
           Ve a Extracción y presiona &ldquo;Extraer datos con OCR&rdquo;
         </p>
         <button
           onClick={onGoToConfig}
-          className="mt-3 h-8 px-4 text-xs font-semibold bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors"
+          className="mt-3 h-8 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 transition-colors"
         >
           Ir a Extracción
         </button>
@@ -170,18 +170,18 @@ export function OCRResultPanel({
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-semibold text-stone-700">
+          <span className="text-body-sm font-medium text-fg-secondary">
             {fieldCount} campo{fieldCount !== 1 ? 's' : ''} extraído{fieldCount !== 1 ? 's' : ''}
           </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 font-medium border border-[var(--border)]">
+          <span className="text-overline px-2 py-0.5 rounded-full bg-surface-sunken text-fg-tertiary font-medium border border-border">
             {EXTRACTION_MODE_LABELS[ocrResult.extractionMode] ?? ocrResult.extractionMode}
           </span>
         </div>
         <button
           onClick={exportJson}
-          className="h-6 px-2.5 flex items-center gap-1 text-[10px] font-semibold border border-[var(--border)] text-stone-500 bg-white rounded-md hover:bg-stone-50 hover:text-stone-800 transition-colors"
+          className="h-7 px-2.5 flex items-center gap-1 text-overline font-medium border border-border text-fg-tertiary bg-surface-card rounded-md hover:bg-surface-sunken hover:text-fg-primary transition-colors"
         >
           <DownloadIcon size={11} />JSON
         </button>
@@ -198,23 +198,23 @@ export function OCRResultPanel({
               return (
                 <div
                   key={key}
-                  className="group bg-white rounded-lg px-3 py-2.5 border border-[var(--border)] hover:border-stone-300 transition-colors"
+                  className="group bg-surface-card rounded-md px-3 py-2.5 border border-border hover:border-border-strong transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1 flex-1">
+                    <p className="text-overline text-overline-uppercase text-fg-tertiary mb-1 flex-1">
                       {key.replace(/_/g, ' ')}
                     </p>
                     <button
                       onClick={() => copyField(key, formatted)}
                       title="Copiar valor"
-                      className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 flex items-center justify-center text-stone-400 hover:text-stone-700 rounded"
+                      className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 flex items-center justify-center text-fg-tertiary hover:text-fg-primary rounded"
                     >
                       {copied
-                        ? <CheckSmallIcon size={12} className="text-emerald-500" />
+                        ? <CheckSmallIcon size={12} className="text-success-fg" />
                         : <CopyIcon size={12} />}
                     </button>
                   </div>
-                  <p className={`text-[13px] text-stone-800 font-medium break-words leading-relaxed ${isLong ? 'max-h-24 overflow-y-auto pr-1' : ''}`}>
+                  <p className={`text-body-sm text-fg-primary font-medium break-words leading-relaxed ${isLong ? 'max-h-24 overflow-y-auto pr-1' : ''}`}>
                     {formatted}
                   </p>
                 </div>
@@ -240,10 +240,10 @@ export function OCRResultPanel({
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-[var(--border)]">
+      <div className="p-3 border-t border-border">
         <button
           onClick={onGoToChat}
-          className="w-full h-8 flex items-center justify-center gap-2 text-xs font-medium border border-[var(--border)] text-stone-600 rounded-lg hover:bg-stone-100 transition-colors"
+          className="w-full h-9 flex items-center justify-center gap-2 text-button-sm border border-border text-fg-secondary rounded-md hover:bg-surface-sunken transition-colors"
         >
           <ChatIcon size={11} />¿Tienes preguntas sobre este documento?
         </button>
