@@ -8,14 +8,16 @@ Inventario completo de aliases deprecados introducidos en Fase 2 (sección 8 de 
 
 Conteos agregados con `grep` (no inventados):
 
-| Métrica | Baseline | Wave 1 | Wave 2 | Delta total |
-|---|---|---|---|---|
-| Total usos `*-stone-*` (`text-`/`bg-`/`border-`/`hover:`) | 641 | 614 | 588 | **−53** |
-| Archivos con `*-stone-*` | 70 | 67 | 62 | **−8** |
-| Archivos con `var(--bg\|--border\|--text-*\|--accent\|--success\|--error\|--warning\|--info)` | 33 | 30 | 28 | **−5** |
-| Archivos en `Layout/` con stone o legacy var | 3 | 0 | 0 | **✅ Wave 1** |
-| Archivos huerfanos / componentes legacy compartidos pendientes | 5 | 5 | 0 | **✅ Wave 2** |
-| Lint problems totales | 16 | 16 | 15 | **−1** |
+| Métrica | Baseline | W1 | W2 | W3 | W4 | Delta |
+|---|---|---|---|---|---|---|
+| Total usos `*-stone-*` | 641 | 614 | 588 | 560 | 514 | **−127** |
+| Archivos con `*-stone-*` | 70 | 67 | 62 | 60 | 52 | **−18** |
+| Archivos con legacy CSS var | 33 | 30 | 28 | 26 | 24 | **−9** |
+| Lint problems totales | 16 | 16 | 15 | 15 | 13 | **−3** |
+| Layout/ stone | 3 | 0 | 0 | 0 | 0 | ✅ W1 |
+| Componentes legacy compartidos | 5 | 5 | 0 | 0 | 0 | ✅ W2 |
+| Auth pages | 2 | 2 | 2 | 0 | 0 | ✅ W3 |
+| Dashboard files | 8 | 8 | 7 | 7 | 0 | ✅ W4 |
 
 **Definition of done por wave**: el conteo agregado disminuye + los archivos del scope quedan en 0 usos de stone/legacy.
 

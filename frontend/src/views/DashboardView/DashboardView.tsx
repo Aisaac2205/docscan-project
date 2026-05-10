@@ -21,18 +21,18 @@ export function DashboardView() {
       {/* Top bar interno */}
       <div className="flex items-center justify-between mb-5 md:mb-7">
         <div>
-          <p className="text-xs text-stone-400 uppercase tracking-wider font-semibold mb-0.5">Panel</p>
-          <h1 className="text-xl md:text-2xl font-semibold text-stone-900">Centro de procesamiento de documentos</h1>
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">Panel</p>
+          <h1 className="text-h1">Centro de procesamiento de documentos</h1>
         </div>
         <div className="flex items-center gap-3">
           {/* Search input */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm">
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-surface-card border border-border rounded-md text-fg-tertiary">
             <SearchIcon />
             <input
               type="text"
               placeholder="Buscar documentos..."
               aria-label="Buscar documentos"
-              className="bg-transparent outline-none text-stone-800 placeholder-stone-400 w-44 md:w-64 lg:w-80 text-sm"
+              className="bg-transparent outline-none text-fg-primary placeholder:text-fg-tertiary w-44 md:w-64 lg:w-80 text-body-sm"
             />
           </div>
         </div>
@@ -47,7 +47,7 @@ export function DashboardView() {
         {statsError && (
           <div
             role="alert"
-            className="mb-3 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700"
+            className="mb-3 px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg"
           >
             No pudimos cargar las métricas: {statsError}
           </div>
@@ -125,10 +125,10 @@ export function DashboardView() {
       {recentDocuments.length > 0 && (
         <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-stone-800">Documentos recientes</h2>
+            <h2 className="text-h3">Documentos recientes</h2>
             <button
               onClick={() => router.push('/documents')}
-              className="text-sm text-stone-600 hover:text-stone-900 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+              className="text-button-sm text-fg-secondary hover:text-fg-primary font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
             >
               Ver todos
             </button>
@@ -152,8 +152,8 @@ export function DashboardView() {
 function SearchIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <circle cx="6.5" cy="6.5" r="4" stroke="#A8A29E" strokeWidth="1.3" />
-      <path d="M9.5 9.5L13 13" stroke="#A8A29E" strokeWidth="1.3" strokeLinecap="round" />
+      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }

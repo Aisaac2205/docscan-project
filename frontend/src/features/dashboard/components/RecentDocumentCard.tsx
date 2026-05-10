@@ -1,6 +1,7 @@
 'use client';
 
 import type { Document } from '@/features/documents/types/document.types';
+import { Badge, type BadgeVariant } from '@/shared/components/ui';
 
 interface RecentDocumentCardProps {
   document: Document;
@@ -21,63 +22,60 @@ function timeAgo(dateStr: string): string {
 function getFileIcon(mimeType: string) {
   if (mimeType === 'application/pdf') {
     return (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="2" y="1" width="16" height="18" rx="2" stroke="#EF4444" strokeWidth="1.4" />
-        <path d="M6 7h8M6 10h8M6 13h5" stroke="#EF4444" strokeWidth="1.2" strokeLinecap="round" />
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-danger-fg">
+        <rect x="2" y="1" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M6 7h8M6 10h8M6 13h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     );
   }
   if (mimeType.startsWith('image/')) {
     return (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="2" y="1" width="16" height="18" rx="2" stroke="#3B82F6" strokeWidth="1.4" />
-        <circle cx="7" cy="6" r="1.5" stroke="#3B82F6" strokeWidth="1.2" />
-        <path d="M2 14l5-4 4 3 3-2 4 4" stroke="#3B82F6" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-info-fg">
+        <rect x="2" y="1" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
+        <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M2 14l5-4 4 3 3-2 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="2" y="1" width="16" height="18" rx="2" stroke="#A8A29E" strokeWidth="1.4" />
-      <path d="M6 7h8M6 10h8" stroke="#A8A29E" strokeWidth="1.2" strokeLinecap="round" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-fg-tertiary">
+      <rect x="2" y="1" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M6 7h8M6 10h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   );
 }
 
-function getFileTypeBadge(mimeType: string) {
-  if (mimeType === 'application/pdf') return { label: 'PDF', color: 'bg-red-50 text-red-600 border-red-200' };
-  if (mimeType.startsWith('image/')) return { label: 'Imagen', color: 'bg-blue-50 text-blue-600 border-blue-200' };
-  return { label: 'Archivo', color: 'bg-stone-100 text-stone-600 border-stone-200' };
+function getIconBg(mimeType: string): string {
+  if (mimeType === 'application/pdf') return 'bg-danger-bg';
+  if (mimeType.startsWith('image/'))  return 'bg-info-bg';
+  return 'bg-surface-sunken';
+}
+
+function getStatusVariant(status: Document['status']): { label: string; variant: BadgeVariant } {
+  if (status === 'completed') return { label: 'Completado', variant: 'success' };
+  if (status === 'failed')    return { label: 'Fallido',    variant: 'danger' };
+  return { label: 'Procesando', variant: 'warning' };
 }
 
 export function RecentDocumentCard({ document }: RecentDocumentCardProps) {
-  const badge = getFileTypeBadge(document.mimeType);
+  const status = getStatusVariant(document.status);
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-xl hover:border-stone-300 hover:shadow-md transition-all card-interactive">
+    <div className="flex items-center gap-4 p-4 bg-surface-card border border-border rounded-lg hover:border-border-strong hover:shadow-sm transition-all card-interactive">
       {/* File icon */}
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${badge.color.replace('text-', 'bg-').replace('-600', '-50').replace('bg-red-50', 'bg-red-50').replace('bg-blue-50', 'bg-blue-50').replace('bg-stone-100', 'bg-stone-100')} border`}>
+      <div className={`w-11 h-11 rounded-md flex items-center justify-center flex-shrink-0 ${getIconBg(document.mimeType)}`}>
         {getFileIcon(document.mimeType)}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-stone-800 truncate">{document.originalName}</p>
-        <p className="text-xs text-stone-400 mt-0.5">
+        <p className="text-body-sm font-medium text-fg-primary truncate">{document.originalName}</p>
+        <p className="text-caption text-fg-tertiary mt-0.5">
           {document.mimeType?.split('/').pop()?.toUpperCase() || 'ARCHIVO'} · Procesado: {timeAgo(document.createdAt)}
         </p>
       </div>
 
-      {/* Status badge */}
-      <span className={`text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${
-        document.status === 'completed'
-          ? 'bg-green-50 text-green-700 border-green-200'
-          : document.status === 'failed'
-          ? 'bg-red-50 text-red-700 border-red-200'
-          : 'bg-amber-50 text-amber-700 border-amber-200'
-      }`}>
-        {document.status === 'completed' ? 'Completado' : document.status === 'failed' ? 'Fallido' : 'Procesando'}
-      </span>
+      <Badge variant={status.variant}>{status.label}</Badge>
 
       {/* Actions */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -87,7 +85,7 @@ export function RecentDocumentCard({ document }: RecentDocumentCardProps) {
               href={document.filePath}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+              className="p-2 text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
               title="Ver"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -98,7 +96,7 @@ export function RecentDocumentCard({ document }: RecentDocumentCardProps) {
             <a
               href={document.filePath}
               download
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+              className="p-2 text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
               title="Descargar"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
