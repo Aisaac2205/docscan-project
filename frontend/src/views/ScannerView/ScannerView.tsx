@@ -66,8 +66,8 @@ export function ScannerView() {
       <ScannerMetricsBar />
 
       <div className="mb-4 md:mb-6">
-        <h2 className="text-[length:var(--text-heading-xl)] font-semibold text-stone-900">Captura de documentos</h2>
-        <p className="text-sm lg:text-base text-stone-400 mt-0.5">
+        <h2 className="text-h1">Captura de documentos</h2>
+        <p className="text-body-sm text-fg-tertiary mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>
       </div>
@@ -77,17 +77,17 @@ export function ScannerView() {
         <div
           role="status"
           aria-live="polite"
-          className="mb-5 flex items-start justify-between gap-3 px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl"
+          className="mb-5 flex items-start justify-between gap-3 px-4 py-3 bg-surface-sunken border border-border rounded-md"
         >
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+            <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
               Asignación automática
             </p>
-            <p className="text-sm text-stone-800">
+            <p className="text-body-sm text-fg-primary">
               Los documentos que proceses se van a asociar a{' '}
               <Link
                 href={`/persons/${targetPersonId}`}
-                className="font-semibold underline hover:text-stone-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+                className="font-medium underline hover:text-fg-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
               >
                 {targetPersonName ?? 'esta persona'}
               </Link>
@@ -97,7 +97,7 @@ export function ScannerView() {
           <button
             type="button"
             onClick={() => setTargetPerson(null, null)}
-            className="flex-shrink-0 text-xs text-stone-500 hover:text-stone-900 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+            className="flex-shrink-0 text-caption text-fg-tertiary hover:text-fg-primary underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
           >
             Quitar
           </button>
@@ -137,10 +137,10 @@ export function ScannerView() {
       )}
 
       <div className="flex items-center gap-3 mb-3 mt-5">
-        <span className="text-[11px] lg:text-xs font-semibold text-stone-400 uppercase tracking-wider whitespace-nowrap">
+        <span className="text-overline text-overline-uppercase text-fg-tertiary whitespace-nowrap">
           Fuentes de captura
         </span>
-        <div className="flex-1 h-px bg-[var(--border)]" />
+        <div className="flex-1 h-px bg-border" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -170,7 +170,7 @@ export function ScannerView() {
       <RecentScansFeed />
 
       {(error || cameraError) && (
-        <div className="mb-5 px-4 py-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-sm">
+        <div className="mb-5 px-4 py-3 bg-danger-bg border border-danger-border rounded-md text-danger-fg text-body-sm">
           {error || cameraError}
         </div>
       )}

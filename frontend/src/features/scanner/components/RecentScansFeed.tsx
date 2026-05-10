@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { useDocumentStore } from '@/features/documents/store';
 import { ExtractedDataModal } from '@/features/documents/components/ExtractedDataModal';
 import { EyeIcon, TrashIcon, FileIcon } from '@/shared/ui/icons';
+import { Badge, type BadgeVariant } from '@/shared/components/ui';
 import type { Document } from '@/features/documents/types/document.types';
-
-/* ─────────────────── Helpers ─────────────────── */
 
 function relativeDate(dateStr: string): string {
   const now = new Date();
@@ -36,40 +35,20 @@ function relativeDate(dateStr: string): string {
 }
 
 function statusBadge(status: Document['status']) {
-  const map: Record<Document['status'], string> = {
-    completed: 'bg-green-50 text-green-700 border-green-200',
-    pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    processing: 'bg-amber-50 text-amber-700 border-amber-200',
-    failed: 'bg-red-50 text-red-700 border-red-200',
+  const map: Record<Document['status'], { label: string; variant: BadgeVariant }> = {
+    completed: { label: 'Completado', variant: 'success' },
+    pending: { label: 'Pendiente', variant: 'warning' },
+    processing: { label: 'Procesando', variant: 'warning' },
+    failed: { label: 'Falló', variant: 'danger' },
   };
 
-  const labels: Record<Document['status'], string> = {
-    completed: 'Completado',
-    pending: 'Pendiente',
-    processing: 'Procesando',
-    failed: 'Falló',
-  };
-
-  return (
-    <span
-      className={`text-[10px] lg:text-xs px-1.5 py-0.5 rounded border font-medium ${map[status]}`}
-    >
-      {labels[status]}
-    </span>
-  );
+  const { label, variant } = map[status];
+  return <Badge variant={variant}>{label}</Badge>;
 }
-
-/* ─── Data JSON icon (inline SVG) ─── */
 
 function DataIcon({ className = '', size = 13 }: { className?: string; size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 13 13"
-      fill="none"
-      className={className}
-    >
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" className={className}>
       <path
         d="M4 3L1.5 6.5 4 10M9 3l2.5 3.5L9 10M7.5 1l-2 12"
         stroke="currentColor"
@@ -81,8 +60,6 @@ function DataIcon({ className = '', size = 13 }: { className?: string; size?: nu
   );
 }
 
-/* ─────────────────── Main Component ─────────────────── */
-
 export function RecentScansFeed() {
   const { documents, deleteDocument } = useDocumentStore();
   const [modalDoc, setModalDoc] = useState<Document | null>(null);
@@ -91,17 +68,15 @@ export function RecentScansFeed() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
-  /* ─── Empty state ─── */
-
   if (recent.length === 0) {
     return (
       <div className="mb-5">
-        <h3 className="text-xs lg:text-sm font-semibold text-stone-400 uppercase tracking-wider mb-3">
+        <h3 className="text-overline text-overline-uppercase text-fg-tertiary mb-3">
           Escaneos recientes
         </h3>
-        <div className="bg-white border border-[var(--border)] rounded-xl px-5 py-8 text-center">
-          <FileIcon size={28} className="mx-auto text-stone-200 mb-3" />
-          <p className="text-sm text-stone-400">
+        <div className="bg-surface-card border border-border rounded-md px-5 py-8 text-center">
+          <FileIcon size={28} className="mx-auto text-border-strong mb-3" />
+          <p className="text-body-sm text-fg-tertiary">
             Aún no hay documentos. Subí tu primer archivo arriba.
           </p>
         </div>
@@ -109,23 +84,21 @@ export function RecentScansFeed() {
     );
   }
 
-  /* ─── Feed ─── */
-
   return (
     <div className="mb-5">
-      <h3 className="text-xs lg:text-sm font-semibold text-stone-400 uppercase tracking-wider mb-3">
+      <h3 className="text-overline text-overline-uppercase text-fg-tertiary mb-3">
         Escaneos recientes
       </h3>
 
-      <div className="bg-white border border-[var(--border)] rounded-xl stagger-children overflow-hidden">
+      <div className="bg-surface-card border border-border rounded-md stagger-children overflow-hidden">
         {recent.map((doc) => (
           <div
             key={doc.id}
-            className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] last:border-b-0"
+            className="flex items-center gap-3 px-4 py-3 border-b border-border-subtle last:border-b-0"
           >
-            {/* ── Thumbnail ── */}
-            <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center flex-shrink-0 overflow-hidden text-fg-tertiary">
               {doc.mimeType.startsWith('image/') ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={doc.filePath}
                   alt=""
@@ -139,26 +112,24 @@ export function RecentScansFeed() {
               )}
             </div>
 
-            {/* ── Metadata ── */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-stone-800 truncate">
+                <p className="text-body-sm font-medium text-fg-primary truncate">
                   {doc.originalName}
                 </p>
                 {statusBadge(doc.status)}
               </div>
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p className="text-caption text-fg-tertiary mt-0.5">
                 {relativeDate(doc.createdAt)}
               </p>
             </div>
 
-            {/* ── Quick actions ── */}
             <div className="flex items-center gap-0.5 flex-shrink-0">
               <a
                 href={doc.filePath}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                className="h-7 w-7 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
                 title="Ver documento"
               >
                 <EyeIcon size={14} />
@@ -167,7 +138,7 @@ export function RecentScansFeed() {
               <button
                 type="button"
                 onClick={() => setModalDoc(doc)}
-                className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                className="h-7 w-7 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
                 title="Ver datos extraídos"
               >
                 <DataIcon size={13} />
@@ -176,7 +147,7 @@ export function RecentScansFeed() {
               <button
                 type="button"
                 onClick={() => deleteDocument(doc.id)}
-                className="h-7 w-7 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="h-7 w-7 flex items-center justify-center text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg rounded-md transition-colors"
                 title="Eliminar"
               >
                 <TrashIcon size={13} />
@@ -186,7 +157,6 @@ export function RecentScansFeed() {
         ))}
       </div>
 
-      {/* ── Extracted data modal ── */}
       {modalDoc && (
         <ExtractedDataModal
           isOpen

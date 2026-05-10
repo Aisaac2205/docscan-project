@@ -49,14 +49,14 @@ export function OCRPanel({
   return (
     <div className="lg:col-span-3 flex flex-col min-h-[320px] sm:min-h-[420px]">
       {/* Tab bar */}
-      <div className="flex border-b border-[var(--border)] bg-white">
+      <div className="flex border-b border-border bg-surface-card">
         <TabBtn active={panel.activePanel === 'config'} onClick={() => panel.setActivePanel('config')}>
           <OcrIcon size={12} />Extracción
         </TabBtn>
         <TabBtn active={panel.activePanel === 'result'} onClick={() => panel.setActivePanel('result')} disabled={!ocrResult}>
           <SparkleIcon size={12} />Resultado
           {ocrResult && (
-            <span className="ml-1 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-1.5 py-0.5 leading-none">
+            <span className="ml-1 text-overline font-medium bg-success-bg text-success-fg rounded-full px-1.5 py-0.5 leading-none">
               {fieldCount}
             </span>
           )}
@@ -64,7 +64,7 @@ export function OCRPanel({
         <TabBtn active={panel.activePanel === 'chat'} onClick={() => panel.setActivePanel('chat')} disabled={!documentId}>
           <ChatIcon size={12} />Preguntar
           {queryHistory.length > 0 && (
-            <span className="ml-1 text-[9px] font-bold bg-stone-200 text-stone-600 rounded-full px-1.5 py-0.5 leading-none">
+            <span className="ml-1 text-overline font-medium bg-surface-sunken text-fg-secondary rounded-full px-1.5 py-0.5 leading-none">
               {queryHistory.length}
             </span>
           )}
@@ -132,10 +132,10 @@ function TabBtn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-1.5 px-4 py-2.5 lg:py-3 text-[11px] lg:text-xs font-semibold transition-colors border-b-2 -mb-px disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`flex items-center gap-1.5 px-4 py-3 text-overline text-overline-uppercase font-medium transition-colors border-b-2 -mb-px disabled:opacity-40 disabled:cursor-not-allowed ${
         active
-          ? 'text-stone-900 border-stone-900 bg-white'
-          : 'text-stone-400 border-transparent hover:text-stone-600 hover:bg-white/60'
+          ? 'text-fg-primary border-fg-primary bg-surface-card'
+          : 'text-fg-tertiary border-transparent hover:text-fg-secondary hover:bg-surface-card/60'
       }`}
     >
       {children}

@@ -65,7 +65,7 @@ function TrendDownIcon({ className = '' }: { className?: string }) {
 
 function MiniBar({ value, colorClass }: { value: number; colorClass: string }) {
   return (
-    <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden mt-2">
+    <div className="w-full h-1.5 bg-surface-sunken rounded-full overflow-hidden mt-2">
       <div
         className={`h-full rounded-full ${colorClass} transition-all duration-500`}
         style={{ width: `${Math.round(value * 100)}%` }}
@@ -96,9 +96,9 @@ export function ScannerMetricsBar() {
           : trend > 0
             ? `${trend > 0 ? '+' : ''}${trend}% vs ayer`
             : `${trend}% vs ayer`,
-      subtextColor: trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-500' : 'text-stone-400',
+      subtextColor: trend > 0 ? 'text-success-fg' : trend < 0 ? 'text-danger-fg' : 'text-fg-tertiary',
       icon: <DocsTodayIcon />,
-      iconBg: 'bg-stone-100 text-stone-600',
+      iconBg: 'bg-surface-sunken text-fg-secondary',
       bar: null as { value: number; color: string } | null,
     },
     {
@@ -106,19 +106,19 @@ export function ScannerMetricsBar() {
       label: 'Tasa de éxito',
       value: successRate !== null ? `${Math.round(successRate * 100)}%` : '\u2014',
       subtext: successRate !== null ? 'Completados hoy' : 'Sin datos',
-      subtextColor: 'text-stone-400',
+      subtextColor: 'text-fg-tertiary',
       icon: <SuccessIcon />,
-      iconBg: 'bg-green-50 text-green-600',
-      bar: successRate !== null ? { value: successRate, color: 'bg-green-500' } : null,
+      iconBg: 'bg-success-bg text-success-fg',
+      bar: successRate !== null ? { value: successRate, color: 'bg-success-fg' } : null,
     },
     {
       key: 'processing',
       label: 'En cola',
       value: String(processingCount),
       subtext: processingCount > 0 ? 'Pendientes de OCR' : 'Todo listo',
-      subtextColor: processingCount > 0 ? 'text-amber-600' : 'text-stone-400',
+      subtextColor: processingCount > 0 ? 'text-warning-fg' : 'text-fg-tertiary',
       icon: <QueueIcon />,
-      iconBg: 'bg-amber-50 text-amber-600',
+      iconBg: 'bg-warning-bg text-warning-fg',
       bar: null as { value: number; color: string } | null,
       pulse: processingCount > 0,
     },
@@ -127,10 +127,10 @@ export function ScannerMetricsBar() {
       label: 'Confianza promedio',
       value: avgConfidence !== null ? `${Math.round(avgConfidence * 100)}%` : '\u2014',
       subtext: avgConfidence !== null ? 'Calidad del OCR' : 'Sin datos',
-      subtextColor: 'text-stone-400',
+      subtextColor: 'text-fg-tertiary',
       icon: <TargetIcon />,
-      iconBg: 'bg-blue-50 text-blue-600',
-      bar: avgConfidence !== null ? { value: avgConfidence, color: 'bg-blue-500' } : null,
+      iconBg: 'bg-info-bg text-info-fg',
+      bar: avgConfidence !== null ? { value: avgConfidence, color: 'bg-info-fg' } : null,
     },
   ];
 
@@ -139,31 +139,31 @@ export function ScannerMetricsBar() {
       {cards.map((card) => (
         <div
           key={card.key}
-          className="bg-white border border-[var(--border)] rounded-xl px-4 py-4 card-interactive"
+          className="bg-surface-card border border-border rounded-md px-4 py-4 card-interactive"
         >
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-2xl lg:text-3xl font-bold text-stone-900 leading-none tracking-tight">
+              <p className="text-display-lg text-fg-primary leading-none tracking-tight">
                 {card.value}
               </p>
               <div className="flex items-center gap-1.5 mt-1.5">
                 {'pulse' in card && card.pulse && (
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-fg opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-warning-fg" />
                   </span>
                 )}
                 {'pulse' in card && !card.pulse && trend !== 0 && card.key === 'docs-today' && (
                   trend > 0
-                    ? <TrendUpIcon className="text-green-500" />
-                    : <TrendDownIcon className="text-red-500" />
+                    ? <TrendUpIcon className="text-success-fg" />
+                    : <TrendDownIcon className="text-danger-fg" />
                 )}
-                <p className={`text-[11px] font-medium ${card.subtextColor}`}>
+                <p className={`text-overline font-medium ${card.subtextColor}`}>
                   {card.subtext}
                 </p>
               </div>
             </div>
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${card.iconBg}`}>
+            <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${card.iconBg}`}>
               {card.icon}
             </div>
           </div>

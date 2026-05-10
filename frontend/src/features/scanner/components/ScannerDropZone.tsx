@@ -54,11 +54,11 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
   const isProcessing = loading;
 
   /* ─── Border style ─── */
-  let borderClass = 'border-2 border-dashed border-stone-200';
+  let borderClass = 'border-2 border-dashed border-border';
   if (dragActive) {
-    borderClass = 'border-2 border-dashed border-stone-500 bg-stone-50';
+    borderClass = 'border-2 border-dashed border-border-strong bg-surface-sunken';
   } else if (uploadedDoc) {
-    borderClass = 'border-2 border-dashed border-green-400 bg-green-50/30';
+    borderClass = 'border-2 border-dashed border-success-border bg-success-bg/30';
   }
 
   /* ─── Handle file input click ─── */
@@ -81,31 +81,31 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
       {/* ── Uploaded success state ── */}
       {uploadedDoc && !selectedFile ? (
         <div className={`rounded-xl ${borderClass} px-5 py-6 text-center`}>
-          <CheckIcon size={28} className="mx-auto mb-2" />
-          <p className="text-sm font-medium text-stone-800">¡Documento subido!</p>
-          <p className="text-xs text-stone-400 mt-0.5 mb-4">
+          <CheckIcon size={28} className="mx-auto mb-2 text-success-fg" />
+          <p className="text-body-sm font-medium text-fg-primary">¡Documento subido!</p>
+          <p className="text-caption text-fg-tertiary mt-0.5 mb-4">
             Se está procesando y aparecerá en los resultados.
           </p>
           <button
             type="button"
             onClick={resetUpload}
-            className="h-9 px-4 border border-[var(--border)] text-stone-600 bg-white text-xs font-medium rounded-lg hover:bg-stone-50 hover:border-stone-400 transition-colors"
+            className="h-9 px-4 border border-border text-fg-secondary bg-surface-card text-button-sm rounded-md hover:bg-surface-sunken hover:border-border-strong transition-colors"
           >
             Subir otro archivo
           </button>
         </div>
       ) : selectedFile ? (
         /* ── File preview state ── */
-        <div className="bg-white border border-[var(--border)] rounded-xl px-4 py-4">
+        <div className="bg-surface-card border border-border rounded-md px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center flex-shrink-0 text-fg-tertiary">
               <FileIcon size={16} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-stone-800 truncate">
+              <p className="text-body-sm font-medium text-fg-primary truncate">
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p className="text-caption text-fg-tertiary mt-0.5">
                 {formatSize(selectedFile.size)}
               </p>
             </div>
@@ -113,7 +113,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
               type="button"
               onClick={clearSelectedFile}
               disabled={isProcessing}
-              className="h-7 w-7 flex items-center justify-center text-stone-300 hover:text-stone-500 hover:bg-stone-100 rounded-lg transition-colors disabled:opacity-40"
+              className="h-7 w-7 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors disabled:opacity-40"
               title="Cancelar"
             >
               <CloseIcon size={13} />
@@ -121,7 +121,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
           </div>
 
           {sizeError && (
-            <div className="mt-3 px-3 py-2 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-md text-[var(--error)] text-xs">
+            <div className="mt-3 px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-danger-fg text-caption">
               El archivo supera el tamaño máximo de {MAX_SIZE_MB} MB.
             </div>
           )}
@@ -131,7 +131,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
               type="button"
               onClick={handleUpload}
               disabled={isProcessing || sizeError}
-              className="flex-1 h-9 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 h-9 bg-fg-primary text-fg-inverse text-button rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isProcessing ? (
                 <span className="inline-flex items-center gap-1.5">
@@ -149,7 +149,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
               type="button"
               onClick={clearSelectedFile}
               disabled={isProcessing}
-              className="h-9 px-3 border border-[var(--border)] text-stone-600 text-sm rounded-lg hover:bg-stone-50 hover:border-stone-400 transition-colors disabled:opacity-40"
+              className="h-9 px-3 border border-border text-fg-secondary text-button-sm rounded-md hover:bg-surface-sunken hover:border-border-strong transition-colors disabled:opacity-40"
             >
               Cancelar
             </button>
@@ -166,7 +166,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`rounded-xl ${borderClass} px-5 py-10 text-center cursor-pointer transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+          className={`rounded-xl ${borderClass} px-5 py-10 text-center cursor-pointer transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]`}
         >
           <UploadIcon
             active={dragActive}
@@ -174,13 +174,13 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
             className="mx-auto mb-3"
           />
 
-          <p className="text-sm font-medium text-stone-700">
+          <p className="text-body-sm font-medium text-fg-primary">
             Arrastrá tu archivo aquí
           </p>
-          <p className="text-xs text-stone-400 mt-1">
+          <p className="text-caption text-fg-tertiary mt-1">
             o hacé clic para seleccionar
           </p>
-          <p className="text-[10px] text-stone-300 mt-2">
+          <p className="text-overline text-fg-disabled mt-2">
             JPEG, PNG o PDF · Máx. {MAX_SIZE_MB} MB
           </p>
 
