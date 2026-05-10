@@ -33,26 +33,26 @@ export function MedicalHistoryPanel({ entries }: MedicalHistoryPanelProps) {
       empty={entries.length === 0}
       emptyMessage="No hay constancias médicas asociadas todavía."
     >
-      <ul className="divide-y divide-stone-100">
+      <ul className="divide-y divide-border-subtle">
         {entries.map((e) => (
           <li key={e.documentId} className="py-3 first:pt-0 last:pb-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-stone-800">
+                <p className="text-body-sm font-medium text-fg-primary">
                   {e.diagnostico ?? 'Diagnóstico no detectado'}
                 </p>
-                <p className="text-xs text-stone-500 mt-0.5">
+                <p className="text-caption text-fg-secondary mt-0.5">
                   Del {formatDate(e.fecha_inicio_reposo)} al {formatDate(e.fecha_fin_reposo)}
                   {e.dias_reposo != null && ` · ${e.dias_reposo} ${e.dias_reposo === 1 ? 'día' : 'días'}`}
                 </p>
                 {e.nombre_medico && (
-                  <p className="text-xs text-stone-400 mt-0.5">
+                  <p className="text-caption text-fg-tertiary mt-0.5">
                     {e.nombre_medico}
                     {e.numero_colegiado && ` · Col. ${e.numero_colegiado}`}
                   </p>
                 )}
               </div>
-              <span className="text-xs text-stone-500 flex-shrink-0">
+              <span className="text-caption text-fg-secondary flex-shrink-0">
                 {HEALTH_STATUS_LABEL[e.healthStatus] ?? e.healthStatus}
               </span>
             </div>

@@ -8,10 +8,10 @@ export function ProfileField({ label, value, emptyText = '—' }: ProfileFieldPr
   const display = formatValue(value, emptyText);
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-wider font-semibold text-stone-400 mb-0.5">
+      <dt className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
         {label}
       </dt>
-      <dd className="text-sm text-stone-800">{display}</dd>
+      <dd className="text-body-sm text-fg-primary">{display}</dd>
     </div>
   );
 }

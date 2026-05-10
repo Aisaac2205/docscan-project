@@ -23,16 +23,16 @@ export function ProfileSection({
   return (
     <section
       aria-label={title}
-      className="bg-white border border-stone-200 rounded-xl p-4 md:p-5"
+      className="bg-surface-card border border-border rounded-md p-4 md:p-5"
     >
       <header className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-sm md:text-base font-semibold text-stone-900">{title}</h3>
+          <h3 className="text-h4 text-fg-primary">{title}</h3>
           {description && (
-            <p className="text-xs text-stone-500 mt-0.5">{description}</p>
+            <p className="text-caption text-fg-secondary mt-0.5">{description}</p>
           )}
           {source && (
-            <p className="text-[11px] text-stone-400 mt-1">
+            <p className="text-overline text-fg-tertiary mt-1">
               Datos extraídos de {source.documentName}.
             </p>
           )}
@@ -41,7 +41,7 @@ export function ProfileSection({
       </header>
 
       {empty ? (
-        <p className="text-sm text-stone-400 italic">{emptyMessage}</p>
+        <p className="text-body-sm text-fg-tertiary italic">{emptyMessage}</p>
       ) : (
         children
       )}

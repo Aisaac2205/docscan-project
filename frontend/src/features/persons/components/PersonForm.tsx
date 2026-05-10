@@ -64,18 +64,20 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
   };
 
   const inputClass =
-    'w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm text-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700';
+    'w-full h-10 px-3 rounded-md border border-border bg-surface-card text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]';
+
+  const labelClass = 'block text-overline text-overline-uppercase text-fg-tertiary mb-1';
 
   return (
     <form onSubmit={submit} className="space-y-4">
       {error && (
-        <div role="alert" className="px-3 py-2 bg-stone-100 border border-stone-300 rounded-lg text-sm text-stone-800">
+        <div role="alert" className="px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="person-name" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+        <label htmlFor="person-name" className={labelClass}>
           Nombre completo
         </label>
         <input
@@ -91,7 +93,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label htmlFor="person-cui" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+          <label htmlFor="person-cui" className={labelClass}>
             CUI (opcional)
           </label>
           <input
@@ -104,7 +106,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
           />
         </div>
         <div>
-          <label htmlFor="person-phone" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+          <label htmlFor="person-phone" className={labelClass}>
             Teléfono (opcional)
           </label>
           <input
@@ -119,7 +121,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
       </div>
 
       <div>
-        <label htmlFor="person-email" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+        <label htmlFor="person-email" className={labelClass}>
           Correo (opcional)
         </label>
         <input
@@ -135,7 +137,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label htmlFor="person-role" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+          <label htmlFor="person-role" className={labelClass}>
             Tipo
           </label>
           <select
@@ -148,7 +150,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
           </select>
         </div>
         <div>
-          <label htmlFor="person-status" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+          <label htmlFor="person-status" className={labelClass}>
             Estado
           </label>
           <select
@@ -163,7 +165,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
       </div>
 
       <div>
-        <label htmlFor="person-notes" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+        <label htmlFor="person-notes" className={labelClass}>
           Notas internas (opcional)
         </label>
         <textarea
@@ -171,7 +173,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm text-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+          className="w-full px-3 py-2 rounded-md border border-border bg-surface-card text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
           placeholder="Observaciones para uso interno de RRHH."
         />
       </div>
@@ -180,7 +182,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
         <button
           type="submit"
           disabled={submitting}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 text-white hover:bg-stone-700 disabled:opacity-50 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+          className="px-4 py-2 rounded-md text-button bg-fg-primary text-fg-inverse hover:opacity-90 disabled:opacity-50 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]"
         >
           {submitting ? 'Guardando...' : submitLabel}
         </button>
@@ -188,7 +190,7 @@ export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCance
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-white text-stone-700 border border-stone-200 hover:border-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+            className="px-4 py-2 rounded-md text-button bg-surface-card text-fg-secondary border border-border hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]"
           >
             Cancelar
           </button>

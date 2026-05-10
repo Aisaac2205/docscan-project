@@ -14,15 +14,15 @@ export function CompliancePanel({ personId }: CompliancePanelProps) {
   if (loading && !data) {
     return (
       <div aria-busy="true" className="space-y-4">
-        <div className="h-32 rounded-xl bg-stone-100 animate-pulse" />
-        <div className="h-48 rounded-xl bg-stone-100 animate-pulse" />
+        <div className="h-32 rounded-md bg-surface-sunken animate-pulse" />
+        <div className="h-48 rounded-md bg-surface-sunken animate-pulse" />
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div role="alert" className="px-4 py-3 bg-stone-100 border border-stone-300 rounded-xl text-sm text-stone-800">
+      <div role="alert" className="px-4 py-3 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg">
         {error ?? 'No se pudo cargar la verificación.'}
       </div>
     );
@@ -34,7 +34,7 @@ export function CompliancePanel({ personId }: CompliancePanelProps) {
         <button
           onClick={revalidate}
           disabled={revalidating}
-          className="text-sm text-stone-700 hover:text-stone-900 underline disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+          className="text-body-sm text-fg-link hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
         >
           {revalidating ? 'Verificando...' : 'Re-verificar'}
         </button>

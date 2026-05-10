@@ -37,9 +37,9 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
   if (loading && !data) {
     return (
       <div className="animate-fade-in" aria-busy="true">
-        <div className="h-6 w-48 rounded bg-stone-100 animate-pulse mb-2" />
-        <div className="h-8 w-72 rounded bg-stone-100 animate-pulse mb-6" />
-        <div className="h-40 rounded-xl bg-stone-100 animate-pulse" />
+        <div className="h-6 w-48 rounded bg-surface-sunken animate-pulse mb-2" />
+        <div className="h-8 w-72 rounded bg-surface-sunken animate-pulse mb-6" />
+        <div className="h-40 rounded-md bg-surface-sunken animate-pulse" />
       </div>
     );
   }
@@ -49,12 +49,12 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
       <div className="animate-fade-in">
         <button
           onClick={() => router.back()}
-          className="text-xs text-stone-500 hover:text-stone-800 mb-4"
+          className="text-caption text-fg-tertiary hover:text-fg-primary mb-4"
         >
           ← Volver
         </button>
-        <div role="alert" className="p-4 bg-stone-100 border border-stone-300 rounded-xl">
-          <p className="text-sm text-stone-800">
+        <div role="alert" className="p-4 bg-danger-bg border border-danger-border rounded-md">
+          <p className="text-body-sm text-danger-fg">
             {error ?? 'No se pudo cargar la persona.'}
           </p>
         </div>
@@ -69,7 +69,7 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
       {/* Top bar */}
       <button
         onClick={() => router.push('/persons')}
-        className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-800 mb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+        className="flex items-center gap-1.5 text-caption text-fg-tertiary hover:text-fg-primary mb-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
           <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -79,15 +79,15 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
 
       {/* Header */}
       <header className="mb-5 md:mb-6">
-        <p className="text-xs text-stone-400 uppercase tracking-wider font-semibold mb-0.5">
+        <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
           Persona
         </p>
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-xl md:text-2xl font-semibold text-stone-900">{person.fullName}</h1>
+          <h1 className="text-h1">{person.fullName}</h1>
           <PersonRoleBadge role={person.role} />
           <PersonStatusBadge status={person.status} />
         </div>
-        <div className="mt-2 text-sm text-stone-500 space-x-4">
+        <div className="mt-2 text-body-sm text-fg-secondary space-x-4">
           {person.cui && <span>CUI: <span className="font-mono">{person.cui}</span></span>}
           {person.email && <span>{person.email}</span>}
           {person.phone && <span>{person.phone}</span>}
@@ -95,7 +95,7 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
       </header>
 
       {/* Tabs */}
-      <nav role="tablist" aria-label="Secciones" className="flex flex-wrap gap-1 border-b border-stone-200 mb-6">
+      <nav role="tablist" aria-label="Secciones" className="flex flex-wrap gap-1 border-b border-border mb-6">
         {TABS.map(({ value, label }) => {
           const active = tab === value;
           return (
@@ -104,10 +104,10 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
               role="tab"
               aria-selected={active}
               onClick={() => setTab(value)}
-              className={`px-3 py-2 text-sm font-medium border-b-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-t-sm ${
+              className={`px-3 py-2 text-button-sm border-b-2 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-t-sm ${
                 active
-                  ? 'border-stone-900 text-stone-900'
-                  : 'border-transparent text-stone-500 hover:text-stone-800'
+                  ? 'border-fg-primary text-fg-primary'
+                  : 'border-transparent text-fg-tertiary hover:text-fg-primary'
               }`}
             >
               {label}
@@ -137,7 +137,7 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
       {tab === 'evaluations' && <EvaluationsPanel personId={person.id} />}
 
       {tab === 'edit' && (
-        <section aria-label="Editar datos de la persona" className="bg-white border border-stone-200 rounded-xl p-4 md:p-5 max-w-2xl">
+        <section aria-label="Editar datos de la persona" className="bg-surface-card border border-border rounded-md p-4 md:p-5 max-w-2xl">
           <PersonForm
             initial={person}
             submitLabel="Guardar cambios"

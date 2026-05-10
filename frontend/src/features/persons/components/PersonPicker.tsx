@@ -26,7 +26,6 @@ export function PersonPicker({
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Fetch selected person when value changes externally
   useEffect(() => {
     if (!value) { setSelected(null); return; }
     if (selected?.id === value) return;
@@ -35,7 +34,6 @@ export function PersonPicker({
     return () => { cancelled = true; };
   }, [value, selected?.id]);
 
-  // Debounced search
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -50,7 +48,6 @@ export function PersonPicker({
     return () => clearTimeout(t);
   }, [query, open]);
 
-  // Click outside to close
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -80,12 +77,12 @@ export function PersonPicker({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-2 h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+        className="w-full flex items-center justify-between gap-2 h-10 px-3 rounded-md border border-border bg-surface-card text-body-sm text-left focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
       >
-        <span className={selected ? 'text-stone-800' : 'text-stone-400'}>
+        <span className={selected ? 'text-fg-primary' : 'text-fg-tertiary'}>
           {selected ? selected.fullName : 'Sin asignar'}
         </span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" className="text-fg-tertiary">
           <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
@@ -93,22 +90,22 @@ export function PersonPicker({
       {open && (
         <div
           role="listbox"
-          className="absolute z-30 mt-1 w-full bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden"
+          className="absolute z-30 mt-1 w-full bg-surface-card border border-border rounded-md shadow-sm overflow-hidden"
         >
-          <div className="p-2 border-b border-stone-100">
+          <div className="p-2 border-b border-border-subtle">
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}
-              className="w-full h-9 px-2 text-sm rounded-md bg-stone-50 border border-stone-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-stone-700"
+              className="w-full h-9 px-2 text-body-sm rounded-md bg-surface-sunken border border-border text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
             />
           </div>
           <div className="max-h-64 overflow-y-auto">
             {loading ? (
-              <p className="px-3 py-3 text-xs text-stone-400">Buscando...</p>
+              <p className="px-3 py-3 text-caption text-fg-tertiary">Buscando...</p>
             ) : persons.length === 0 ? (
-              <p className="px-3 py-3 text-xs text-stone-400">Sin resultados.</p>
+              <p className="px-3 py-3 text-caption text-fg-tertiary">Sin resultados.</p>
             ) : (
               <ul>
                 {persons.map((p) => (
@@ -118,11 +115,11 @@ export function PersonPicker({
                       role="option"
                       aria-selected={selected?.id === p.id}
                       onClick={() => handleSelect(p)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-stone-50 focus-visible:bg-stone-50 focus-visible:outline-none"
+                      className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-sunken focus-visible:bg-surface-sunken focus-visible:outline-none"
                     >
-                      <p className="text-stone-800 font-medium">{p.fullName}</p>
+                      <p className="text-fg-primary font-medium">{p.fullName}</p>
                       {p.cui && (
-                        <p className="text-xs text-stone-400 font-mono">{p.cui}</p>
+                        <p className="text-caption text-fg-tertiary font-mono">{p.cui}</p>
                       )}
                     </button>
                   </li>
@@ -131,11 +128,11 @@ export function PersonPicker({
             )}
           </div>
           {allowClear && selected && (
-            <div className="border-t border-stone-100 p-2">
+            <div className="border-t border-border-subtle p-2">
               <button
                 type="button"
                 onClick={handleClear}
-                className="w-full text-left px-2 py-1.5 text-xs text-stone-500 hover:text-stone-800 rounded-md hover:bg-stone-50"
+                className="w-full text-left px-2 py-1.5 text-caption text-fg-tertiary hover:text-fg-primary rounded-md hover:bg-surface-sunken"
               >
                 Quitar asignación
               </button>

@@ -53,25 +53,27 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
   };
 
   const inputClass =
-    'h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm text-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700';
+    'h-10 px-3 rounded-md border border-border bg-surface-card text-body-sm text-fg-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]';
+
+  const labelClass = 'block text-overline text-overline-uppercase text-fg-tertiary mb-1';
 
   return (
     <div className="space-y-5">
       {/* Generador */}
       <section
         aria-label="Generar nueva evaluación"
-        className="bg-white border border-stone-200 rounded-xl p-4 md:p-5"
+        className="bg-surface-card border border-border rounded-md p-4 md:p-5"
       >
-        <h3 className="text-sm md:text-base font-semibold text-stone-900 mb-1">
+        <h3 className="text-h4 text-fg-primary mb-1">
           Generar evaluación con IA
         </h3>
-        <p className="text-xs text-stone-500 mb-4">
+        <p className="text-caption text-fg-secondary mb-4">
           La IA analiza los datos extraídos del expediente y devuelve una recomendación. No procesa los documentos originales.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
-            <label htmlFor="eval-provider" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+            <label htmlFor="eval-provider" className={labelClass}>
               Motor de IA
             </label>
             <select
@@ -91,7 +93,7 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
 
           {availableModels.length > 0 && (
             <div>
-              <label htmlFor="eval-model" className="block text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1">
+              <label htmlFor="eval-model" className={labelClass}>
                 Modelo
               </label>
               <select
@@ -113,7 +115,7 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
           <button
             type="button"
             onClick={() => setShowCustom((s) => !s)}
-            className="text-xs text-stone-500 hover:text-stone-800"
+            className="text-caption text-fg-tertiary hover:text-fg-primary"
           >
             {showCustom ? 'Quitar instrucción adicional' : 'Agregar instrucción adicional (opcional)'}
           </button>
@@ -124,13 +126,13 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
               rows={3}
               maxLength={2000}
               placeholder="Ej: enfocá el análisis en compatibilidad con un puesto de cajero."
-              className="mt-2 w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm text-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+              className="mt-2 w-full px-3 py-2 rounded-md border border-border bg-surface-card text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
             />
           )}
         </div>
 
         {error && (
-          <div role="alert" className="mb-3 px-3 py-2 bg-stone-100 border border-stone-300 rounded-lg text-sm text-stone-800">
+          <div role="alert" className="mb-3 px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg">
             {error}
           </div>
         )}
@@ -139,7 +141,7 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
           type="button"
           onClick={handleGenerate}
           disabled={generating}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 text-white hover:bg-stone-700 disabled:opacity-50 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700"
+          className="px-4 py-2 rounded-md text-button bg-fg-primary text-fg-inverse hover:opacity-90 disabled:opacity-50 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]"
         >
           {generating ? 'Analizando expediente...' : 'Generar evaluación'}
         </button>
@@ -147,48 +149,48 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
 
       {/* Historial */}
       <section aria-label="Historial de evaluaciones">
-        <h3 className="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-3">
+        <h3 className="text-overline text-overline-uppercase text-fg-tertiary mb-3">
           Historial
         </h3>
 
         {loading && evaluations.length === 0 ? (
           <div aria-busy="true" className="space-y-2">
-            <div className="h-32 rounded-xl bg-stone-100 animate-pulse" />
+            <div className="h-32 rounded-md bg-surface-sunken animate-pulse" />
           </div>
         ) : evaluations.length === 0 ? (
-          <p className="text-sm text-stone-400 italic">
+          <p className="text-body-sm text-fg-tertiary italic">
             Aún no hay evaluaciones. Generá la primera con el botón de arriba.
           </p>
         ) : (
           <ul className="space-y-3">
             {evaluations.map((e) => (
-              <li key={e.id} className="bg-white border border-stone-200 rounded-xl p-4 md:p-5">
+              <li key={e.id} className="bg-surface-card border border-border rounded-md p-4 md:p-5">
                 <header className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-wider font-semibold text-stone-400">
+                    <p className="text-overline text-overline-uppercase text-fg-tertiary">
                       {PROVIDER_LABEL[e.provider as EvaluationProvider] ?? e.provider}
-                      {e.model && <span className="text-stone-300 font-normal"> · {e.model}</span>}
+                      {e.model && <span className="text-fg-disabled font-normal"> · {e.model}</span>}
                     </p>
-                    <p className="text-xs text-stone-500 mt-0.5">{formatDateTime(e.createdAt)}</p>
+                    <p className="text-caption text-fg-secondary mt-0.5">{formatDateTime(e.createdAt)}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     {e.score != null && (
-                      <span className="text-2xl font-semibold text-stone-900 leading-none">
+                      <span className="text-display-lg text-fg-primary leading-none">
                         {e.score}
-                        <span className="text-sm text-stone-400 font-normal">/100</span>
+                        <span className="text-body-sm text-fg-tertiary font-normal">/100</span>
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => remove(e.id)}
-                      className="text-xs text-stone-400 hover:text-stone-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-700 rounded-sm"
+                      className="text-caption text-fg-tertiary hover:text-fg-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
                       aria-label="Eliminar evaluación"
                     >
                       Eliminar
                     </button>
                   </div>
                 </header>
-                <div className="prose prose-stone prose-sm max-w-none text-sm text-stone-800">
+                <div className="prose prose-stone prose-sm max-w-none text-body-sm text-fg-primary">
                   <MarkdownRenderer text={e.result} />
                 </div>
               </li>
