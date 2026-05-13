@@ -1,4 +1,4 @@
-# SCANNER.md — Integración de escaneo en DocScan
+# Flujo de escaneo en DocScan
 
 Estado: **eSCL (AirScan) sobre red + captura por cámara del navegador**.
 
@@ -42,9 +42,9 @@ Cada usuario puede registrar uno o más escáneres por IP en la base.
 
 ## 4) Requisitos del escáner
 
-- Compatible con AirScan / Mopria Scan (eSCL).
+- Compatible con el estándar **eSCL** (Mopria Scan / Apple AirScan). Casi todos los escáneres y multifunción de red modernos lo soportan; el fabricante o modelo es indiferente mientras exponga la API HTTP de eSCL.
 - IP estable accesible desde el host del backend.
-- Modelos validados: Epson WorkForce serie ES, Ricoh ScanSnap, HP OfficeJet/LaserJet con AirScan habilitado.
+- Puerto HTTP del servicio eSCL (típicamente `80` o `8080`).
 
 ---
 

@@ -11,7 +11,7 @@ DocScan soporta dos fuentes de imagen:
 
 Los escáneres se administran como `ScannerConfig` (CRUD en `/api/scanner/configs`) con ping a `/eSCL/ScannerStatus`.
 
-> Más detalle en `docs/SCANNER.md` y `docs/ARCHITECTURE.md`.
+> Más detalle en [`docs/scanner-flow.md`](docs/scanner-flow.md) y [`docs/architecture-project.md`](docs/architecture-project.md).
 
 ---
 
