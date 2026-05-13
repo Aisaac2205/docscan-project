@@ -20,14 +20,12 @@ docscan/
 │   │       ├── auth/              # Registro, login, JWT strategy
 │   │       ├── documents/         # CRUD + upload pipeline
 │   │       ├── ocr/               # Extracción de facturas con Gemini
-│   │       ├── scanner/           # NAPS2 CLI + mock fallback
+│   │       ├── scanner/           # eSCL/AirScan + captura cámara (base64)
 │   │       ├── storage/           # Sharp + Bunny CDN
 │   │       └── health/            # Health check
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── migrations/
-│   ├── mocks/
-│   │   └── sample-invoice.jpg     # Imagen de muestra para mock scan
 │   └── uploads/                   # Directorio temporal de multer
 ├── frontend/
 │   └── src/
@@ -97,14 +95,11 @@ docscan/
 - En caso de error, actualiza el documento a `status: failed`
 
 #### ScannerModule
-- **`GET /api/scanner/devices`**: devuelve el perfil NAPS2 por defecto (configurable vía `NAPS2_DEFAULT_PROFILE`)
-- **`POST /api/scanner/scan`**: ejecuta `naps2.console.exe -p <profile> -o <outputPath>` con reintentos (3 intentos, backoff exponencial, timeout 120s)
-- **`POST /api/scanner/capture`**: acepta imagen en base64, la decodifica y la sube al CDN
-- Fallback automático a `mockScan()` cuando:
-  - `NAPS2_FORCE_MOCK=true`
-  - El proceso NAPS2 falla o excede el timeout
-  - El archivo generado no se puede leer
-- `mockScan()` usa `mocks/sample-invoice.jpg` como imagen de muestra y crea un documento en BD
+- **`POST /api/scanner/capture`**: acepta imagen en base64 desde la cámara del navegador (WebRTC/WebUSB), la decodifica y la sube al CDN
+- **`POST /api/scanner/network-scan`**: habla eSCL/AirScan vía HTTP directo con un escáner por IP — crea job (`POST /eSCL/ScanJobs`), poll a `NextDocument`, sube el resultado al CDN
+- **CRUD `/api/scanner/configs`**: gestiona `ScannerConfig` (nombre, IP, puerto) por usuario en BD
+- **`GET /api/scanner/configs/:id/ping`**: verifica disponibilidad vía `GET /eSCL/ScannerStatus`
+- Sin dependencias de binarios locales ni agentes externos. Toda la comunicación es HTTP estándar (Node `http`/`https`).
 
 #### HealthModule
 - `GET /api/health` — verifica estado del servidor y conectividad con la base de datos
@@ -230,15 +225,25 @@ Cliente POST /api/ocr/process { documentId }
   → Respuesta: { documentId, extractedData }
 ```
 
-### Escaneo físico
+### Escaneo desde cámara (browser)
 
 ```
-Cliente POST /api/scanner/scan { deviceId? }
-  → ScannerService.scan()
-  → [si NAPS2_FORCE_MOCK=true → mockScan()]
-  → spawn('naps2.console.exe', ['-p', profile, '-o', outputPath])
-  → [si falla/timeout → mockScan()]
-  → readFile(outputPath)
+Cliente POST /api/scanner/capture { imageData: base64, personId? }
+  → ScannerService.saveCapturedImage()
+  → decode base64 → Buffer → writeFile temporal
+  → StorageService.uploadFile() → CDN URL
+  → DocumentsService.createDocument()
+  → Respuesta: { documentId, url, originalName }
+```
+
+### Escaneo de red (eSCL/AirScan)
+
+```
+Cliente POST /api/scanner/network-scan { ipAddress, port?, personId? }
+  → ScannerService.scanFromNetwork()
+  → GET http://{ip}:{port}/eSCL/ScannerStatus     (reachability)
+  → POST http://{ip}:{port}/eSCL/ScanJobs (XML ScanSettings) → Location header
+  → poll GET {jobLocation}/NextDocument (cada 2s, hasta 30s)
   → StorageService.uploadFile() → CDN URL
   → DocumentsService.createDocument()
   → Respuesta: { documentId, url, originalName }
