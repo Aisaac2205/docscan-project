@@ -40,7 +40,6 @@
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.5",
-    "tesseract.js": "^5.0.4",
     "zod": "^4.3.6"
   },
   "pnpm": {
@@ -50,8 +49,7 @@
       "bcrypt",
       "prisma",
       "protobufjs",
-      "sharp",
-      "tesseract.js"
+      "sharp"
     ]
   },
   "devDependencies": {
