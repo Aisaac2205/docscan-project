@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Readable } from 'stream';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
@@ -11,6 +11,8 @@ import * as https from 'https';
 
 @Injectable()
 export class ScannerService {
+  private readonly logger = new Logger(ScannerService.name);
+
   constructor(
     private readonly storageService: StorageService,
     private readonly documentsService: DocumentsService,
@@ -27,9 +29,11 @@ export class ScannerService {
   }
 
   async createConfig(userId: string, data: { name: string; ip: string; port?: number }) {
-    return this.prisma.scannerConfig.create({
+    const created = await this.prisma.scannerConfig.create({
       data: { userId, name: data.name, ip: data.ip, port: data.port ?? 80 },
     });
+    this.logger.log(`ScannerConfig created: id=${created.id} user=${userId} ip=${created.ip}:${created.port}`);
+    return created;
   }
 
   async deleteConfig(id: string, userId: string) {
@@ -37,6 +41,7 @@ export class ScannerService {
     if (!config) throw new NotFoundException('Escáner no encontrado');
     if (config.userId !== userId) throw new ForbiddenException();
     await this.prisma.scannerConfig.delete({ where: { id } });
+    this.logger.log(`ScannerConfig deleted: id=${id} user=${userId}`);
   }
 
   async pingConfig(id: string, userId: string): Promise<{ online: boolean }> {
@@ -44,11 +49,16 @@ export class ScannerService {
     if (!config) throw new NotFoundException('Escáner no encontrado');
     if (config.userId !== userId) throw new ForbiddenException();
 
+    const target = `${config.ip}:${config.port}`;
     const online = await this.httpGet(
-      `http://${config.ip}:${config.port}/eSCL/ScannerStatus`,
-    ).then(() => true).catch(() => false);
+      `http://${target}/eSCL/ScannerStatus`,
+    ).then(() => true).catch((err: Error) => {
+      this.logger.warn(`Ping failed for ${target}: ${err.message}`);
+      return false;
+    });
 
     if (online) {
+      this.logger.debug(`Ping OK: ${target}`);
       await this.prisma.scannerConfig.update({
         where: { id },
         data: { lastSeenAt: new Date() },
@@ -63,12 +73,15 @@ export class ScannerService {
     userId: string,
     personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
+    const startedAt = Date.now();
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
     const timestamp = Date.now();
     const fileName = `camera-${userId}-${timestamp}.png`;
     const outputDir = appConfig.upload.dir;
     const outputPath = join(outputDir, fileName);
+
+    this.logger.log(`Camera capture starting: user=${userId} bytes=${buffer.length} personId=${personId ?? 'none'}`);
 
     await mkdir(outputDir, { recursive: true });
     await writeFile(outputPath, buffer);
@@ -96,6 +109,9 @@ export class ScannerService {
       personId,
     });
 
+    this.logger.log(
+      `Camera capture completed: documentId=${created.id} bytes=${buffer.length} durationMs=${Date.now() - startedAt}`,
+    );
     return { documentId: created.id, url: uploaded.url, originalName: fileName };
   }
 
@@ -105,10 +121,13 @@ export class ScannerService {
     userId: string,
     personId?: string,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
+    const startedAt = Date.now();
     const baseUrl = `http://${ipAddress}:${port}/eSCL`;
+    this.logger.log(`Starting eSCL scan job to ${ipAddress}:${port} user=${userId}`);
 
     // 1. Verify scanner is reachable
-    await this.httpGet(`${baseUrl}/ScannerStatus`).catch(() => {
+    await this.httpGet(`${baseUrl}/ScannerStatus`).catch((err: Error) => {
+      this.logger.error(`Scanner unreachable at ${ipAddress}:${port}: ${err.message}`, err.stack);
       throw new BadRequestException(
         `No se pudo conectar al escáner en ${ipAddress}:${port}. Verifica la IP y que el dispositivo esté encendido.`,
       );
@@ -140,22 +159,27 @@ export class ScannerService {
       `${baseUrl}/ScanJobs`,
       scanXml,
       'text/xml',
-    ).catch(() => {
+    ).catch((err: Error) => {
+      this.logger.error(`Scan job rejected by ${ipAddress}:${port}: ${err.message}`, err.stack);
       throw new BadRequestException(
         'El escáner rechazó el trabajo de escaneo. Asegúrate de que sea compatible con AirScan (eSCL).',
       );
     });
 
     if (!jobLocation) {
+      this.logger.error(`Scanner returned no Location header: ${ipAddress}:${port}`);
       throw new BadRequestException('El escáner no devolvió una ubicación de trabajo.');
     }
+
+    this.logger.debug(`Scan job created: location=${jobLocation}`);
 
     // 3. Retrieve scanned document (poll up to 30 s)
     const docUrl = jobLocation.startsWith('http')
       ? `${jobLocation}/NextDocument`
       : `http://${ipAddress}:${port}${jobLocation}/NextDocument`;
 
-    const imageBuffer = await this.pollForDocument(docUrl, 30).catch(() => {
+    const imageBuffer = await this.pollForDocument(docUrl, 30).catch((err: Error) => {
+      this.logger.error(`Poll timeout for ${docUrl}: ${err.message}`, err.stack);
       throw new BadRequestException(
         'El escáner tardó demasiado en responder. Vuelve a intentarlo.',
       );
@@ -193,6 +217,9 @@ export class ScannerService {
       personId,
     });
 
+    this.logger.log(
+      `Scan completed: documentId=${created.id} bytes=${imageBuffer.length} durationMs=${Date.now() - startedAt}`,
+    );
     return { documentId: created.id, url: uploaded.url, originalName: fileName };
   }
 
@@ -250,11 +277,17 @@ export class ScannerService {
 
   private async pollForDocument(url: string, maxSeconds: number): Promise<Buffer> {
     const deadline = Date.now() + maxSeconds * 1000;
+    const maxAttempts = Math.ceil(maxSeconds / 2);
+    let attempt = 0;
     while (Date.now() < deadline) {
+      attempt++;
       try {
         const buf = await this.httpGetBuffer(url);
+        this.logger.debug(`Poll attempt ${attempt}/${maxAttempts}: got ${buf.length} bytes`);
         return buf;
-      } catch {
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Poll attempt ${attempt}/${maxAttempts} failed: ${msg}`);
         await new Promise((r) => setTimeout(r, 2000));
       }
     }
