@@ -1,3 +1,5 @@
+import { IsInt, IsIP, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+
 export class ScannerDeviceDto {
   id: string;
   name: string;
@@ -10,7 +12,17 @@ export class ScanResultDto {
 }
 
 export class CreateScannerConfigDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
   name: string;
+
+  @IsIP()
   ip: string;
-  port: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  @IsOptional()
+  port?: number;
 }
