@@ -26,9 +26,9 @@ export class ScannerService {
     });
   }
 
-  async createConfig(userId: string, data: { name: string; ip: string; port: number }) {
+  async createConfig(userId: string, data: { name: string; ip: string; port?: number }) {
     return this.prisma.scannerConfig.create({
-      data: { userId, ...data },
+      data: { userId, name: data.name, ip: data.ip, port: data.port ?? 80 },
     });
   }
 

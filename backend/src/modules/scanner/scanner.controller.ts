@@ -3,6 +3,8 @@ import { ScannerService } from './scanner.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateScannerConfigDto } from './dto/scanner.dto';
+import { CaptureImageDto } from './dto/capture-image.dto';
+import { NetworkScanDto } from './dto/network-scan.dto';
 
 @Controller('scanner')
 @UseGuards(JwtAuthGuard)
@@ -11,7 +13,7 @@ export class ScannerController {
 
   @Post('capture')
   async capture(
-    @Body() body: { imageData: string; personId?: string },
+    @Body() body: CaptureImageDto,
     @CurrentUser() user: { id: string },
   ) {
     return this.scannerService.saveCapturedImage(body.imageData, user.id, body.personId);
@@ -19,7 +21,7 @@ export class ScannerController {
 
   @Post('network-scan')
   async networkScan(
-    @Body() body: { ipAddress: string; port?: number; personId?: string },
+    @Body() body: NetworkScanDto,
     @CurrentUser() user: { id: string },
   ) {
     return this.scannerService.scanFromNetwork(body.ipAddress, body.port ?? 80, user.id, body.personId);
