@@ -62,13 +62,6 @@ export class DocumentsRepository {
     });
   }
 
-  async findByOriginalName(userId: string, originalName: string) {
-    return this.prisma.document.findFirst({
-      where: { userId, originalName },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
   async update(id: string, data: {
     rawText?: string;
     confidence?: number;
