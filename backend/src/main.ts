@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import * as express from 'express';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { appConfig } from './config';
 
@@ -33,6 +33,6 @@ async function bootstrap() {
   );
 
   await app.listen(appConfig.port);
-  console.log(`🚀 Backend ejecutándose en http://localhost:${appConfig.port}`);
+  Logger.log(`Backend ejecutándose en http://localhost:${appConfig.port}`, 'Bootstrap');
 }
 bootstrap();
