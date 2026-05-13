@@ -17,12 +17,18 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Scanner capture sends base64 images; 20 MB covers the largest cases.
-  // Keep a tighter limit for every other route via the default NestJS body parser.
-  app.use('/api/scanner', express.json({ limit: '20mb' }));
-  app.use(express.json({ limit: '256kb' }));
-  
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix(appConfig.apiPrefix);
+
+  // Scanner capture sends base64 images; the larger limit covers the
+  // worst case. Order matters: the route-specific parser must be
+  // registered BEFORE the global one so Express matches it first.
+  app.use(
+    `/${appConfig.apiPrefix}/scanner`,
+    express.json({ limit: appConfig.scannerBodyLimit }),
+  );
+
+  // Tighter limit for every other route as defense in depth.
+  app.use(express.json({ limit: appConfig.defaultBodyLimit }));
   
   app.useGlobalPipes(
     new ValidationPipe({

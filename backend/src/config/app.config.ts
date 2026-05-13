@@ -10,6 +10,9 @@ function requireEnv(name: string): string {
 
 export const appConfig = {
   port: parseInt(process.env.PORT || '3001', 10),
+  apiPrefix: 'api',
+  scannerBodyLimit: '20mb',
+  defaultBodyLimit: '256kb',
   jwt: {
     secret: requireEnv('JWT_SECRET'),
     expiresIn: (process.env.JWT_EXPIRATION || '24h') as ms.StringValue,
