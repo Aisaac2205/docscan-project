@@ -25,40 +25,41 @@ export type ProcessingStatusBucket =
   | 'revision'
   | 'error';
 
-/** Document-type buckets surfaced to the frontend. */
+/**
+ * Document-type buckets surfaced to the frontend.
+ *
+ * Aligned 1:1 con los ExtractionMode reales que el OCR populates en
+ * `Document.documentType` (ver `backend/src/modules/ocr/dto/ocr.dto.ts`
+ * y `frontend/src/features/ocr/types/ocr.types.ts` para los labels).
+ *
+ * Excluidos a propósito:
+ * - `general` y `custom`: catch-all sin tipo claro, no aportan valor en
+ *   un chart de distribución por tipo.
+ * - El default histórico `"document"`: no es un tipo extraído, es el
+ *   placeholder pre-OCR.
+ */
 export type DocumentTypeBucket =
   | 'cv'
-  | 'dpi'
-  | 'contrato'
-  | 'pasaporte'
-  | 'factura';
+  | 'id_card'
+  | 'fiscal_social'
+  | 'medical_cert'
+  | 'background_check';
 
 /**
- * Maps an internal Document.documentType to a chart bucket.
- *
- * Current ExtractionMode values that have NO matching bucket
- * (medical_cert, background_check, general, custom, "document"):
- * they are intentionally excluded from the chart — only the 5 HR-relevant
- * types are surfaced. Documents with those types still count in the
- * overall metrics, just not in this specific chart.
- *
- * TODO: when ExtractionMode adds CONTRATO and separates PASAPORTE from
- * ID_CARD, extend this mapping. For invoices ("factura"), a future
- * ExtractionMode.INVOICE should map directly.
+ * Maps `Document.documentType` (string libre actualmente) al bucket
+ * del chart. Identidad para los 5 modos catalogables; el resto cae
+ * fuera del chart sin contarlo como ruido.
  */
 export const DOCUMENT_TYPE_BUCKET_MAP: Readonly<Record<string, DocumentTypeBucket>> = {
   cv: 'cv',
-  id_card: 'dpi',
-  // Placeholder mappings for future ExtractionMode values — keys included
-  // for clarity. Until OCR populates them, counts stay at 0 (real, not mocked).
-  contrato: 'contrato',
-  pasaporte: 'pasaporte',
-  factura: 'factura',
-  invoice: 'factura',
+  id_card: 'id_card',
+  fiscal_social: 'fiscal_social',
+  medical_cert: 'medical_cert',
+  background_check: 'background_check',
 };
 
 export const ALL_TYPE_BUCKETS: readonly DocumentTypeBucket[] = [
-  'cv', 'dpi', 'contrato', 'pasaporte', 'factura',
+  'cv', 'id_card', 'fiscal_social', 'medical_cert', 'background_check',
 ];
 
 export const ALL_STATUS_BUCKETS: readonly ProcessingStatusBucket[] = [

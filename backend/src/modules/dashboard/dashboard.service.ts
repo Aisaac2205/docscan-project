@@ -336,9 +336,13 @@ export class DashboardService {
       };
     });
 
-    // ── documentTypes chart — fixed 5 buckets ────────────────────────────────
+    // ── documentTypes chart — fixed 5 buckets, alineados con ExtractionMode ──
     const typeBucketCounts: Record<DocumentTypeBucket, number> = {
-      cv: 0, dpi: 0, contrato: 0, pasaporte: 0, factura: 0,
+      cv: 0,
+      id_card: 0,
+      fiscal_social: 0,
+      medical_cert: 0,
+      background_check: 0,
     };
     for (const doc of typeCounts) {
       const bucket = DOCUMENT_TYPE_BUCKET_MAP[doc.documentType];

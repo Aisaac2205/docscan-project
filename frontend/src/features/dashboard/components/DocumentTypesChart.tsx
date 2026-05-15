@@ -21,19 +21,20 @@ import type {
 } from '../api/dashboardApi';
 
 // ---------------------------------------------------------------------------
-// Type-bucket → display label + color. Monochromatic blue family
-// (chart-1 .. chart-5) per the design system rules. No rainbow.
+// Type-bucket → display label + color. Labels copian las del catálogo
+// canónico en `features/ocr/types/ocr.types.ts` (EXTRACTION_MODE_LABELS)
+// para no divergir. Familia monocromática azul (chart-1..chart-5).
 // ---------------------------------------------------------------------------
 
 const BUCKET_META: Record<
   DocumentTypeBucket,
   { label: string; color: string }
 > = {
-  cv:        { label: 'CV',        color: CHART_COLORS[0] },
-  dpi:       { label: 'DPI',       color: CHART_COLORS[2] },
-  contrato:  { label: 'Contrato',  color: CHART_COLORS[3] },
-  pasaporte: { label: 'Pasaporte', color: CHART_COLORS[4] },
-  factura:   { label: 'Factura',   color: CHART_COLORS[5] },
+  cv:               { label: 'Currículum Vitae',     color: CHART_COLORS[0] },
+  id_card:          { label: 'DPI / Pasaporte',      color: CHART_COLORS[1] },
+  fiscal_social:    { label: 'NIT / IGSS',           color: CHART_COLORS[2] },
+  medical_cert:     { label: 'Constancia Médica',    color: CHART_COLORS[3] },
+  background_check: { label: 'Antecedentes',         color: CHART_COLORS[4] },
 };
 
 interface DocumentTypesChartProps {
@@ -54,7 +55,7 @@ export function DocumentTypesChart({ data, loading }: DocumentTypesChartProps) {
       ) : !data || total === 0 ? (
         <EmptyState
           title="Sin documentos procesados esta semana"
-          description="Cuando proceses CVs, DPIs, contratos, pasaportes o facturas aparecerán acá."
+          description="Cuando proceses CVs, DPIs, constancias fiscales, médicas o antecedentes aparecerán acá."
         />
       ) : (
         <div className="flex flex-col sm:flex-row items-center gap-6">

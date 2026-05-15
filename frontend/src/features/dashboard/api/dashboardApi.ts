@@ -48,12 +48,15 @@ export interface WeeklyProcessingPoint {
   validados: number;
 }
 
+// Buckets alineados 1:1 con ExtractionMode (ver
+// `features/ocr/types/ocr.types.ts`). `general` y `custom` se excluyen
+// del chart porque son catch-all sin tipo catalogable.
 export type DocumentTypeBucket =
   | 'cv'
-  | 'dpi'
-  | 'contrato'
-  | 'pasaporte'
-  | 'factura';
+  | 'id_card'
+  | 'fiscal_social'
+  | 'medical_cert'
+  | 'background_check';
 
 export interface DocumentTypeBucketCount {
   type: DocumentTypeBucket;
