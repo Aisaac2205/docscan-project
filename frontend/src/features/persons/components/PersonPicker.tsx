@@ -39,8 +39,11 @@ export function PersonPicker({
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        const data = await personsApi.list({ q: query.trim() || undefined });
-        setPersons(data);
+        const data = await personsApi.list({
+          q: query.trim() || undefined,
+          pageSize: 20,
+        });
+        setPersons(data.items);
       } finally {
         setLoading(false);
       }

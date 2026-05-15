@@ -31,3 +31,5 @@ export type { SeparatorProps } from './Separator';
 
 export { Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+
+export { Dialog, DialogContent, DialogTrigger, DialogClose } from './Dialog';

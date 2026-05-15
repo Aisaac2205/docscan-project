@@ -51,7 +51,10 @@ export interface FiscalData {
   _source: FieldSource | null;
 }
 
+export type BackgroundTipoEmisor = 'penal' | 'policial';
+
 export interface BackgroundData {
+  tipo_emisor: BackgroundTipoEmisor | null;
   tiene_antecedentes: boolean | null;
   delito_indicado: string | null;
   fecha_emision: string | null;
@@ -59,7 +62,13 @@ export interface BackgroundData {
   codigo_validacion: string | null;
   cui_dpi: string | null;
   nombre_completo: string | null;
-  _source: FieldSource | null;
+  _source: FieldSource;
+}
+
+export interface BackgroundSection {
+  penal: BackgroundData | null;
+  policial: BackgroundData | null;
+  unclassified: BackgroundData[];
 }
 
 export interface MedicalEntry {
@@ -94,7 +103,7 @@ export interface FieldConflict {
 export interface PersonProfile {
   identity: IdentityData | null;
   fiscal: FiscalData | null;
-  background: BackgroundData | null;
+  background: BackgroundSection;
   medicalHistory: MedicalEntry[];
   cv: CvData | null;
   conflicts: FieldConflict[];
@@ -128,3 +137,46 @@ export interface CreatePersonInput {
 }
 
 export type UpdatePersonInput = Partial<CreatePersonInput>;
+
+// ─── Completeness + pagination + metrics ─────────────────────────────────────
+
+export type SlotId =
+  | 'cv'
+  | 'id_card'
+  | 'background_penal'
+  | 'background_policial'
+  | 'fiscal_social';
+
+export interface CompletenessSummary {
+  done: number;
+  total: number;
+  missing: SlotId[];
+}
+
+export interface RequiredSlot {
+  id: SlotId;
+  label: string;
+  required: boolean;
+  satisfied: boolean;
+}
+
+export interface CompletenessDetail extends CompletenessSummary {
+  slots: RequiredSlot[];
+}
+
+export interface PersonWithCompleteness extends Person {
+  completeness?: CompletenessSummary;
+}
+
+export interface PaginatedPersons {
+  items: PersonWithCompleteness[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+export interface PersonMetrics {
+  activeCount: number;
+  incompleteCount: number;
+}
