@@ -4,9 +4,11 @@ import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats'
 import { DashboardGreeting } from '@/features/dashboard/components/DashboardGreeting';
 import { MetricCard } from '@/features/dashboard/components/MetricCard';
 import { ActivityFeed } from '@/features/dashboard/components/ActivityFeed';
-import { ActionCard } from '@/features/dashboard/components/ActionCard';
-
+import { WeeklyProcessingChart } from '@/features/dashboard/components/WeeklyProcessingChart';
+import { DocumentTypesChart } from '@/features/dashboard/components/DocumentTypesChart';
+import { ProcessingStatusChart } from '@/features/dashboard/components/ProcessingStatusChart';
 import { DashboardFooter } from '@/features/dashboard/components/DashboardFooter';
+import { toMetricDelta } from '@/features/dashboard/api/dashboardApi';
 
 // ---------------------------------------------------------------------------
 // Icons — fg-tertiary, uniform color across all cards
@@ -47,42 +49,6 @@ function PendingIcon() {
       <path d="M3 11v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M3 11l2.5-7h9L17 11" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M6 11h2.5l1 2h1l1-2H14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function UploadCardIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M10 15V4M10 4L5 9M10 4l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3 17v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ExportIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M10 4v10M10 14l-3-3M10 14l3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3 17v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function HistoryIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M10 6v4l2.5 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -130,39 +96,27 @@ export function DashboardView() {
             isLoading={statsLoading}
             icon={<DocsTodayIcon />}
             label="Procesados hoy"
-            value={
-              stats?.documentsProcessedToday !== undefined
-                ? String(stats.documentsProcessedToday)
-                : undefined
-            }
-            delta={stats?.documentsProcessedDelta}
-            sparkline={stats?.documentsProcessedSparkline}
+            value={stats ? String(stats.documentsProcessedToday) : undefined}
+            delta={stats ? toMetricDelta(stats.documentsProcessedTodayDelta) : undefined}
+            sparkline={stats?.documentsProcessedWeekly}
           />
 
           <MetricCard
             isLoading={statsLoading}
             icon={<AccuracyIcon />}
             label="Precisión OCR"
-            value={
-              stats?.ocrAccuracyAvgPercent !== undefined
-                ? `${stats.ocrAccuracyAvgPercent.toFixed(1)}%`
-                : undefined
-            }
-            delta={stats?.ocrAccuracyDelta}
-            sparkline={stats?.ocrAccuracySparkline}
+            value={stats ? `${stats.ocrPrecision.toFixed(1)}%` : undefined}
+            delta={stats ? toMetricDelta(stats.ocrPrecisionDelta) : undefined}
+            sparkline={stats?.ocrPrecisionWeekly}
           />
 
           <MetricCard
             isLoading={statsLoading}
             icon={<TimerIcon />}
             label="Tiempo promedio"
-            value={
-              stats?.avgProcessingTimeSeconds !== undefined
-                ? `${stats.avgProcessingTimeSeconds.toFixed(1)}s`
-                : undefined
-            }
-            delta={stats?.processingTimeDelta}
-            sparkline={stats?.processingTimeSparkline}
+            value={stats ? `${stats.avgProcessingTime.toFixed(1)}s` : undefined}
+            delta={stats ? toMetricDelta(stats.avgProcessingTimeDelta) : undefined}
+            sparkline={stats?.avgProcessingTimeWeekly}
             invertPolarity
           />
 
@@ -170,44 +124,40 @@ export function DashboardView() {
             isLoading={statsLoading}
             icon={<PendingIcon />}
             label="Pendientes de revisión"
-            value={
-              stats?.pendingReviewCount !== undefined
-                ? String(stats.pendingReviewCount)
-                : undefined
-            }
-            delta={stats?.pendingReviewDelta}
-            sparkline={stats?.pendingReviewSparkline}
+            value={stats ? String(stats.pendingReview) : undefined}
+            delta={stats ? toMetricDelta(stats.pendingReviewDelta) : undefined}
+            sparkline={stats?.pendingReviewWeekly}
             invertPolarity
           />
 
         </div>
       </section>
 
-      {/* ── Quick actions ───────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger-children">
-        <ActionCard
-          icon={<UploadCardIcon />}
-          title="Subir documentos"
-          description="Formatos PDF, JPG, PNG"
-          href="/scan"
-        />
-        <ActionCard
-          icon={<ExportIcon />}
-          title="Exportar resultados"
-          description="Formatos TXT, DOCX, CSV"
-        />
-        <ActionCard
-          icon={<HistoryIcon />}
-          title="Archivos recientes"
-          description="Ver historial de procesamiento"
-          href="/documents"
-        />
-        <ActionCard
-          icon={<SettingsIcon />}
-          title="Configuración"
-          description="Personalizá tu experiencia"
-        />
-      </div>
+      {/* ── Charts row: weekly (2/3) + types (1/3) ──────────────────────── */}
+      <section
+        aria-labelledby="charts-heading"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6"
+      >
+        <h2 id="charts-heading" className="sr-only">Análisis</h2>
+        <div className="lg:col-span-2 min-w-0">
+          <WeeklyProcessingChart
+            data={stats?.weeklyProcessing}
+            loading={statsLoading}
+          />
+        </div>
+        <div className="min-w-0">
+          <DocumentTypesChart
+            data={stats?.documentTypes}
+            loading={statsLoading}
+          />
+        </div>
+      </section>
+
+      {/* ── Status chart (full width) ───────────────────────────────────── */}
+      <ProcessingStatusChart
+        data={stats?.processingStatus}
+        loading={statsLoading}
+      />
 
       {/* ── Activity feed ───────────────────────────────────────────────── */}
       <ActivityFeed

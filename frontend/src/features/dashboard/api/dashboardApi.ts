@@ -1,8 +1,12 @@
 import { api } from '@/shared/api/client';
 
 // ---------------------------------------------------------------------------
-// Activity types & shape
+// Shape mirrors backend `dashboard.service.ts`. Keep both files in lockstep.
+// TODO: when a shared types package exists (`packages/shared` or codegen),
+// move these interfaces there and import from a single source of truth.
 // ---------------------------------------------------------------------------
+
+// ── Activity ───────────────────────────────────────────────────────────────
 
 export type ActivityType =
   | 'document_processed'
@@ -27,93 +31,100 @@ export interface ActivityEvent {
   link?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Metric delta shape
-// ---------------------------------------------------------------------------
+// ── MetricCard adapter types (UI internal — not part of API response) ──────
 
-/**
- * Delta relative to the previous period.
- * `direction` is the raw direction of change (up = value increased, down = decreased).
- * Whether "up" is good or bad depends on the metric — callers decide the color.
- */
 export interface MetricDelta {
   percentage: number;
   direction: 'up' | 'down' | 'neutral';
 }
 
-// ---------------------------------------------------------------------------
-// Sparkline: last-7-days data points (raw numbers, no labels)
-// ---------------------------------------------------------------------------
+export type SparklineSeries = readonly number[];
 
-export type SparklineSeries = readonly [
-  number, number, number, number, number, number, number
-];
+// ── Chart payload types (mirror backend) ───────────────────────────────────
 
-// ---------------------------------------------------------------------------
-// Dashboard stats
-// ---------------------------------------------------------------------------
+export interface WeeklyProcessingPoint {
+  day: string;
+  procesados: number;
+  validados: number;
+}
+
+export type DocumentTypeBucket =
+  | 'cv'
+  | 'dpi'
+  | 'contrato'
+  | 'pasaporte'
+  | 'factura';
+
+export interface DocumentTypeBucketCount {
+  type: DocumentTypeBucket;
+  count: number;
+  percentage: number;
+}
+
+export type ProcessingStatusBucket =
+  | 'completado'
+  | 'pendiente'
+  | 'revision'
+  | 'error';
+
+export interface ProcessingStatusBucketCount {
+  status: ProcessingStatusBucket;
+  count: number;
+  percentage: number;
+}
+
+// ── Full dashboard response ────────────────────────────────────────────────
 
 export interface DashboardStats {
-  // ── Existing fields (backend: GET /api/dashboard/stats) ──────────────────
+  // Pre-existing fields
   activePersons: number;
   unassignedDocuments: number;
   pendingHealthRecords: number;
   totalPersons: number;
-  /** @deprecated Use `recentActivity` (typed as ActivityEvent[]) instead */
   recentActivity: ActivityEvent[];
 
-  // ── OCR metrics (backend: TODO — these fields are not yet implemented) ────
-  /**
-   * TODO: backend needs to expose `documentsProcessedToday` in
-   * GET /api/dashboard/stats. Query: COUNT of documents with
-   * status='processed' AND processedAt >= today_start.
-   */
-  documentsProcessedToday?: number;
-  /** 7-day sparkline for documentsProcessedToday */
-  documentsProcessedSparkline?: SparklineSeries;
-  /** Delta vs yesterday */
-  documentsProcessedDelta?: MetricDelta;
+  // Per-metric
+  documentsProcessedToday: number;
+  documentsProcessedTodayDelta: number;
+  documentsProcessedWeekly: number[];
 
-  /**
-   * TODO: backend needs to expose `ocrAccuracyAvgPercent` in
-   * GET /api/dashboard/stats. Query: AVG(ocrConfidenceScore * 100)
-   * from documents processed today, rounded to 1 decimal.
-   */
-  ocrAccuracyAvgPercent?: number;
-  /** 7-day sparkline for ocrAccuracyAvgPercent */
-  ocrAccuracySparkline?: SparklineSeries;
-  /** Delta vs yesterday */
-  ocrAccuracyDelta?: MetricDelta;
+  ocrPrecision: number;
+  ocrPrecisionDelta: number;
+  ocrPrecisionWeekly: number[];
 
-  /**
-   * TODO: backend needs to expose `avgProcessingTimeSeconds` in
-   * GET /api/dashboard/stats. Query: AVG(processingDurationMs / 1000)
-   * from documents processed today.
-   */
-  avgProcessingTimeSeconds?: number;
-  /** 7-day sparkline for avgProcessingTimeSeconds */
-  processingTimeSparkline?: SparklineSeries;
-  /** Delta vs yesterday */
-  processingTimeDelta?: MetricDelta;
+  avgProcessingTime: number;
+  avgProcessingTimeDelta: number;
+  avgProcessingTimeWeekly: number[];
 
-  /**
-   * TODO: backend needs to expose `pendingReviewCount` in
-   * GET /api/dashboard/stats. Query: COUNT of documents with
-   * status='pending_review'.
-   */
-  pendingReviewCount?: number;
-  /** 7-day sparkline for pendingReviewCount */
-  pendingReviewSparkline?: SparklineSeries;
-  /** Delta vs yesterday */
-  pendingReviewDelta?: MetricDelta;
+  pendingReview: number;
+  pendingReviewDelta: number;
+  pendingReviewWeekly: number[];
 
-  // ── System status (backend: TODO — GET /api/system/status) ───────────────
+  // Charts
+  weeklyProcessing: WeeklyProcessingPoint[];
+  documentTypes: DocumentTypeBucketCount[];
+  processingStatus: ProcessingStatusBucketCount[];
+
+  // ── Optional fields the backend has not yet wired (TODO endpoints) ───────
   /**
-   * TODO: backend needs to expose system health via GET /api/system/status.
-   * Should return { ocrEngineOnline: boolean, activeWorkers: number }.
+   * TODO: backend GET /api/system/status should expose
+   * { ocrEngineOnline: boolean, activeWorkers: number }.
    */
   ocrEngineOnline?: boolean;
   activeWorkers?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Adapter helpers — convert backend signed-number deltas to MetricDelta shape
+// expected by MetricCard.
+// ---------------------------------------------------------------------------
+
+export function toMetricDelta(signedPercent: number): MetricDelta {
+  if (signedPercent === 0) return { percentage: 0, direction: 'neutral' };
+  return {
+    percentage: Math.abs(signedPercent),
+    direction: signedPercent > 0 ? 'up' : 'down',
+  };
 }
 
 // ---------------------------------------------------------------------------
