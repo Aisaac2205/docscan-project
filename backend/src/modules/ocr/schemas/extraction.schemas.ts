@@ -56,9 +56,17 @@ export const MedicalCertDataSchema = z
   })
   .catchall(z.unknown());
 
+export const BackgroundCheckTipoEmisorSchema = z
+  .enum(['penal', 'policial'])
+  .nullable()
+  .optional();
+
 export const BackgroundCheckDataSchema = z
   .object({
     tipo_documento: nullableString,
+    // 'penal' = Organismo Judicial, 'policial' = PNC. null cuando OCR no logra
+    // clasificar — el slot queda en "sin clasificar" hasta acción manual.
+    tipo_emisor: BackgroundCheckTipoEmisorSchema,
     datos_ciudadano: z.object({
       nombre_completo: nullableString,
       cui_dpi: nullableString,

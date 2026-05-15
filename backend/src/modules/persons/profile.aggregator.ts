@@ -36,7 +36,10 @@ export interface FiscalData {
   _source: FieldSource | null;
 }
 
+export type BackgroundTipoEmisor = 'penal' | 'policial';
+
 export interface BackgroundData {
+  tipo_emisor: BackgroundTipoEmisor | null;
   tiene_antecedentes: boolean | null;
   delito_indicado: string | null;
   fecha_emision: string | null;
@@ -44,7 +47,13 @@ export interface BackgroundData {
   codigo_validacion: string | null;
   cui_dpi: string | null;
   nombre_completo: string | null;
-  _source: FieldSource | null;
+  _source: FieldSource;
+}
+
+export interface BackgroundSection {
+  penal: BackgroundData | null;
+  policial: BackgroundData | null;
+  unclassified: BackgroundData[];
 }
 
 export interface MedicalEntry {
@@ -79,7 +88,7 @@ export interface FieldConflict {
 export interface PersonProfile {
   identity: IdentityData | null;
   fiscal: FiscalData | null;
-  background: BackgroundData | null;
+  background: BackgroundSection;
   medicalHistory: MedicalEntry[];
   cv: CvData | null;
   conflicts: FieldConflict[];
@@ -102,26 +111,28 @@ export function aggregateProfile(
 ): PersonProfile {
   const idCard = pickMostRecent(docs, 'id_card');
   const fiscal = pickMostRecent(docs, 'fiscal_social');
-  const background = pickMostRecent(docs, 'background_check');
   const cv = pickMostRecent(docs, 'cv');
   const medical = docs.filter((d) => d.documentType === 'medical_cert');
 
+  const background = buildBackgroundSection(
+    docs.filter((d) => d.documentType === 'background_check'),
+  );
+
   const identityData = idCard ? buildIdentity(idCard) : null;
   const fiscalData = fiscal ? buildFiscal(fiscal) : null;
-  const backgroundData = background ? buildBackground(background) : null;
   const cvData = cv ? buildCv(cv) : null;
   const medicalHistory = medical.map(buildMedicalEntry).sort(byCreatedAtDesc);
 
   const conflicts = detectConflicts({
     identity: identityData,
     fiscal: fiscalData,
-    background: backgroundData,
+    background,
   });
 
   return {
     identity: identityData,
     fiscal: fiscalData,
-    background: backgroundData,
+    background,
     medicalHistory,
     cv: cvData,
     conflicts,
@@ -171,6 +182,7 @@ function buildBackground(doc: DocInput): BackgroundData {
   const resultado = asObject(data.resultado);
   const validacion = asObject(data.validacion);
   return {
+    tipo_emisor: parseTipoEmisor(data.tipo_emisor),
     tiene_antecedentes: getBoolean(resultado, 'tiene_antecedentes'),
     delito_indicado: getString(resultado, 'delito_indicado'),
     fecha_emision: getString(validacion, 'fecha_emision'),
@@ -180,6 +192,21 @@ function buildBackground(doc: DocInput): BackgroundData {
     nombre_completo: getString(ciudadano, 'nombre_completo'),
     _source: toSource(doc),
   };
+}
+
+function buildBackgroundSection(docs: DocInput[]): BackgroundSection {
+  const built = docs.map(buildBackground);
+
+  // Most recent first (by source extractedAt = doc.createdAt).
+  const sorted = built.slice().sort((a, b) => {
+    return new Date(b._source.extractedAt).getTime() - new Date(a._source.extractedAt).getTime();
+  });
+
+  const penal = sorted.find((b) => b.tipo_emisor === 'penal') ?? null;
+  const policial = sorted.find((b) => b.tipo_emisor === 'policial') ?? null;
+  const unclassified = sorted.filter((b) => b.tipo_emisor === null);
+
+  return { penal, policial, unclassified };
 }
 
 function buildCv(doc: DocInput): CvData {
@@ -217,11 +244,11 @@ function buildMedicalEntry(doc: DocInput): MedicalEntry {
 function detectConflicts(args: {
   identity: IdentityData | null;
   fiscal: FiscalData | null;
-  background: BackgroundData | null;
+  background: BackgroundSection;
 }): FieldConflict[] {
   const conflicts: FieldConflict[] = [];
 
-  // CUI conflicts across documents
+  // CUI conflicts across all document sources.
   const cuiClaims: { source: string; value: string }[] = [];
   if (args.identity?.cui) {
     cuiClaims.push({ source: 'DPI', value: normalizeCui(args.identity.cui) });
@@ -229,8 +256,11 @@ function detectConflicts(args: {
   if (args.fiscal?.cui_dpi) {
     cuiClaims.push({ source: 'RTU', value: normalizeCui(args.fiscal.cui_dpi) });
   }
-  if (args.background?.cui_dpi) {
-    cuiClaims.push({ source: 'Antecedentes', value: normalizeCui(args.background.cui_dpi) });
+  if (args.background.penal?.cui_dpi) {
+    cuiClaims.push({ source: 'Antecedentes Penales', value: normalizeCui(args.background.penal.cui_dpi) });
+  }
+  if (args.background.policial?.cui_dpi) {
+    cuiClaims.push({ source: 'Antecedentes Policíacos', value: normalizeCui(args.background.policial.cui_dpi) });
   }
 
   if (cuiClaims.length >= 2) {
@@ -275,6 +305,11 @@ function getNumber(obj: Record<string, unknown>, key: string): number | null {
 function getBoolean(obj: Record<string, unknown>, key: string): boolean | null {
   const v = obj[key];
   return typeof v === 'boolean' ? v : null;
+}
+
+function parseTipoEmisor(value: unknown): BackgroundTipoEmisor | null {
+  if (value === 'penal' || value === 'policial') return value;
+  return null;
 }
 
 function toSource(doc: DocInput): FieldSource {

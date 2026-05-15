@@ -213,9 +213,14 @@ case ExtractionMode.FISCAL_SOCIAL:
           '\n\nREGLAS ESTRICTAS:\n' +
           '1. Devuelve ÚNICAMENTE un objeto JSON válido.\n' +
           '2. El campo "tiene_antecedentes" es CRÍTICO: debe ser "false" si el documento indica explícitamente que la persona "CARECE" de antecedentes. Si indica que sí tiene, u omite la palabra carece en el contexto del récord, debe ser "true".\n' +
+          '\nCLASIFICACIÓN DEL EMISOR (tipo_emisor):\n' +
+          '- "penal": emitido por el Organismo Judicial (OJ). Suele decir "Antecedentes Penales", aparece logo del OJ.\n' +
+          '- "policial": emitido por la Policía Nacional Civil (PNC) o el Ministerio de Gobernación. Suele decir "Antecedentes Policíacos".\n' +
+          '- null: SI Y SOLO SI no podés determinar el emisor con certeza. NO ALUCINES. Es preferible null a una clasificación incorrecta — habrá fallback manual.\n' +
           '\nESTRUCTURA JSON REQUERIDA:\n' +
           '{\n' +
           '  "tipo_documento": "string (PENAL o POLICIACO)",\n' +
+          '  "tipo_emisor": "penal | policial | null",\n' +
           '  "datos_ciudadano": {\n' +
           '    "nombre_completo": "string",\n' +
           '    "cui_dpi": "string (13 dígitos)"\n' +
@@ -231,7 +236,7 @@ case ExtractionMode.FISCAL_SOCIAL:
           '  },\n' +
           '  "_metadata": {\n' +
           '    "confidence_score": "number",\n' +
-          '    "requiere_revision_manual": "boolean (MÁXIMA PRIORIDAD: true si tiene_antecedentes es true, o si el score < 0.90)"\n' +
+          '    "requiere_revision_manual": "boolean (MÁXIMA PRIORIDAD: true si tiene_antecedentes es true, o si tipo_emisor es null, o si el score < 0.90)"\n' +
           '  }\n' +
           '}'
         );

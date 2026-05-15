@@ -12,7 +12,14 @@ export interface ValidationResult {
   severity: ValidationSeverity;
 }
 
+export interface BackgroundClaim {
+  cui_dpi: string | null;
+  fecha_emision: string | null;
+  tiene_antecedentes: boolean | null;
+}
+
 export interface ValidatorInput {
+  cv: { present: boolean } | null;
   identity: {
     cui: string | null;
     fecha_vencimiento: string | null;
@@ -22,10 +29,9 @@ export interface ValidatorInput {
     cui_dpi: string | null;
   } | null;
   background: {
-    fecha_emision: string | null;
-    cui_dpi: string | null;
-    tiene_antecedentes: boolean | null;
-  } | null;
+    penal: BackgroundClaim | null;
+    policial: BackgroundClaim | null;
+  };
 }
 
 const FOUR_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 4;
@@ -33,14 +39,26 @@ const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
 
 export function runComplianceValidations(input: ValidatorInput): ValidationResult[] {
   return [
+    validatePresence('cv_presence', 'Currículum vitae cargado', !!input.cv),
     validatePresence('dpi_presence', 'Documento de identidad cargado', !!input.identity),
     validatePresence('rtu_presence', 'Documento fiscal cargado (RTU/NIT)', !!input.fiscal),
-    validatePresence('background_check_presence', 'Antecedentes cargados', !!input.background),
+    validatePresence(
+      'background_penal_presence',
+      'Antecedentes penales cargados',
+      !!input.background.penal,
+    ),
+    validatePresence(
+      'background_policial_presence',
+      'Antecedentes policíacos cargados',
+      !!input.background.policial,
+    ),
     validateCuiMatch(input),
-    validateBackgroundFreshness(input.background),
+    validateBackgroundFreshness('background_penal_freshness', 'Vigencia de antecedentes penales', input.background.penal),
+    validateBackgroundFreshness('background_policial_freshness', 'Vigencia de antecedentes policíacos', input.background.policial),
     validateSatStatus(input.fiscal),
     validateDpiExpiration(input.identity),
-    validateBackgroundResult(input.background),
+    validateBackgroundResult('background_penal_result', 'Resultado de antecedentes penales', input.background.penal),
+    validateBackgroundResult('background_policial_result', 'Resultado de antecedentes policíacos', input.background.policial),
   ];
 }
 
@@ -66,7 +84,12 @@ function validateCuiMatch(input: ValidatorInput): ValidationResult {
   const claims: { source: string; value: string }[] = [];
   if (input.identity?.cui) claims.push({ source: 'DPI', value: normalize(input.identity.cui) });
   if (input.fiscal?.cui_dpi) claims.push({ source: 'RTU', value: normalize(input.fiscal.cui_dpi) });
-  if (input.background?.cui_dpi) claims.push({ source: 'Antecedentes', value: normalize(input.background.cui_dpi) });
+  if (input.background.penal?.cui_dpi) {
+    claims.push({ source: 'Antecedentes Penales', value: normalize(input.background.penal.cui_dpi) });
+  }
+  if (input.background.policial?.cui_dpi) {
+    claims.push({ source: 'Antecedentes Policíacos', value: normalize(input.background.policial.cui_dpi) });
+  }
 
   if (claims.length === 0) {
     return { id, label, status: 'fail', message: 'No hay documentos con CUI para comparar.', severity: 'high' };
@@ -102,10 +125,11 @@ function validateCuiMatch(input: ValidatorInput): ValidationResult {
   };
 }
 
-function validateBackgroundFreshness(bg: ValidatorInput['background']): ValidationResult {
-  const id = 'background_check_freshness';
-  const label = 'Vigencia de antecedentes';
-
+function validateBackgroundFreshness(
+  id: string,
+  label: string,
+  bg: BackgroundClaim | null,
+): ValidationResult {
   if (!bg) {
     return { id, label, status: 'fail', message: 'Aún no hay antecedentes cargados.', severity: 'high' };
   }
@@ -202,17 +226,17 @@ function validateDpiExpiration(identity: ValidatorInput['identity']): Validation
   if (expires.getTime() < now) {
     return { id, label, status: 'fail', message: `DPI vencido el ${formatted}.`, severity: 'high' };
   }
-  // 6 months warning
   if (expires.getTime() - now < 1000 * 60 * 60 * 24 * 30 * 6) {
     return { id, label, status: 'warning', message: `DPI vence el ${formatted} (en menos de 6 meses).`, severity: 'medium' };
   }
   return { id, label, status: 'pass', message: `Vigente hasta ${formatted}.`, severity: 'medium' };
 }
 
-function validateBackgroundResult(bg: ValidatorInput['background']): ValidationResult {
-  const id = 'background_check_result';
-  const label = 'Resultado de antecedentes';
-
+function validateBackgroundResult(
+  id: string,
+  label: string,
+  bg: BackgroundClaim | null,
+): ValidationResult {
   if (!bg) {
     return { id, label, status: 'fail', message: 'Aún no hay antecedentes cargados.', severity: 'medium' };
   }

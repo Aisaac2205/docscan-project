@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DocumentsRepository } from './repositories/documents.repository';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto';
@@ -31,6 +31,30 @@ export class DocumentsService {
       throw new NotFoundException('Documento no encontrado');
     }
     return this.repository.update(id, { personId });
+  }
+
+  async classifyBackground(id: string, userId: string, tipoEmisor: 'penal' | 'policial') {
+    const document = await this.repository.findByIdAndUserId(id, userId);
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+    if (document.documentType !== 'background_check') {
+      throw new ForbiddenException(
+        'Solo se pueden clasificar documentos de tipo antecedentes (background_check).',
+      );
+    }
+
+    const current =
+      document.extractedData && typeof document.extractedData === 'object' && !Array.isArray(document.extractedData)
+        ? (document.extractedData as Record<string, unknown>)
+        : {};
+
+    const next: Prisma.InputJsonValue = {
+      ...current,
+      tipo_emisor: tipoEmisor,
+    };
+
+    return this.repository.update(id, { extractedData: next });
   }
 
   async getDocumentsByType(userId: string, documentType: string) {

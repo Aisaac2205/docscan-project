@@ -1,5 +1,10 @@
-import { IsString, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsEnum } from 'class-validator';
 import { Prisma } from '@prisma/client';
+
+export class ClassifyBackgroundDto {
+  @IsEnum(['penal', 'policial'])
+  tipo_emisor: 'penal' | 'policial';
+}
 
 export class CreateDocumentDto {
   @IsString()

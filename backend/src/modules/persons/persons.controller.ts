@@ -17,6 +17,7 @@ import {
   UpdatePersonDto,
   UpdateProfileOverridesDto,
 } from './dto/person.dto';
+import { ListPersonsQueryDto } from './dto/list-persons.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -28,10 +29,20 @@ export class PersonsController {
   @Get()
   list(
     @CurrentUser() user: { id: string },
-    @Query('status') status?: string,
-    @Query('q') q?: string,
+    @Query() query: ListPersonsQueryDto,
   ) {
-    return this.personsService.listAll(user.id, { status, q });
+    return this.personsService.listPage(user.id, {
+      status: query.status,
+      q: query.q,
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 25,
+      includeCompleteness: query.include === 'completeness',
+    });
+  }
+
+  @Get('metrics')
+  metrics(@CurrentUser() user: { id: string }) {
+    return this.personsService.getMetrics(user.id);
   }
 
   @Post()
@@ -62,6 +73,11 @@ export class PersonsController {
   @Get(':id/profile')
   profile(@Param('id') id: string, @CurrentUser() user: { id: string }) {
     return this.personsService.getProfile(user.id, id);
+  }
+
+  @Get(':id/completeness')
+  completeness(@Param('id') id: string, @CurrentUser() user: { id: string }) {
+    return this.personsService.getCompletenessFor(user.id, id);
   }
 
   @Patch(':id/overrides')

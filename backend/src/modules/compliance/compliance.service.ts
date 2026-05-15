@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PersonsService } from '../persons/persons.service';
 import { runComplianceValidations, ValidationResult, ValidatorInput } from './compliance.validator';
+import type { BackgroundData } from '../persons/profile.aggregator';
 
 export interface ComplianceFile {
   personId: string;
@@ -21,19 +22,17 @@ export class ComplianceService {
     const { person, profile } = await this.personsService.getProfile(userId, personId);
 
     const input: ValidatorInput = {
+      cv: profile.cv ? { present: true } : null,
       identity: profile.identity
         ? { cui: profile.identity.cui, fecha_vencimiento: profile.identity.fecha_vencimiento }
         : null,
       fiscal: profile.fiscal
         ? { estado_contribuyente: profile.fiscal.estado_contribuyente, cui_dpi: profile.fiscal.cui_dpi }
         : null,
-      background: profile.background
-        ? {
-            fecha_emision: profile.background.fecha_emision,
-            cui_dpi: profile.background.cui_dpi,
-            tiene_antecedentes: profile.background.tiene_antecedentes,
-          }
-        : null,
+      background: {
+        penal: toClaim(profile.background.penal),
+        policial: toClaim(profile.background.policial),
+      },
     };
 
     const validations = runComplianceValidations(input);
@@ -49,4 +48,13 @@ export class ComplianceService {
       summary,
     };
   }
+}
+
+function toClaim(bg: BackgroundData | null) {
+  if (!bg) return null;
+  return {
+    cui_dpi: bg.cui_dpi,
+    fecha_emision: bg.fecha_emision,
+    tiene_antecedentes: bg.tiene_antecedentes,
+  };
 }

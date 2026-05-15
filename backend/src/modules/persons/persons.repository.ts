@@ -19,18 +19,37 @@ export class PersonsRepository {
   }
 
   findByUserId(userId: string, opts?: { status?: string; q?: string }) {
-    const where: Prisma.PersonWhereInput = { userId };
-    if (opts?.status) where.status = opts.status;
-    if (opts?.q) {
-      where.OR = [
-        { fullName: { contains: opts.q, mode: 'insensitive' } },
-        { cui: { contains: opts.q, mode: 'insensitive' } },
-        { email: { contains: opts.q, mode: 'insensitive' } },
-      ];
-    }
     return this.prisma.person.findMany({
-      where,
+      where: buildWhere(userId, opts),
       orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async findPage(
+    userId: string,
+    opts: { status?: string; q?: string; page: number; pageSize: number },
+  ) {
+    const where = buildWhere(userId, opts);
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.person.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip: (opts.page - 1) * opts.pageSize,
+        take: opts.pageSize,
+      }),
+      this.prisma.person.count({ where }),
+    ]);
+    return { items, total };
+  }
+
+  countActive(userId: string) {
+    return this.prisma.person.count({ where: { userId, status: 'active' } });
+  }
+
+  listIdsAndRoles(userId: string) {
+    return this.prisma.person.findMany({
+      where: { userId },
+      select: { id: true, role: true },
     });
   }
 
@@ -68,4 +87,17 @@ export class PersonsRepository {
   countByUserId(userId: string) {
     return this.prisma.person.count({ where: { userId } });
   }
+}
+
+function buildWhere(userId: string, opts?: { status?: string; q?: string }): Prisma.PersonWhereInput {
+  const where: Prisma.PersonWhereInput = { userId };
+  if (opts?.status) where.status = opts.status;
+  if (opts?.q) {
+    where.OR = [
+      { fullName: { contains: opts.q, mode: 'insensitive' } },
+      { cui: { contains: opts.q, mode: 'insensitive' } },
+      { email: { contains: opts.q, mode: 'insensitive' } },
+    ];
+  }
+  return where;
 }

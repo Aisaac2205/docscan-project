@@ -84,11 +84,25 @@ function serializeProfileForPrompt(
     sections.push('\n### Datos fiscales (RTU/NIT)\n_No cargado_');
   }
 
-  if (profile.background) {
-    sections.push('\n### Antecedentes');
-    sections.push(formatFields(profile.background));
+  if (profile.background.penal) {
+    sections.push('\n### Antecedentes Penales');
+    sections.push(formatFields(profile.background.penal));
   } else {
-    sections.push('\n### Antecedentes\n_No cargado_');
+    sections.push('\n### Antecedentes Penales\n_No cargado_');
+  }
+
+  if (profile.background.policial) {
+    sections.push('\n### Antecedentes Policíacos');
+    sections.push(formatFields(profile.background.policial));
+  } else {
+    sections.push('\n### Antecedentes Policíacos\n_No cargado_');
+  }
+
+  if (profile.background.unclassified.length > 0) {
+    sections.push('\n### Antecedentes sin clasificar');
+    profile.background.unclassified.forEach((bg, i) => {
+      sections.push(`- Documento ${i + 1} (${bg._source.documentName}): ${formatFields(bg)}`);
+    });
   }
 
   if (profile.medicalHistory.length > 0) {

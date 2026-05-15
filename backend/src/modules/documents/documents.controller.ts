@@ -21,6 +21,7 @@ import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { appConfig } from '../../config';
+import { ClassifyBackgroundDto } from './dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
@@ -96,6 +97,15 @@ export class DocumentsController {
     @Body() body: { personId: string | null },
   ) {
     return this.documentsService.assignToPerson(id, user.id, body.personId);
+  }
+
+  @Patch(':id/classify-background')
+  async classifyBackground(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+    @Body() body: ClassifyBackgroundDto,
+  ) {
+    return this.documentsService.classifyBackground(id, user.id, body.tipo_emisor);
   }
 
   @Delete(':id')
