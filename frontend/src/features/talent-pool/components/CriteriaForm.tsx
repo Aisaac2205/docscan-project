@@ -1,3 +1,4 @@
+import { Heading } from '@/shared/components/Layout';
 import type { TalentPoolCriteria } from '../types/talent-pool.types';
 import { ListField } from './ListField';
 
@@ -13,7 +14,7 @@ export function CriteriaForm({ criterios, setCriterio }: CriteriaFormProps) {
   return (
     <article className="rounded-md border border-border bg-surface-card p-4 md:p-5 lg:p-6 space-y-4">
       <div className="space-y-1">
-        <h2 className="text-h4 text-fg-primary">Criterios del proceso</h2>
+        <Heading level={4} as="h2" className="text-fg-primary">Criterios del proceso</Heading>
         <p className="text-caption text-fg-tertiary">Definí qué perfil buscás y qué no querés en esta vacante.</p>
       </div>
 

@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { Heading } from '@/shared/components/Layout';
 
 export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ReactNode;
@@ -27,7 +28,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
         </span>
       )}
       <div className="flex flex-col gap-1 max-w-md">
-        <h3 className="text-h3">{title}</h3>
+        <Heading level={3}>{title}</Heading>
         {description && (
           <p className="text-body text-fg-secondary">{description}</p>
         )}

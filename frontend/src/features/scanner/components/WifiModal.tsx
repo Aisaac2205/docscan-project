@@ -1,6 +1,7 @@
 'use client';
 
 import { SpinnerIcon, WifiIcon, CloseIcon, ScanIcon, TrashIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import type { WifiStatus, ScannerConfig } from '../types/scanner.types';
 
 interface WifiModalProps {
@@ -48,7 +49,7 @@ export function WifiModal({
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <WifiIcon className="text-fg-tertiary" />
-            <p className="text-h4 text-fg-primary">Escáner en red</p>
+            <Heading level={4} as="h2" className="text-fg-primary">Escáner en red</Heading>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken transition-colors">
             <CloseIcon />

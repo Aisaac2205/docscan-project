@@ -1,4 +1,5 @@
 import { SpinnerIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import type { ProviderId, ProviderInfo } from '@/features/ocr/types/ocr.types';
 import { PRIORITY_OPTIONS, TONE_OPTIONS, type TalentPoolCriteria } from '../types/talent-pool.types';
 
@@ -31,7 +32,7 @@ export function EvaluationPanel({
   return (
     <article className="rounded-md border border-border bg-surface-card p-4 md:p-5 lg:p-6 space-y-4">
       <div className="space-y-1">
-        <h2 className="text-h4 text-fg-primary">Modo de evaluación con IA</h2>
+        <Heading level={4} as="h2" className="text-fg-primary">Modo de evaluación con IA</Heading>
         <p className="text-caption text-fg-tertiary">Elegí velocidad o privacidad según tu proceso.</p>
       </div>
 

@@ -18,6 +18,7 @@ import { SourceCard } from '@/features/scanner/components/SourceCard';
 import { ResultPanel } from '@/features/scanner/components/ResultPanel';
 import { ScanResultBar } from '@/features/scanner/components/ScanResultBar';
 import { CameraIcon, WifiIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 
 export function ScannerView() {
   const searchParams = useSearchParams();
@@ -66,7 +67,7 @@ export function ScannerView() {
       <ScannerMetricsBar />
 
       <div className="mb-4 md:mb-6">
-        <h2 className="text-h1">Captura de documentos</h2>
+        <Heading level={1}>Captura de documentos</Heading>
         <p className="text-body-sm text-fg-tertiary mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>

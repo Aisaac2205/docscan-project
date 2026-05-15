@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import { useDocumentStore } from '@/features/documents/store';
 import { DocumentCard } from '@/features/documents/components/DocumentCard';
 import { printDocument } from '@/features/documents/utils/print';
@@ -35,7 +36,7 @@ export function DocumentsView() {
     <div>
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h1 className="text-h1">Documentos</h1>
+          <Heading level={1}>Documentos</Heading>
           <p className="text-body-sm text-fg-tertiary mt-0.5">
             {documents.length} documento{documents.length !== 1 ? 's' : ''} en tu biblioteca
           </p>

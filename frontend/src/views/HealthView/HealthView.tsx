@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import { useHealthStore } from '@/features/health/store';
 import { HealthFilters } from '@/features/health/components/HealthFilters';
 import { HealthRecordCard } from '@/features/health/components/HealthRecordCard';
@@ -45,9 +46,9 @@ export function HealthView() {
           <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             RRHH
           </p>
-          <h1 className="text-h1">
+          <Heading level={1}>
             Gestion de Salud y Ausencias
-          </h1>
+          </Heading>
         </div>
       </div>
 

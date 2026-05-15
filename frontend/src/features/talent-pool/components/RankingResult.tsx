@@ -1,3 +1,4 @@
+import { Heading } from '@/shared/components/Layout';
 import type { TalentPoolLabel, TalentPoolRankResult } from '../types/talent-pool.types';
 
 const labelStyle: Record<TalentPoolLabel, string> = {
@@ -44,7 +45,7 @@ export function RankingResult({ resultado, updatingPinRunId, onTogglePinned }: R
                 <span className="h-7 min-w-7 px-2 rounded-full bg-surface-sunken text-fg-secondary text-button-sm font-medium inline-flex items-center justify-center">
                   #{item.orden}
                 </span>
-                <h3 className="text-h4 text-fg-primary truncate">{item.nombre}</h3>
+                <Heading level={4} as="h3" className="text-fg-primary truncate">{item.nombre}</Heading>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-body-sm font-medium text-fg-secondary">{item.score}/100</span>

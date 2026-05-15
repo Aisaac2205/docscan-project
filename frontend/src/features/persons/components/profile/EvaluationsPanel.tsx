@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import { useEvaluations } from '@/features/evaluations/hooks/useEvaluations';
 import { useOCRProviders } from '@/features/ocr/hooks/useOCRProviders';
 import { MarkdownRenderer } from '@/shared/components/MarkdownRenderer/MarkdownRenderer';
@@ -64,9 +65,9 @@ export function EvaluationsPanel({ personId }: EvaluationsPanelProps) {
         aria-label="Generar nueva evaluación"
         className="bg-surface-card border border-border rounded-md p-4 md:p-5"
       >
-        <h3 className="text-h4 text-fg-primary mb-1">
+        <Heading level={4} as="h3" className="text-fg-primary mb-1">
           Generar evaluación con IA
-        </h3>
+        </Heading>
         <p className="text-caption text-fg-secondary mb-4">
           La IA analiza los datos extraídos del expediente y devuelve una recomendación. No procesa los documentos originales.
         </p>

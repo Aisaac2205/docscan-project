@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { SpinnerIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import type { Document } from '@/features/documents/types/document.types';
 
 type DocumentPickerProps = {
@@ -26,7 +27,7 @@ export function DocumentPicker({ documents, loading, selectedIds, onToggle, onAd
   return (
     <div className="rounded-md border border-border bg-surface-sunken/60 p-3 lg:p-4 space-y-3">
       <div className="space-y-1">
-        <h3 className="text-h4 text-fg-primary">Agregar desde CV/documentos escaneados</h3>
+        <Heading level={4} as="h3" className="text-fg-primary">Agregar desde CV/documentos escaneados</Heading>
         <p className="text-caption text-fg-secondary">
           Podés traer candidatos desde documentos ya cargados. Priorizamos los que están completos.
         </p>

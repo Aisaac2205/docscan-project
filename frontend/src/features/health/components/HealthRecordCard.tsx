@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Heading } from '@/shared/components/Layout';
 import type { HealthRecord } from '../types';
 import { HealthActions } from './HealthActions';
 
@@ -62,9 +63,9 @@ export function HealthRecordCard({ record }: HealthRecordCardProps) {
           <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             Constancia medica
           </p>
-          <h3 className="text-h4 text-fg-primary leading-tight">
+          <Heading level={4} as="h3" className="text-fg-primary leading-tight">
             {record.personName ?? record.nombre_paciente ?? record.originalName}
-          </h3>
+          </Heading>
           {record.personId ? (
             <Link
               href={`/persons/${record.personId}`}

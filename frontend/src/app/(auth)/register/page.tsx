@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button, Input, Label } from '@/shared/components/ui';
+import { Heading } from '@/shared/components/Layout';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,10 +37,10 @@ export default function RegisterPage() {
           </div>
         </div>
         <div>
-          <h2 className="text-fg-inverse text-h1 font-normal leading-snug mb-6">
+          <Heading level={1} as="h2" className="text-fg-inverse font-normal leading-snug mb-6">
             Comienza a digitalizar tus documentos<br />
             <span className="text-brand-ink-200">con inteligencia artificial.</span>
-          </h2>
+          </Heading>
           <div className="space-y-3">
             {[
               'Extracción automática de datos con Gemini AI',
@@ -72,7 +73,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-h1 mb-1">Crear cuenta</h1>
+            <Heading level={1} className="mb-1">Crear cuenta</Heading>
             <p className="text-fg-secondary text-body-sm">Completa los datos para comenzar</p>
           </div>
 

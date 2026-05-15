@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { Heading } from '@/shared/components/Layout';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Chart palette — referencias a CSS vars definidas en globals.css
@@ -51,7 +52,7 @@ export const ChartContainer = forwardRef<HTMLElement, ChartContainerProps>(
     >
       <header className="flex items-start justify-between gap-4 p-5 border-b border-border-subtle">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <h3 className="text-h3">{title}</h3>
+          <Heading level={3}>{title}</Heading>
           {description && (
             <p className="text-body-sm text-fg-secondary">{description}</p>
           )}

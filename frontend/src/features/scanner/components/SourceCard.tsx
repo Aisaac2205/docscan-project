@@ -1,4 +1,5 @@
 import React from 'react';
+import { Heading } from '@/shared/components/Layout';
 
 interface SourceCardAction {
   label: React.ReactNode;
@@ -24,7 +25,7 @@ export function SourceCard({ icon, title, subtitle, description, action, variant
           {icon}
         </div>
         <div>
-          <p className="text-h4 text-fg-primary">{title}</p>
+          <Heading level={4} as="h3" className="text-fg-primary">{title}</Heading>
           <p className="text-caption text-fg-tertiary mt-0.5">{subtitle}</p>
         </div>
       </div>

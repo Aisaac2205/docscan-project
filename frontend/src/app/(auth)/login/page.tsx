@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button, Input, Label } from '@/shared/components/ui';
+import { Heading } from '@/shared/components/Layout';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-h1 mb-1">Bienvenido de vuelta</h1>
+            <Heading level={1} className="mb-1">Bienvenido de vuelta</Heading>
             <p className="text-fg-secondary text-body-sm">Ingresa tus credenciales para continuar</p>
           </div>
 

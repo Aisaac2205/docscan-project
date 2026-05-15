@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Heading } from '@/shared/components/Layout';
 import type { Person } from '../types';
 import { PersonStatusBadge, PersonRoleBadge } from './PersonStatusBadge';
 
@@ -16,9 +17,9 @@ export function PersonCard({ person }: PersonCardProps) {
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="min-w-0">
-          <h3 className="text-h4 text-fg-primary leading-tight truncate">
+          <Heading level={4} as="h3" className="text-fg-primary leading-tight truncate">
             {person.fullName}
-          </h3>
+          </Heading>
           {person.cui && (
             <p className="text-caption text-fg-secondary mt-0.5">
               CUI: <span className="font-mono">{person.cui}</span>

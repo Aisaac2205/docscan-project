@@ -1,3 +1,4 @@
+import { Heading } from '@/shared/components/Layout';
 import type { FieldConflict } from '../../types';
 
 interface ConflictsPanelProps {
@@ -16,9 +17,9 @@ export function ConflictsPanel({ conflicts }: ConflictsPanelProps) {
       aria-label="Inconsistencias detectadas"
       className="bg-warning-bg border border-warning-border border-dashed rounded-md p-4"
     >
-      <h3 className="text-h4 text-warning-fg mb-2">
+      <Heading level={4} as="h3" className="text-warning-fg mb-2">
         Inconsistencias detectadas entre documentos
-      </h3>
+      </Heading>
       <p className="text-caption text-fg-secondary mb-3">
         Diferentes documentos reportan valores distintos para el mismo dato. Revisá cuál es el correcto.
       </p>

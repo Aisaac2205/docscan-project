@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { SpinnerIcon, CameraIcon, CloseIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 
 interface CameraModalProps {
   streamReady: boolean;
@@ -19,7 +20,7 @@ export function CameraModal({ streamReady, scanning, videoRef, canvasRef, onCapt
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <CameraIcon className="text-fg-tertiary" />
-            <p className="text-h4 text-fg-primary">Cámara del dispositivo</p>
+            <Heading level={4} as="h2" className="text-fg-primary">Cámara del dispositivo</Heading>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken transition-colors">
             <CloseIcon />

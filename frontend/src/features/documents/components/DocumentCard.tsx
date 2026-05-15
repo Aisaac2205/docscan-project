@@ -58,7 +58,7 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
         {/* Content */}
         <div className="flex-1 min-w-0 px-3 lg:px-4 py-2.5 lg:py-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-body-sm font-medium text-fg-primary truncate transition-colors">
+            <p className="text-body-sm text-fg-primary truncate transition-colors">
               {doc.originalName}
             </p>
             <StatusBadge status={doc.status} />

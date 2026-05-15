@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Heading } from '@/shared/components/Layout';
 import { personsApi } from '@/features/persons/api/personsApi';
 import type { Person } from '@/features/persons/types';
 
@@ -93,9 +94,9 @@ export function AssignPersonModal({
           <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
             Asignar a una persona
           </p>
-          <h2 id="assign-person-modal-title" className="text-h4 text-fg-primary truncate">
+          <Heading level={4} as="h2" id="assign-person-modal-title" className="text-fg-primary truncate">
             {documentName ?? 'Documento'}
-          </h2>
+          </Heading>
           <p className="text-caption text-fg-secondary mt-1">
             Buscá por nombre o CUI. Si no existe, creala primero desde la sección Personas.
           </p>

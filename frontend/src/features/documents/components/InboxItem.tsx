@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Heading } from '@/shared/components/Layout';
 import type { Document } from '../types/document.types';
 import { AssignPersonButton } from './AssignPersonButton';
 
@@ -70,12 +71,14 @@ export function InboxItem({ doc, onAssigned }: InboxItemProps) {
     <article className="bg-surface-card border border-border rounded-lg p-4 md:p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0 flex-1">
-          <Link
-            href={`/documents/${doc.id}`}
-            className="text-h4 text-fg-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm truncate block"
-          >
-            {doc.originalName}
-          </Link>
+          <Heading level={4} as="h3" className="text-fg-primary truncate">
+            <Link
+              href={`/documents/${doc.id}`}
+              className="hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm block"
+            >
+              {doc.originalName}
+            </Link>
+          </Heading>
           <p className="text-caption text-fg-secondary mt-0.5">
             {docType}
             <span className="mx-1.5 text-fg-tertiary">·</span>

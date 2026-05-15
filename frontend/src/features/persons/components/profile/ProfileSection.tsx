@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import type { FieldSource } from '../../types';
 
 interface ProfileSectionProps {
@@ -27,7 +28,7 @@ export function ProfileSection({
     >
       <header className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-h4 text-fg-primary">{title}</h3>
+          <Heading level={4} as="h3" className="text-fg-primary">{title}</Heading>
           {description && (
             <p className="text-caption text-fg-secondary mt-0.5">{description}</p>
           )}

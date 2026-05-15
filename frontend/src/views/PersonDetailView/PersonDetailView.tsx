@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Heading } from '@/shared/components/Layout';
 import { usePerson } from '@/features/persons/hooks/usePerson';
 import { PersonForm } from '@/features/persons/components/PersonForm';
 import { PersonStatusBadge, PersonRoleBadge } from '@/features/persons/components/PersonStatusBadge';
@@ -83,7 +84,7 @@ export function PersonDetailView({ personId }: PersonDetailViewProps) {
           Persona
         </p>
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-h1">{person.fullName}</h1>
+          <Heading level={1}>{person.fullName}</Heading>
           <PersonRoleBadge role={person.role} />
           <PersonStatusBadge status={person.status} />
         </div>

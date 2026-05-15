@@ -2,6 +2,7 @@
 
 import { useDocumentUpload, formatSize } from '../hooks/useDocumentUpload';
 import { CheckIcon, UploadIcon, ImageIcon, PdfIcon, FileIcon, CloseIcon, SpinnerIcon, SaveIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 
 interface DocumentUploadProps {
   onUploadComplete?: (documentId: string) => void;
@@ -20,7 +21,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-h2">Subir documento</h2>
+        <Heading level={2}>Subir documento</Heading>
         <p className="text-body-sm text-fg-tertiary mt-0.5">
           Arrastra un archivo o haz clic para seleccionarlo
         </p>

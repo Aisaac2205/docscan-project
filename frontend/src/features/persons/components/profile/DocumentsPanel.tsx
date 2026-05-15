@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import { personsApi } from '../../api/personsApi';
 import { useDocumentStore } from '@/features/documents/store';
 import type { Document } from '@/features/documents/types/document.types';
@@ -71,7 +72,7 @@ export function DocumentsPanel({ personId }: DocumentsPanelProps) {
     >
       <header className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-h4 text-fg-primary">Documentos asociados</h3>
+          <Heading level={4} as="h3" className="text-fg-primary">Documentos asociados</Heading>
           <p className="text-caption text-fg-secondary mt-0.5">
             Documentos cuyos datos alimentan el perfil de esta persona.
           </p>

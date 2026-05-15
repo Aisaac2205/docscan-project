@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { CloseIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 
 /* ─────────────────── Props ─────────────────── */
 
@@ -63,9 +64,9 @@ export function ExtractedDataModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
           <div className="min-w-0">
-            <h3 className="text-h4 text-fg-primary">
+            <Heading level={4} as="h2" className="text-fg-primary">
               Datos extraídos
-            </h3>
+            </Heading>
             <p className="text-body-sm text-fg-tertiary mt-0.5 truncate max-w-sm lg:max-w-md">
               {documentName}
             </p>

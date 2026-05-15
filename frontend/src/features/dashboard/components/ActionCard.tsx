@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Heading } from '@/shared/components/Layout';
 
 interface ActionCardProps {
   icon: React.ReactNode;
@@ -30,7 +31,7 @@ export function ActionCard({ icon, title, description, href, onClick }: ActionCa
         {icon}
       </div>
       <div className="min-w-0">
-        <h3 className="text-h4 text-fg-primary">{title}</h3>
+        <Heading level={4} as="h3" className="text-fg-primary">{title}</Heading>
         <p className="text-caption text-fg-tertiary mt-0.5">{description}</p>
       </div>
     </button>

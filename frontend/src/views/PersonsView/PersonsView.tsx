@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Heading } from '@/shared/components/Layout';
 import { usePersons } from '@/features/persons/hooks/usePersons';
 import { PersonCard } from '@/features/persons/components/PersonCard';
 import { PersonForm } from '@/features/persons/components/PersonForm';
@@ -31,7 +32,7 @@ export function PersonsView() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5 md:mb-7">
         <div>
           <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">RRHH</p>
-          <h1 className="text-h1">Personas</h1>
+          <Heading level={1}>Personas</Heading>
           <p className="text-body-sm text-fg-secondary mt-1">
             Gestioná candidatos y empleados con sus datos extraídos.
           </p>

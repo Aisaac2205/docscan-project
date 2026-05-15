@@ -1,5 +1,6 @@
 'use client';
 
+import { Heading } from '@/shared/components/Layout';
 import { useInboxDocuments } from '@/features/documents/hooks/useInboxDocuments';
 import { InboxItem } from '@/features/documents/components/InboxItem';
 
@@ -16,7 +17,7 @@ export function InboxView() {
       <div className="flex items-start justify-between mb-5 md:mb-7">
         <div>
           <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">RRHH</p>
-          <h1 className="text-h1">Bandeja de entrada</h1>
+          <Heading level={1}>Bandeja de entrada</Heading>
           <p className="text-body-sm text-fg-secondary mt-1">
             Documentos procesados que aún no están asociados a una persona.
           </p>

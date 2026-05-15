@@ -5,6 +5,7 @@ import { ocrClient } from '@/features/ocr/client';
 import type { ProviderId, ProviderInfo } from '@/features/ocr/types/ocr.types';
 import { toast } from '@/shared/ui/toast/store';
 import { SpinnerIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import { useTalentPoolStore } from '@/features/talent-pool/store';
 import { useDocumentStore } from '@/features/documents/store';
 import { CriteriaForm } from '@/features/talent-pool/components/CriteriaForm';
@@ -184,7 +185,7 @@ export function TalentPoolView() {
   return (
     <div className="space-y-4 md:space-y-6">
       <header className="space-y-1">
-        <h1 className="text-h1">Bolsa de talento</h1>
+        <Heading level={1}>Bolsa de talento</Heading>
         <p className="text-body-sm text-fg-secondary max-w-3xl">
           Compará candidatos de forma clara para RRHH. Cargás criterios, pegás CVs y obtenés un ranking con recomendaciones simples.
         </p>
@@ -210,7 +211,7 @@ export function TalentPoolView() {
       <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-h4 text-fg-primary">Candidatos a comparar</h2>
+            <Heading level={4} as="h2" className="text-fg-primary">Candidatos a comparar</Heading>
             <p className="text-caption text-fg-tertiary">Pegá el resumen o CV de cada persona. Máximo 7000 caracteres por candidato.</p>
           </div>
           <button
@@ -265,7 +266,7 @@ export function TalentPoolView() {
 
       <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
         <div>
-          <h2 className="text-h4 text-fg-primary">Resultado actual</h2>
+          <Heading level={4} as="h2" className="text-fg-primary">Resultado actual</Heading>
           <p className="text-caption text-fg-tertiary">Priorizamos la última corrida para decidir rápido, y debajo queda el historial.</p>
         </div>
 

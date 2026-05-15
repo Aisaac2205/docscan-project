@@ -1,4 +1,5 @@
 import { SpinnerIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import type { TalentPoolHistoryItem } from '../types/talent-pool.types';
 
 type HistorySectionProps = {
@@ -22,7 +23,7 @@ export function HistorySection({
     <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 lg:p-6 space-y-3 lg:space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-h4 text-fg-primary">Historial de evaluaciones</h2>
+          <Heading level={4} as="h2" className="text-fg-primary">Historial de evaluaciones</Heading>
           <p className="text-caption text-fg-tertiary">
             Las evaluaciones fijadas quedan arriba. Después se ordena por fecha más reciente.
           </p>
@@ -55,7 +56,7 @@ export function HistorySection({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-h4 text-fg-primary truncate">{run.puesto}</h3>
+                    <Heading level={4} as="h3" className="text-fg-primary truncate">{run.puesto}</Heading>
                     {run.isPinned && (
                       <span className="text-overline font-medium px-2 py-0.5 rounded-full border border-warning-border text-warning-fg bg-warning-bg">
                         Fijada

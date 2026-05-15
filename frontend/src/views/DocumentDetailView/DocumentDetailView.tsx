@@ -12,6 +12,7 @@ import { StatusBadge } from '@/features/documents/components/StatusBadge';
 import { printDocument } from '@/features/documents/utils/print';
 import { documentsClient } from '@/features/documents/client';
 import { FileIcon, PrintIcon, TrashIcon, SparkleIcon, OcrIcon } from '@/shared/ui/icons';
+import { Heading } from '@/shared/components/Layout';
 import { useDocumentStore } from '@/features/documents/store';
 
 interface DocumentDetailViewProps {
@@ -122,7 +123,7 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
           <div className="max-w-3xl mx-auto">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-h2">Datos extraídos</h2>
+                <Heading level={2}>Datos extraídos</Heading>
                 {renderedFields.length > 0 && (
                   <span className="text-caption font-medium text-fg-tertiary bg-surface-sunken px-2 py-0.5 rounded-full">
                     {renderedFields.length} campo{renderedFields.length !== 1 ? 's' : ''}
