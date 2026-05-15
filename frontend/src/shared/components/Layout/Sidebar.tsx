@@ -41,18 +41,6 @@ const tabs = [
     ),
   },
   {
-    id: 'inbox',
-    label: 'Bandeja de entrada',
-    path: '/inbox',
-    icon: (
-      <svg className="sidebar-icon" viewBox="0 0 16 16" fill="none">
-        <path d="M2 8.5V13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-        <path d="M2 8.5L4 3h8l2 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-        <path d="M5 8.5h2l1 1.5h0l1-1.5h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
     id: 'documents',
     label: 'Documentos',
     path: '/documents',

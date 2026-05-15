@@ -9,7 +9,7 @@ type DocumentsState = {
   setDocuments: (d: Document[]) => void;
   addDocument: (doc: Document) => void;
   updateDocument: (id: string, patch: Partial<Document>) => void;
-  fetchDocuments: () => Promise<void>;
+  fetchDocuments: (filters?: { unassigned?: boolean }) => Promise<void>;
   uploadDocument: (file: File, onProgress?: (p: number) => void, personId?: string) => Promise<Document | null>;
   deleteDocument: (id: string) => Promise<void>;
   assignToPerson: (documentId: string, personId: string | null) => Promise<void>;
@@ -33,10 +33,10 @@ export const useDocumentStore = create<DocumentsState>((set, get) => ({
     set((s) => ({
       documents: s.documents.map((d) => (d.id === id ? { ...d, ...patch } : d)),
     })),
-  fetchDocuments: async () => {
+  fetchDocuments: async (filters) => {
     set({ loading: true, error: null });
     try {
-      const docs = await documentsClient.list();
+      const docs = await documentsClient.list(filters);
       console.log('[documents] fetched:', docs.map(d => ({ id: d.id, status: d.status, extractedData: d.extractedData })));
       set({ documents: docs });
     } catch (err: unknown) {
