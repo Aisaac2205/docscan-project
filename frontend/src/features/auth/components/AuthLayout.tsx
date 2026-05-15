@@ -10,7 +10,7 @@ export function AuthLayout({ brandContent, children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen bg-surface-page flex">
       {/* Left panel */}
-      <div className="hidden lg:flex lg:w-[480px] bg-brand-ink-700 flex-col justify-between p-12 flex-shrink-0">
+      <div className="hidden lg:flex lg:w-[480px] bg-brand-ink-900 flex-col justify-between p-12 flex-shrink-0">
         <div>
           <div className="flex items-center gap-2.5">
             <DocScanIcon />

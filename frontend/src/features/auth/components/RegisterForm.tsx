@@ -109,7 +109,11 @@ export function RegisterForm() {
           />
         </div>
 
-        <Button type="submit" loading={loading} className="w-full mt-1">
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full mt-1 bg-brand-ink-700 hover:bg-brand-ink-700 active:bg-brand-ink-700 text-white transition-none"
+        >
           {loading ? 'Creando cuenta...' : 'Crear cuenta'}
         </Button>
       </form>

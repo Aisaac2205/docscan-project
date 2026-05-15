@@ -89,7 +89,11 @@ export function LoginForm() {
           />
         </div>
 
-        <Button type="submit" loading={loading} className="w-full mt-1">
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full mt-1 bg-brand-ink-700 hover:bg-brand-ink-700 active:bg-brand-ink-700 text-white transition-none"
+        >
           {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </Button>
       </form>
