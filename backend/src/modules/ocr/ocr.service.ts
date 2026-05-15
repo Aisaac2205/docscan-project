@@ -148,6 +148,8 @@ export class OcrService {
           '5. Si hay listas/bullets en el CV, consérvalos como arreglos de strings.\n' +
           '6. Normaliza fechas al formato YYYY-MM cuando sea posible; si indica presente, usa "actual".\n' +
           '7. Mantén nombres de claves claros y consistentes en snake_case, pero prioriza fidelidad al contenido real del CV.\n' +
+          '8. NORMALIZA palabras cortadas por iconos, hipervínculos o saltos de columna. Ejemplos: "Linked In" → "LinkedIn", "Git Hub" / "GitHu b" → "GitHub", "Emai l" → "Email", "Vau ltly" → "Vaultly", "What sApp" → "WhatsApp". Si una palabra tiene un espacio intermedio sospechoso y junta tiene sentido, JUNTALA.\n' +
+          '9. Devolvé un ÚNICO objeto JSON plano en la raíz. NO uses el nombre de la persona como llave raíz. NO envuelvas el resultado en un array. NO inyectes strings de metadata jammed dentro de arrays.\n' +
           'Incluye "_confidence" como número entre 0.0 y 1.0 al nivel raíz del JSON. ' +
           'Recuerda: solo incluye secciones y campos que realmente existan en el documento, con máximo detalle.'
         );
@@ -277,6 +279,7 @@ case ExtractionMode.FISCAL_SOCIAL:
     }
 
     const provider = this.registry.get(providerId);
+    const startedAt = Date.now();
 
     try {
       const imageBuffer = await this.fetchImageBuffer(document.filePath);
@@ -320,11 +323,16 @@ case ExtractionMode.FISCAL_SOCIAL:
       }
       const extractedData = (validation.success ? validation.data : rawData) as ExtractedDataByMode[M];
 
+      const completedAt = new Date();
+      const processingDurationMs = Date.now() - startedAt;
+
       try {
         await this.documentsRepository.update(documentId, {
           extractedData: extractedData as unknown as Prisma.InputJsonValue,
           status: 'completed',
           documentType: mode,
+          processedAt: completedAt,
+          processingDurationMs,
           ...(confidence !== undefined && { confidence }),
         });
       } catch (err: unknown) {

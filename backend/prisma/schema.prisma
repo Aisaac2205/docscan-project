@@ -70,6 +70,17 @@ model Document {
   confidence    Float?
   status        String          @default("pending")
   retainOriginal Boolean        @default(true)
+
+  // Populated by OcrService when an extraction completes successfully.
+  // Used by the dashboard to slice metrics by processing day instead of upload day.
+  processedAt          DateTime?
+  // Wall-clock milliseconds taken by the OCR provider call. Drives avgProcessingTime.
+  processingDurationMs Int?
+  // Set by a (future) manual-validation flow when a human signs off on extracted data.
+  // While the flow does not exist, "validados" series stays at 0 (real state, not mocked).
+  validatedAt          DateTime?
+  validatedBy          String?
+
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   queries       DocumentQuery[]
@@ -79,6 +90,8 @@ model Document {
   @@index([status])
   @@index([documentType])
   @@index([userId, documentType])
+  @@index([userId, processedAt])
+  @@index([userId, validatedAt])
 }
 
 model DocumentQuery {

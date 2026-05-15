@@ -71,6 +71,10 @@ export class DocumentsRepository {
     documentType?: string;
     filePath?: string;
     personId?: string | null;
+    processedAt?: Date | null;
+    processingDurationMs?: number | null;
+    validatedAt?: Date | null;
+    validatedBy?: string | null;
   }) {
     return this.prisma.document.update({
       where: { id },
