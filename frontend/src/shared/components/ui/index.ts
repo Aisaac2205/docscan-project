@@ -4,7 +4,6 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export {
   Card,
   CardHeader,
-  CardTitle,
   CardDescription,
   CardContent,
   CardFooter,

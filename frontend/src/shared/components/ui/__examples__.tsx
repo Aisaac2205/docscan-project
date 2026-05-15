@@ -18,7 +18,6 @@ import {
   Button,
   Card,
   CardHeader,
-  CardTitle,
   CardDescription,
   CardContent,
   CardFooter,
@@ -197,7 +196,7 @@ export function DesignSystemGallery() {
           <ExampleBlock label="Uso compuesto" fullWidth>
             <Card>
               <CardHeader>
-                <CardTitle>Confirmar eliminación</CardTitle>
+                <Heading level={4} as="h3">Confirmar eliminación</Heading>
                 <CardDescription>
                   Esta acción no se puede deshacer.
                 </CardDescription>
@@ -221,21 +220,21 @@ export function DesignSystemGallery() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Default</CardTitle>
+                  <Heading level={4} as="h3">Default</Heading>
                   <CardDescription>Border simple, sin sombra.</CardDescription>
                 </CardHeader>
                 <CardContent>Para listas y panels.</CardContent>
               </Card>
               <Card variant="elevated">
                 <CardHeader>
-                  <CardTitle>Elevated</CardTitle>
+                  <Heading level={4} as="h3">Elevated</Heading>
                   <CardDescription>Sombra sutil, sin border.</CardDescription>
                 </CardHeader>
                 <CardContent>Destaca sobre otras cards.</CardContent>
               </Card>
               <Card variant="interactive" tabIndex={0}>
                 <CardHeader>
-                  <CardTitle>Interactive</CardTitle>
+                  <Heading level={4} as="h3">Interactive</Heading>
                   <CardDescription>Hover muestra sombra. Cursor pointer.</CardDescription>
                 </CardHeader>
                 <CardContent>Para listas clickeables.</CardContent>
@@ -248,7 +247,7 @@ export function DesignSystemGallery() {
               <CardHeader>
                 <Cluster justify="between">
                   <Stack gap="xs">
-                    <CardTitle>Documento DPI-2024-0142</CardTitle>
+                    <Heading level={4} as="h3">Documento DPI-2024-0142</Heading>
                     <CardDescription>Cargado el 12 de mayo, 14:32</CardDescription>
                   </Stack>
                   <Badge variant="success">Procesado</Badge>

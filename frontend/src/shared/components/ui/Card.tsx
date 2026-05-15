@@ -38,13 +38,6 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
 );
 CardHeader.displayName = 'CardHeader';
 
-export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn('text-h3', className)} {...props} />
-  )
-);
-CardTitle.displayName = 'CardTitle';
-
 export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
     <p ref={ref} className={cn('text-body-sm text-fg-secondary', className)} {...props} />
