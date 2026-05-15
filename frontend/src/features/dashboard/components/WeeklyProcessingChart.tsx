@@ -5,7 +5,6 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -18,12 +17,8 @@ import {
   EmptyState,
 } from '@/shared/components/data-display';
 import { Skeleton } from '@/shared/components/ui';
+import { useElementSize } from '@/shared/hooks/useElementSize';
 import type { WeeklyProcessingPoint } from '../api/dashboardApi';
-
-// ---------------------------------------------------------------------------
-// Series → color mapping (chart-1 brand for procesados, chart-2 ink for validados).
-// Names below are what shows in the tooltip/legend.
-// ---------------------------------------------------------------------------
 
 const SERIES = [
   { key: 'procesados', name: 'Procesados', color: CHART_COLORS[0] },
@@ -36,6 +31,9 @@ interface WeeklyProcessingChartProps {
 }
 
 export function WeeklyProcessingChart({ data, loading }: WeeklyProcessingChartProps) {
+  const [ref, size] = useElementSize<HTMLDivElement>();
+  const ready = size.width > 0 && size.height > 0;
+
   return (
     <ChartContainer
       title="Procesamiento semanal"
@@ -49,9 +47,14 @@ export function WeeklyProcessingChart({ data, loading }: WeeklyProcessingChartPr
           description="Aún no hay actividad en los últimos 7 días."
         />
       ) : (
-        <div className="h-[260px] w-full">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+        <div ref={ref} className="h-[260px] w-full">
+          {ready && (
+            <AreaChart
+              width={size.width}
+              height={size.height}
+              data={data}
+              margin={{ top: 8, right: 8, bottom: 0, left: -16 }}
+            >
               <defs>
                 {SERIES.map((s) => (
                   <linearGradient
@@ -91,7 +94,7 @@ export function WeeklyProcessingChart({ data, loading }: WeeklyProcessingChartPr
                 />
               ))}
             </AreaChart>
-          </ResponsiveContainer>
+          )}
         </div>
       )}
     </ChartContainer>

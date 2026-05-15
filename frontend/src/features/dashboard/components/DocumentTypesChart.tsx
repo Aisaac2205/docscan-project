@@ -1,13 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
+import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 import {
   CHART_COLORS,
   ChartContainer,
@@ -15,16 +9,11 @@ import {
   EmptyState,
 } from '@/shared/components/data-display';
 import { Skeleton } from '@/shared/components/ui';
+import { useElementSize } from '@/shared/hooks/useElementSize';
 import type {
   DocumentTypeBucket,
   DocumentTypeBucketCount,
 } from '../api/dashboardApi';
-
-// ---------------------------------------------------------------------------
-// Type-bucket → display label + color. Labels copian las del catálogo
-// canónico en `features/ocr/types/ocr.types.ts` (EXTRACTION_MODE_LABELS)
-// para no divergir. Familia monocromática azul (chart-1..chart-5).
-// ---------------------------------------------------------------------------
 
 const BUCKET_META: Record<
   DocumentTypeBucket,
@@ -43,6 +32,8 @@ interface DocumentTypesChartProps {
 }
 
 export function DocumentTypesChart({ data, loading }: DocumentTypesChartProps) {
+  const [ref, size] = useElementSize<HTMLDivElement>();
+  const ready = size.width > 0 && size.height > 0;
   const total = useMemo(
     () => (data ? data.reduce((acc, d) => acc + d.count, 0) : 0),
     [data],
@@ -59,9 +50,9 @@ export function DocumentTypesChart({ data, loading }: DocumentTypesChartProps) {
         />
       ) : (
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="relative w-[180px] h-[180px] shrink-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart>
+          <div ref={ref} className="relative w-[180px] h-[180px] shrink-0">
+            {ready && (
+              <PieChart width={size.width} height={size.height}>
                 <Pie
                   data={data}
                   dataKey="count"
@@ -85,7 +76,7 @@ export function DocumentTypesChart({ data, loading }: DocumentTypesChartProps) {
                   }
                 />
               </PieChart>
-            </ResponsiveContainer>
+            )}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-h2 text-fg-primary leading-none tabular-nums">
                 {total}

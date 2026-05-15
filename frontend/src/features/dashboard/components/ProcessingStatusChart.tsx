@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, Cell, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   CHART_COLORS,
   ChartContainer,
@@ -16,15 +8,11 @@ import {
   EmptyState,
 } from '@/shared/components/data-display';
 import { Skeleton } from '@/shared/components/ui';
+import { useElementSize } from '@/shared/hooks/useElementSize';
 import type {
   ProcessingStatusBucket,
   ProcessingStatusBucketCount,
 } from '../api/dashboardApi';
-
-// ---------------------------------------------------------------------------
-// Status-bucket → display label + color.
-// "error" uses the only semantic exception allowed in charts (danger-fg).
-// ---------------------------------------------------------------------------
 
 const BUCKET_META: Record<
   ProcessingStatusBucket,
@@ -53,6 +41,8 @@ export function ProcessingStatusChart({
   data,
   loading,
 }: ProcessingStatusChartProps) {
+  const [ref, size] = useElementSize<HTMLDivElement>();
+  const ready = size.width > 0 && size.height > 0;
   const total = data ? data.reduce((acc, d) => acc + d.count, 0) : 0;
 
   return (
@@ -68,9 +58,11 @@ export function ProcessingStatusChart({
           description="Cuando proceses tu primer documento aparecerá el desglose por estado."
         />
       ) : (
-        <div className="h-[220px] w-full">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <div ref={ref} className="h-[220px] w-full">
+          {ready && (
             <BarChart
+              width={size.width}
+              height={size.height}
               layout="vertical"
               data={toChartData(data)}
               margin={{ top: 4, right: 56, bottom: 4, left: 8 }}
@@ -111,7 +103,7 @@ export function ProcessingStatusChart({
                 ))}
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+          )}
         </div>
       )}
     </ChartContainer>
