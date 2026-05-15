@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export interface ElementSize {
   width: number;
@@ -6,15 +6,23 @@ export interface ElementSize {
 }
 
 export function useElementSize<T extends HTMLElement>(): [
-  React.RefObject<T | null>,
+  (node: T | null) => void,
   ElementSize,
 ] {
-  const ref = useRef<T>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
   const [size, setSize] = useState<ElementSize>({ width: 0, height: 0 });
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+  const refCallback = useCallback((node: T | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+
+    if (!node) {
+      return;
+    }
+
+    const rect = node.getBoundingClientRect();
+    setSize({ width: rect.width, height: rect.height });
+
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
@@ -23,9 +31,9 @@ export function useElementSize<T extends HTMLElement>(): [
         prev.width === width && prev.height === height ? prev : { width, height },
       );
     });
-    observer.observe(el);
-    return () => observer.disconnect();
+    observer.observe(node);
+    observerRef.current = observer;
   }, []);
 
-  return [ref, size];
+  return [refCallback, size];
 }
