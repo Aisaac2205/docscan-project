@@ -29,8 +29,6 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
   const renderedFields = useExtractedFields(extracted);
   const isCompleted = doc.status === 'completed';
   const isImage = doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf');
-  const isPdf = doc.filePath?.toLowerCase().endsWith('.pdf');
-  const [previewOpen, setPreviewOpen] = useState(true);
 
   useEffect(() => {
     documentsClient.get(initialDoc.id)
@@ -116,76 +114,40 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-        {/* Data panel — PRIMARY, larger */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-surface-card">
-          <div className="max-w-3xl mx-auto">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <Heading level={2}>Datos extraídos</Heading>
-                {renderedFields.length > 0 && (
-                  <span className="text-caption font-medium text-fg-tertiary bg-surface-sunken px-2 py-0.5 rounded-full">
-                    {renderedFields.length} campo{renderedFields.length !== 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-              <p className="text-body-sm text-fg-tertiary">
-                {isCompleted && renderedFields.length > 0
-                  ? 'Información estructurada extraída del documento'
-                  : 'Aún no se han extraído datos de este documento'}
-              </p>
+      {/* Main content — data panel ocupa todo el ancho. El OCR YA leyó el doc;
+          no tiene sentido mostrar el PDF al lado. Si el usuario necesita ver
+          el original, lo abre con Imprimir o desde la URL del filePath. */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-surface-card">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Heading level={2}>Datos extraídos</Heading>
+              {renderedFields.length > 0 && (
+                <span className="text-caption font-medium text-fg-tertiary bg-surface-sunken px-2 py-0.5 rounded-full">
+                  {renderedFields.length} campo{renderedFields.length !== 1 ? 's' : ''}
+                </span>
+              )}
             </div>
-
-            {isCompleted && renderedFields.length > 0 ? (
-              <ExtractedFieldsPanel fields={renderedFields} />
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-fg-tertiary gap-3">
-                <OcrIcon size={40} />
-                <p className="text-body">{!isCompleted ? 'Procesando documento…' : 'No hay datos extraídos'}</p>
-                {!isCompleted && doc.status !== 'processing' && (
-                  <button
-                    onClick={() => documentAction.handleSmartExtract()}
-                    className="mt-2 h-9 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 transition-colors flex items-center gap-1.5"
-                  >
-                    <SparkleIcon size={12} />Extraer con IA
-                  </button>
-                )}
-              </div>
-            )}
+            <p className="text-body-sm text-fg-tertiary">
+              {isCompleted && renderedFields.length > 0
+                ? 'Información estructurada extraída del documento'
+                : 'Aún no se han extraído datos de este documento'}
+            </p>
           </div>
-        </div>
 
-        {/* Preview panel — reference, smaller */}
-        <div className="lg:w-[380px] xl:w-[420px] lg:border-l border-t lg:border-t-0 border-border bg-surface-page flex-shrink-0 flex flex-col">
-          <button
-            onClick={() => setPreviewOpen(!previewOpen)}
-            className="flex items-center justify-between px-4 py-3 lg:px-5 lg:py-4 border-b border-border bg-surface-card"
-          >
-            <span className="text-body-sm font-medium text-fg-primary">Vista previa del documento</span>
-            <span className="text-fg-tertiary">{previewOpen ? '−' : '+'}</span>
-          </button>
-
-          {previewOpen && (
-            <div className="flex-1 overflow-auto p-3 lg:p-4 flex items-center justify-center">
-              {isImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={doc.filePath}
-                  alt={doc.originalName}
-                  className="max-w-full max-h-full object-contain rounded-md shadow-sm"
-                />
-              ) : isPdf ? (
-                <iframe
-                  src={doc.filePath}
-                  title={doc.originalName}
-                  className="w-full h-[300px] lg:h-full rounded-md border border-border bg-surface-card"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-fg-tertiary">
-                  <FileIcon size={32} />
-                  <p className="text-caption">Sin vista previa</p>
-                </div>
+          {isCompleted && renderedFields.length > 0 ? (
+            <ExtractedFieldsPanel fields={renderedFields} />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-fg-tertiary gap-3">
+              <OcrIcon size={40} />
+              <p className="text-body">{!isCompleted ? 'Procesando documento…' : 'No hay datos extraídos'}</p>
+              {!isCompleted && doc.status !== 'processing' && (
+                <button
+                  onClick={() => documentAction.handleSmartExtract()}
+                  className="mt-2 h-9 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 transition-colors flex items-center gap-1.5"
+                >
+                  <SparkleIcon size={12} />Extraer con IA
+                </button>
               )}
             </div>
           )}

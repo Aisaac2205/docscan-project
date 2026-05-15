@@ -40,6 +40,14 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 
 // ─── Clasificación ───────────────────────────────────────────────────────────
 
+// Modelos locales a veces inyectan strings de metadata jammed dentro de
+// arrays — ej. "_confidence_score_estimateed_by_system_expert_..._0.98"
+// metido como elemento más en un array de objetos legítimos. Las filtramos
+// con la misma heurística que aplicamos a las keys: prefijo "_" + letra.
+function isMetaLeakString(v: unknown): boolean {
+  return typeof v === 'string' && /^_[a-z]/i.test(v.trim());
+}
+
 function classifyValue(value: unknown): FieldValue | null {
   if (isNullish(value)) return null;
 
@@ -47,15 +55,8 @@ function classifyValue(value: unknown): FieldValue | null {
     return { type: 'primitive', value: String(value) };
   }
 
-  if (isArrayOfPrimitives(value)) {
-    return { type: 'list', items: value.map(String) };
-  }
-
-  if (isArrayOfObjects(value)) {
-    const rows = value
-      .map((item) => classifyFields(item))
-      .filter((row) => row.length > 0);
-    return rows.length > 0 ? { type: 'array', rows } : null;
+  if (Array.isArray(value)) {
+    return classifyArray(value);
   }
 
   if (isPlainObject(value)) {
@@ -63,14 +64,52 @@ function classifyValue(value: unknown): FieldValue | null {
     return fields.length > 0 ? { type: 'object', fields } : null;
   }
 
-  // Fallback: tipos inesperados como JSON legible
+  // Tipos inesperados (Date, Map, etc.) — JSON legible como último recurso.
   return { type: 'primitive', value: JSON.stringify(value) };
+}
+
+/**
+ * Clasifica un array según su contenido. Maneja 3 casos:
+ *   1. Homogéneo de primitivos → ListField (chips/líneas)
+ *   2. Homogéneo de objetos    → ArrayField (filas con campos)
+ *   3. Heterogéneo (mixto)     → ArrayField clasificando elemento por elemento.
+ *      Esto cubre cuando el modelo devuelve `[{...obj}, "_confidence_..."]`
+ *      después de filtrar las strings de metadata.
+ */
+function classifyArray(value: unknown[]): FieldValue | null {
+  const items = value.filter((v) => !isMetaLeakString(v) && !isNullish(v));
+  if (items.length === 0) return null;
+
+  if (isArrayOfPrimitives(items)) {
+    return { type: 'list', items: items.map(String) };
+  }
+
+  if (isArrayOfObjects(items)) {
+    const rows = items
+      .map((item) => classifyFields(item))
+      .filter((row) => row.length > 0);
+    return rows.length > 0 ? { type: 'array', rows } : null;
+  }
+
+  const rows: RenderedField[][] = items.flatMap((item, i) => {
+    if (isPlainObject(item)) {
+      const fields = classifyFields(item);
+      return fields.length > 0 ? [fields] : [];
+    }
+    const classified = classifyValue(item);
+    if (!classified) return [];
+    return [[{ key: `__item_${i}`, label: 'Elemento', value: classified }]];
+  });
+  return rows.length > 0 ? { type: 'array', rows } : null;
 }
 
 function classifyFields(obj: Record<string, unknown>): RenderedField[] {
   const fields = Object.entries(obj).flatMap(([key, value]) => {
-    // Omitir campos internos (_confidence, _metadata, etc.) y valores vacíos
-    if (key.startsWith('_') || isNullish(value)) return [];
+    // Omitir campos internos (_confidence, _metadata, etc.), valores vacíos,
+    // y strings de metadata-leak guardadas como valor (modelos locales).
+    if (key.startsWith('_') || isNullish(value) || isMetaLeakString(value)) {
+      return [];
+    }
 
     const classified = classifyValue(value);
     if (!classified) return [];
