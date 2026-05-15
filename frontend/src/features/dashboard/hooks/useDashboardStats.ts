@@ -1,61 +1,65 @@
-import { useEffect, useMemo, useState } from 'react';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { useDocumentStore } from '../../documents/store';
-import type { Document } from '@/features/documents/types/document.types';
 import { dashboardApi, type DashboardStats } from '../api/dashboardApi';
 
+// ---------------------------------------------------------------------------
+// Hook return type
+// ---------------------------------------------------------------------------
+
 interface UseDashboardStatsResult {
-  firstName: string;
-  loading: boolean;
-  recentDocuments: Document[];
-  stats: DashboardStats | null;
-  statsLoading: boolean;
-  statsError: string | null;
-  refreshStats: () => Promise<void>;
+  readonly firstName: string;
+  readonly stats: DashboardStats | null;
+  readonly statsLoading: boolean;
+  readonly statsError: string | null;
+  readonly refreshStats: () => Promise<void>;
 }
 
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+/**
+ * useDashboardStats — fetches OCR dashboard stats from the backend.
+ *
+ * Uses the shared `api` client (Axios + JWT). All data comes from
+ * GET /api/dashboard/stats. Fields marked with TODO in `dashboardApi.ts`
+ * will be `undefined` until the backend implements them.
+ */
 export function useDashboardStats(): UseDashboardStatsResult {
   const { user } = useAuth();
-  const { documents, fetchDocuments, loading } = useDocumentStore();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setStatsLoading(true);
     setStatsError(null);
     try {
       const data = await dashboardApi.getStats();
       setStats(data);
     } catch (err) {
-      setStatsError(err instanceof Error ? err.message : 'Error al cargar métricas');
+      setStatsError(
+        err instanceof Error ? err.message : 'Error al cargar las métricas'
+      );
     } finally {
       setStatsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchDocuments();
     loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadStats]);
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuario';
 
-  const recentDocuments = useMemo(() => {
-    return [...documents]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 6);
-  }, [documents]);
-
   return {
     firstName,
-    loading,
-    recentDocuments,
     stats,
     statsLoading,
     statsError,
     refreshStats: loadStats,
-  };
+  } as const;
 }
