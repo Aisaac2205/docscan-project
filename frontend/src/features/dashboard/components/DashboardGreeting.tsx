@@ -5,7 +5,8 @@ import { Heading } from '@/shared/components/Layout';
 import { SystemStatusBadge } from './SystemStatusBadge';
 
 interface DashboardGreetingProps {
-  readonly firstName: string;
+  readonly firstName: string | null;
+  readonly userLoading?: boolean;
   readonly ocrEngineOnline?: boolean;
   readonly activeWorkers?: number;
 }
@@ -36,6 +37,7 @@ function useFormattedDate(): string {
  */
 export function DashboardGreeting({
   firstName,
+  userLoading = false,
   ocrEngineOnline,
   activeWorkers,
 }: DashboardGreetingProps) {
@@ -44,12 +46,21 @@ export function DashboardGreeting({
   const hasSystemStatus =
     ocrEngineOnline !== undefined && activeWorkers !== undefined;
 
+  const showSkeleton = userLoading || !firstName;
+
   return (
     <div className="flex items-start justify-between gap-4 mb-6 md:mb-8">
       {/* Left: greeting + date */}
       <div className="min-w-0">
         <Heading level={1} className="text-fg-primary truncate">
-          Hola, {firstName} 👋
+          {showSkeleton ? (
+            <span
+              aria-label="Cargando saludo"
+              className="inline-block h-[1em] w-48 align-middle rounded-md bg-surface-sunken animate-pulse"
+            />
+          ) : (
+            <>Hola, {firstName} 👋</>
+          )}
         </Heading>
         <p className="text-body-sm text-fg-secondary mt-0.5">
           {formattedDate}

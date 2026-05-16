@@ -1,110 +1,90 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { api, TOKEN_STORAGE_KEY } from '../api/client'; //
+import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { api } from '../api/client';
+import { useAuthStore } from '../auth/authStore';
+import { useCurrentUser, currentUserQueryKey, type CurrentUser } from '../auth/useCurrentUser';
 
-type User = {
-  id: string;
-  email: string;
-  name?: string | null;
-};
-
-// 1. El estado solo maneja la data pura, sin funciones
-type AuthState = {
-  token: string | null;
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-};
-
+/**
+ * Compat surface kept identical to the previous hook so existing consumers
+ * (LoginForm, RegisterForm, Header, useDashboardStats) keep working unchanged.
+ * Internally backed by Zustand (token) + react-query (current user).
+ */
 export function useAuth() {
-  const [state, setState] = useState<AuthState>({
-    token: null,
-    user: null,
-    loading: true,  // always start as loading until fetchMe() resolves
-    error: null
-  });
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const token = useAuthStore((s) => s.token);
+  const setToken = useAuthStore((s) => s.setToken);
+  const clearToken = useAuthStore((s) => s.clearToken);
 
-  // Fetch current user when token exists
-  useEffect(() => {
-    let mounted = true;
-    async function fetchMe() {
-      const token = api.getToken();
-      if (!token) {
-        setState({ token: null, user: null, loading: false, error: null });
-        return;
-      }
-      setState((s) => ({ ...s, loading: true }));
+  const userQuery = useCurrentUser();
+
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      setActionLoading(true);
       try {
-        const res = await api.get<{ id: string; email: string; name?: string | null }>('/api/auth/me');
-        if (!mounted) return;
-        setState({ token, user: res.data, loading: false, error: null });
+        const res = await api.post<{ accessToken: string }>('/api/auth/login', { email, password });
+        setToken(res.data.accessToken);
+        const me = await queryClient.fetchQuery({
+          queryKey: currentUserQueryKey,
+          queryFn: async () => (await api.get<CurrentUser>('/api/auth/me')).data,
+          staleTime: Infinity,
+        });
+        return me;
       } catch (err: unknown) {
-        if (!mounted) return;
-        // Only clear token on auth errors (401), not network/server errors
-        const status = (err as { response?: { status?: number } })?.response?.status;
-        if (status === 401) {
-          api.setToken(null);
-          setState({ token: null, user: null, loading: false, error: null });
-        } else {
-          // Keep token, just stop loading — may recover on retry
-          setState((s) => ({ ...s, loading: false }));
-        }
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        setError(message || 'Login failed');
+        return null;
+      } finally {
+        setActionLoading(false);
       }
-    }
-    fetchMe();
-    return () => { mounted = false; };
-  }, []);
+    },
+    [queryClient, setToken],
+  );
 
-  const login = useCallback(async (email: string, password: string) => {
-    setState((s) => ({ ...s, error: null }));
-    try {
-      const res = await api.post<{ accessToken: string }>('/api/auth/login', { email, password });
-      const token = res.data.accessToken;
-      api.setToken(token);
-      const me = await api.get<User>('/api/auth/me');
-      setState({ token, user: me.data, loading: false, error: null });
-      return me.data;
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setState((s) => ({ ...s, error: message || 'Login failed', loading: false }));
-      return null;
-    }
-  }, []);
-
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    setState((s) => ({ ...s, error: null }));
-    try {
-      await api.post('/api/auth/register', { name, email, password });
-      const res = await api.post<{ accessToken: string }>('/api/auth/login', { email, password });
-      const token = res.data.accessToken;
-      api.setToken(token);
-      const me = await api.get<User>('/api/auth/me');
-      setState({ token, user: me.data, loading: false, error: null });
-      return me.data;
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setState((s) => ({ ...s, error: message || 'Registration failed', loading: false }));
-      return null;
-    }
-  }, []);
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      setError(null);
+      setActionLoading(true);
+      try {
+        await api.post('/api/auth/register', { name, email, password });
+        const res = await api.post<{ accessToken: string }>('/api/auth/login', { email, password });
+        setToken(res.data.accessToken);
+        const me = await queryClient.fetchQuery({
+          queryKey: currentUserQueryKey,
+          queryFn: async () => (await api.get<CurrentUser>('/api/auth/me')).data,
+          staleTime: Infinity,
+        });
+        return me;
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        setError(message || 'Registration failed');
+        return null;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [queryClient, setToken],
+  );
 
   const logout = useCallback(() => {
-    api.setToken(null);
-    setState({ token: null, user: null, loading: false, error: null });
-    if (typeof window !== 'undefined') window.location.href = '/login';
-  }, []);
-
-  // 2. La función sigue existiendo y actualiza el estado correctamente
-  const setError = useCallback((e: string | null) => {
-    setState((s) => ({ ...s, error: e }));
-  }, []);
+    clearToken();
+    queryClient.removeQueries({ queryKey: currentUserQueryKey });
+    queryClient.clear();
+    if (typeof window !== 'undefined') router.push('/login');
+  }, [clearToken, queryClient, router]);
 
   return {
-    token: state.token,
-    user: state.user,
-    loading: state.loading,
-    error: state.error,
+    token,
+    user: userQuery.data ?? null,
+    loading: actionLoading || (Boolean(token) && userQuery.isLoading),
+    error,
     login,
     register,
     logout,

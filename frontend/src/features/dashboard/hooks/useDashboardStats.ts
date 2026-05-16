@@ -1,65 +1,52 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '@/shared/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentUser } from '@/shared/auth/useCurrentUser';
+import { useAuthStore } from '@/shared/auth/authStore';
 import { dashboardApi, type DashboardStats } from '../api/dashboardApi';
 
-// ---------------------------------------------------------------------------
-// Hook return type
-// ---------------------------------------------------------------------------
-
 interface UseDashboardStatsResult {
-  readonly firstName: string;
+  readonly firstName: string | null;
+  readonly userLoading: boolean;
   readonly stats: DashboardStats | null;
   readonly statsLoading: boolean;
   readonly statsError: string | null;
-  readonly refreshStats: () => Promise<void>;
+  readonly refreshStats: () => Promise<unknown>;
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
+export const dashboardStatsQueryKey = ['dashboard', 'stats'] as const;
 
 /**
- * useDashboardStats — fetches OCR dashboard stats from the backend.
- *
- * Uses the shared `api` client (Axios + JWT). All data comes from
- * GET /api/dashboard/stats. Fields marked with TODO in `dashboardApi.ts`
- * will be `undefined` until the backend implements them.
+ * Dashboard stats backed by react-query.
+ * - Cached 30s across navigations (defaults from queryClient).
+ * - Dedupes parallel requests across components.
+ * - `firstName` is null while the user query is in-flight so the UI can
+ *   render a skeleton instead of flashing the "Usuario" fallback.
  */
 export function useDashboardStats(): UseDashboardStatsResult {
-  const { user } = useAuth();
+  const token = useAuthStore((s) => s.token);
+  const userQuery = useCurrentUser();
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState<string | null>(null);
+  const statsQuery = useQuery({
+    queryKey: dashboardStatsQueryKey,
+    queryFn: () => dashboardApi.getStats(),
+    enabled: Boolean(token),
+  });
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
-    setStatsError(null);
-    try {
-      const data = await dashboardApi.getStats();
-      setStats(data);
-    } catch (err) {
-      setStatsError(
-        err instanceof Error ? err.message : 'Error al cargar las métricas'
-      );
-    } finally {
-      setStatsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadStats();
-  }, [loadStats]);
-
-  const firstName = user?.name?.split(' ')[0] ?? 'Usuario';
+  const firstName = userQuery.data?.name
+    ? userQuery.data.name.split(' ')[0]
+    : null;
 
   return {
     firstName,
-    stats,
-    statsLoading,
-    statsError,
-    refreshStats: loadStats,
+    userLoading: Boolean(token) && userQuery.isLoading,
+    stats: statsQuery.data ?? null,
+    statsLoading: statsQuery.isLoading,
+    statsError: statsQuery.error
+      ? statsQuery.error instanceof Error
+        ? statsQuery.error.message
+        : 'Error al cargar las métricas'
+      : null,
+    refreshStats: () => statsQuery.refetch(),
   } as const;
 }

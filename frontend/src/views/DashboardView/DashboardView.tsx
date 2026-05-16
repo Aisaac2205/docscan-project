@@ -58,7 +58,7 @@ function PendingIcon() {
 // ---------------------------------------------------------------------------
 
 export function DashboardView() {
-  const { firstName, stats, statsLoading, statsError, refreshStats } =
+  const { firstName, userLoading, stats, statsLoading, statsError, refreshStats } =
     useDashboardStats();
 
   return (
@@ -67,6 +67,7 @@ export function DashboardView() {
       {/* ── Greeting header ─────────────────────────────────────────────── */}
       <DashboardGreeting
         firstName={firstName}
+        userLoading={userLoading}
         ocrEngineOnline={stats?.ocrEngineOnline}
         activeWorkers={stats?.activeWorkers}
       />
