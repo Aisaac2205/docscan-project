@@ -27,7 +27,11 @@ export class ComplianceService {
         ? { cui: profile.identity.cui, fecha_vencimiento: profile.identity.fecha_vencimiento }
         : null,
       fiscal: profile.fiscal
-        ? { estado_contribuyente: profile.fiscal.estado_contribuyente, cui_dpi: profile.fiscal.cui_dpi }
+        ? {
+            estatus_iva: profile.fiscal.estatus_iva,
+            establecimiento_estado: profile.fiscal.establecimiento_estado,
+            cui: profile.fiscal.cui,
+          }
         : null,
       background: {
         penal: toClaim(profile.background.penal),

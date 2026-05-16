@@ -167,33 +167,70 @@ export class OcrService {
         );
 case ExtractionMode.FISCAL_SOCIAL:
         return (
-          `${base} Actúa como un sistema experto de extracción de datos legales y fiscales enfocado en Guatemala. ` +
-          'Analiza el documento proporcionado (que puede ser un RTU, Constancia de NIT, Carné del IGSS o Resolución Patronal) y extrae la información estructurada. ' +
-          '\n\nREGLAS ESTRICTAS:\n' +
-          '1. Devuelve ÚNICAMENTE un objeto JSON válido. No incluyas bloques de código markdown (como ```json) ni texto adicional.\n' +
-          '2. Extrae SOLO información presente en el texto. No deduzcas datos. Si un campo no existe, usa estrictamente null.\n' +
-          '3. El NIT debe ir exclusivamente con números, sin guiones.\n' +
-          '\nESTRUCTURA JSON REQUERIDA:\n' +
+          `${base} Actúa como un sistema experto de extracción de datos del Registro Tributario Unificado (RTU) de la SAT de Guatemala. ` +
+          'El documento es la "Constancia de inscripción y actualización de datos al Registro Tributario Unificado" (RTU). ' +
+          'Si el documento NO es un RTU, devolvé todos los campos en null y marcá requiere_revision_manual=true.\n' +
+          '\nREGLAS ESTRICTAS:\n' +
+          '1. Devuelve ÚNICAMENTE un objeto JSON válido. Sin bloques markdown ni texto extra.\n' +
+          '2. Extrae SOLO datos presentes en el documento. No deduzcas. Si un campo no existe, usa null.\n' +
+          '3. NIT: solo números, sin guiones. Si el NIT trae guion antes del último dígito (ej. 27436920-6), retorná "274369206".\n' +
+          '4. CUI: 13 dígitos exactos, sin espacios.\n' +
+          '5. Fechas: formato YYYY-MM-DD. La constancia las muestra DD/MM/YYYY — convertilas.\n' +
+          '6. Booleans: para "Participación en Cámara Empresarial" y similares (SÍ/NO), retorná true/false.\n' +
+          '7. Para "es_emisor_fel" mirá la tabla "Características Especiales": true si EMISOR DE FACTURA ELECTRÓNICA tiene estado ACTIVO y no tiene Fecha Hasta.\n' +
+          '\nESTRUCTURA JSON REQUERIDA (todos los campos pueden ser null si faltan):\n' +
           '{\n' +
           '  "datos_fiscales": {\n' +
-          '    "nit": "string (sin guiones)",\n' +
-          '    "nombre_razon_social": "string (nombre completo o razón social registrada)",\n' +
-          '    "cui_dpi": "string (búscalo como Código Único de Identificación, 13 dígitos)",\n' +
-          '    "estado_contribuyente": "string (ej. ACTIVO, OMISO)",\n' +
-          '    "regimen_fiscal": "string (ej. PEQUENO CONTRIBUYENTE, REGIMEN GENERAL)",\n' +
-          '    "actividad_economica": "string",\n' +
-          '    "es_emisor_fel": "boolean (true si en Características Especiales indica EMISOR DE FACTURA ELECTRÓNICA, false si no)",\n' +
-          '    "direccion_fiscal": "string"\n' +
+          '    "nit": "string sin guiones",\n' +
+          '    "nombre_completo": "string (Primer + Segundo nombre + Primer + Segundo apellido), o razón social",\n' +
+          '    "primer_nombre": "string",\n' +
+          '    "segundo_nombre": "string",\n' +
+          '    "primer_apellido": "string",\n' +
+          '    "segundo_apellido": "string",\n' +
+          '    "cui": "string 13 dígitos (Código Único de Identificación)",\n' +
+          '    "fecha_nacimiento": "YYYY-MM-DD",\n' +
+          '    "fecha_vencimiento_cui": "YYYY-MM-DD (Fecha de vencimiento del CUI/DPI)",\n' +
+          '    "sexo": "MASCULINO | FEMENINO",\n' +
+          '    "nacionalidad": "string",\n' +
+          '    "estado_civil": "string (SOLTERO, CASADO, etc.)",\n' +
+          '    "sector_economico": "string (SERVICIOS, COMERCIO, INDUSTRIA, etc.)",\n' +
+          '    "participa_camara_empresarial": "boolean",\n' +
+          '    "participa_gremial": "boolean"\n' +
           '  },\n' +
-          '  "datos_igss": {\n' +
-          '    "numero_afiliacion": "string",\n' +
-          '    "numero_patronal": "string"\n' +
+          '  "actividad_economica": {\n' +
+          '    "codigo": "string (ej. 8211.40)",\n' +
+          '    "descripcion": "string",\n' +
+          '    "clasificacion": "string (PRINCIPAL | SECUNDARIA)"\n' +
+          '  },\n' +
+          '  "establecimiento": {\n' +
+          '    "nombre_comercial": "string",\n' +
+          '    "numero_secuencia": "number",\n' +
+          '    "actividad_economica": "string",\n' +
+          '    "fecha_inicio_operaciones": "YYYY-MM-DD",\n' +
+          '    "estado": "string (ACTIVO | INACTIVO)",\n' +
+          '    "clasificacion": "string (AFECTO | EXENTO)",\n' +
+          '    "tipo": "string (SERVICIO | COMERCIO | INDUSTRIA)"\n' +
+          '  },\n' +
+          '  "afiliacion_iva": {\n' +
+          '    "tipo_contribuyente": "string (ej. PERSONA INDIVIDUAL SERVICIOS TÉCNICO)",\n' +
+          '    "regimen": "string (PEQUEÑO CONTRIBUYENTE | RÉGIMEN GENERAL | etc.)",\n' +
+          '    "periodo_impositivo": "string (MENSUAL | TRIMESTRAL | etc.)",\n' +
+          '    "forma_calculo": "string (ej. 5% SOBRE EL TOTAL DE LAS VENTAS DEL MES)",\n' +
+          '    "estatus": "string (ACTIVO | INACTIVO)",\n' +
+          '    "fecha_desde": "YYYY-MM-DD"\n' +
+          '  },\n' +
+          '  "caracteristicas_especiales": {\n' +
+          '    "es_emisor_fel": "boolean",\n' +
+          '    "fel_fecha_desde": "YYYY-MM-DD"\n' +
+          '  },\n' +
+          '  "vigencia": {\n' +
+          '    "fecha_ultima_actualizacion": "YYYY-MM-DD",\n' +
+          '    "vigente_hasta": "YYYY-MM-DD"\n' +
           '  },\n' +
           '  "_metadata": {\n' +
-          '    "tipo_documento_detectado": "string (RTU, Constancia IGSS, etc.)",\n' +
-          '    "fecha_vencimiento_documento": "YYYY-MM-DD o null (importante si es RTU)",\n' +
-          '    "confidence_score": "number (0.0 a 1.0)",\n' +
-          '    "requiere_revision_manual": "boolean (true si no detecta NIT ni número de IGSS, o si el score es menor a 0.85)"\n' +
+          '    "tipo_documento_detectado": "string (RTU)",\n' +
+          '    "confidence_score": "number entre 0.0 y 1.0",\n' +
+          '    "requiere_revision_manual": "boolean (true si no detecta NIT o si confidence < 0.85)"\n' +
           '  }\n' +
           '}'
         );
@@ -389,7 +426,7 @@ case ExtractionMode.FISCAL_SOCIAL:
       '  ]\n' +
       '}\n' +
       'Tipos posibles: cv (Currículum Vitae), id_card (DPI o Pasaporte guatemalteco), ' +
-      'fiscal_social (RTU, NIT, carné del IGSS), medical_cert (constancia médica), background_check (antecedentes penales o policiacos), general (cualquier otro). ' +
+      'fiscal_social (Constancia RTU de la SAT), medical_cert (constancia médica), background_check (antecedentes penales o policiacos), general (cualquier otro). ' +
       'Incluye entre 4 y 12 campos sugeridos relevantes para este tipo de documento en RRHH. ' +
       'Los keys solo pueden tener letras minúsculas, números y guión bajo.';
 

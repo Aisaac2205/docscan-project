@@ -31,13 +31,86 @@ export const IdCardDataSchema = z
 
 export const FiscalSocialDataSchema = z
   .object({
-    nit: nullableString,
-    nombre_razon_social: nullableString,
-    estado_contribuyente: nullableString,
-    regimen_fiscal: nullableString,
-    direccion_fiscal: nullableString,
-    numero_igss: nullableString,
-    numero_patronal: nullableString,
+    datos_fiscales: z
+      .object({
+        nit: nullableString,
+        nombre_completo: nullableString,
+        primer_nombre: nullableString,
+        segundo_nombre: nullableString,
+        primer_apellido: nullableString,
+        segundo_apellido: nullableString,
+        cui: nullableString,
+        fecha_nacimiento: nullableString,
+        fecha_vencimiento_cui: nullableString,
+        sexo: nullableString,
+        nacionalidad: nullableString,
+        estado_civil: nullableString,
+        sector_economico: nullableString,
+        participa_camara_empresarial: nullableBoolean,
+        participa_gremial: nullableBoolean,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    actividad_economica: z
+      .object({
+        codigo: nullableString,
+        descripcion: nullableString,
+        clasificacion: nullableString,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    establecimiento: z
+      .object({
+        nombre_comercial: nullableString,
+        numero_secuencia: nullableNumber,
+        actividad_economica: nullableString,
+        fecha_inicio_operaciones: nullableString,
+        estado: nullableString,
+        clasificacion: nullableString,
+        tipo: nullableString,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    afiliacion_iva: z
+      .object({
+        tipo_contribuyente: nullableString,
+        regimen: nullableString,
+        periodo_impositivo: nullableString,
+        forma_calculo: nullableString,
+        estatus: nullableString,
+        fecha_desde: nullableString,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    caracteristicas_especiales: z
+      .object({
+        es_emisor_fel: nullableBoolean,
+        fel_fecha_desde: nullableString,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    vigencia: z
+      .object({
+        fecha_ultima_actualizacion: nullableString,
+        vigente_hasta: nullableString,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
+    _metadata: z
+      .object({
+        tipo_documento_detectado: nullableString,
+        confidence_score: nullableNumber,
+        requiere_revision_manual: nullableBoolean,
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
   })
   .catchall(z.unknown());
 

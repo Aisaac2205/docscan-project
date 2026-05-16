@@ -41,13 +41,41 @@ export interface IdentityData {
 
 export interface FiscalData {
   nit: string | null;
-  nombre_razon_social: string | null;
-  estado_contribuyente: string | null;
+  nombre_completo: string | null;
+  cui: string | null;
+  fecha_nacimiento: string | null;
+  fecha_vencimiento_cui: string | null;
+  sexo: string | null;
+  nacionalidad: string | null;
+  estado_civil: string | null;
+  sector_economico: string | null;
+  participa_camara_empresarial: boolean | null;
+  participa_gremial: boolean | null;
+
+  actividad_economica_codigo: string | null;
+  actividad_economica_descripcion: string | null;
+  actividad_economica_clasificacion: string | null;
+
+  establecimiento_nombre: string | null;
+  establecimiento_actividad: string | null;
+  establecimiento_fecha_inicio: string | null;
+  establecimiento_estado: string | null;
+  establecimiento_clasificacion: string | null;
+  establecimiento_tipo: string | null;
+
+  tipo_contribuyente: string | null;
   regimen_fiscal: string | null;
-  direccion_fiscal: string | null;
-  numero_igss: string | null;
-  numero_patronal: string | null;
-  cui_dpi: string | null;
+  periodo_impositivo: string | null;
+  forma_calculo_iva: string | null;
+  estatus_iva: string | null;
+  iva_fecha_desde: string | null;
+
+  es_emisor_fel: boolean | null;
+  fel_fecha_desde: string | null;
+
+  fecha_ultima_actualizacion: string | null;
+  vigente_hasta: string | null;
+
   _source: FieldSource | null;
 }
 

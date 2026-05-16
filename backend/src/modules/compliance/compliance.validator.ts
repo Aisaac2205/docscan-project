@@ -25,8 +25,9 @@ export interface ValidatorInput {
     fecha_vencimiento: string | null;
   } | null;
   fiscal: {
-    estado_contribuyente: string | null;
-    cui_dpi: string | null;
+    estatus_iva: string | null;
+    establecimiento_estado: string | null;
+    cui: string | null;
   } | null;
   background: {
     penal: BackgroundClaim | null;
@@ -41,7 +42,7 @@ export function runComplianceValidations(input: ValidatorInput): ValidationResul
   return [
     validatePresence('cv_presence', 'Currículum vitae cargado', !!input.cv),
     validatePresence('dpi_presence', 'Documento de identidad cargado', !!input.identity),
-    validatePresence('rtu_presence', 'Documento fiscal cargado (RTU/NIT)', !!input.fiscal),
+    validatePresence('rtu_presence', 'Constancia RTU cargada', !!input.fiscal),
     validatePresence(
       'background_penal_presence',
       'Antecedentes penales cargados',
@@ -83,7 +84,7 @@ function validateCuiMatch(input: ValidatorInput): ValidationResult {
 
   const claims: { source: string; value: string }[] = [];
   if (input.identity?.cui) claims.push({ source: 'DPI', value: normalize(input.identity.cui) });
-  if (input.fiscal?.cui_dpi) claims.push({ source: 'RTU', value: normalize(input.fiscal.cui_dpi) });
+  if (input.fiscal?.cui) claims.push({ source: 'RTU', value: normalize(input.fiscal.cui) });
   if (input.background.penal?.cui_dpi) {
     claims.push({ source: 'Antecedentes Penales', value: normalize(input.background.penal.cui_dpi) });
   }
@@ -179,7 +180,10 @@ function validateSatStatus(fiscal: ValidatorInput['fiscal']): ValidationResult {
   if (!fiscal) {
     return { id, label, status: 'fail', message: 'Aún no hay datos fiscales cargados.', severity: 'medium' };
   }
-  if (!fiscal.estado_contribuyente) {
+  // En el RTU el estado del contribuyente se refleja en el "Estatus de la afiliación IVA".
+  // Fallback a "estado del establecimiento" si el primero no se logró extraer.
+  const rawEstado = fiscal.estatus_iva ?? fiscal.establecimiento_estado;
+  if (!rawEstado) {
     return {
       id,
       label,
@@ -188,7 +192,7 @@ function validateSatStatus(fiscal: ValidatorInput['fiscal']): ValidationResult {
       severity: 'medium',
     };
   }
-  const estado = fiscal.estado_contribuyente.trim().toUpperCase();
+  const estado = rawEstado.trim().toUpperCase();
   const isActive = estado === 'ACTIVO';
   return {
     id,
@@ -196,7 +200,7 @@ function validateSatStatus(fiscal: ValidatorInput['fiscal']): ValidationResult {
     status: isActive ? 'pass' : 'fail',
     message: isActive
       ? 'Contribuyente activo ante SAT.'
-      : `Estado actual: "${fiscal.estado_contribuyente}". Se requiere estado ACTIVO.`,
+      : `Estado actual: "${rawEstado}". Se requiere estado ACTIVO.`,
     severity: 'medium',
   };
 }

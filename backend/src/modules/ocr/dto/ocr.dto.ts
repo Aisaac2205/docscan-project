@@ -15,7 +15,7 @@ import type { ProviderId } from '../providers/ocr-provider.interface';
 export enum ExtractionMode {
   CV           = 'cv',           // Currículum Vitae: datos personales, experiencia, educación, habilidades
   ID_CARD      = 'id_card',      // DPI / Pasaporte guatemalteco: CUI, nombres, vigencia
-  FISCAL_SOCIAL = 'fiscal_social', // NIT (SAT), RTU, número de afiliación IGSS
+  FISCAL_SOCIAL = 'fiscal_social', // NIT (SAT), Constancia RTU
   MEDICAL_CERT = 'medical_cert', // Constancia médica: médico, colegiado, reposo
   BACKGROUND_CHECK = 'background_check', // Antecedentes penales/policiacos (Guatemala)
   GENERAL      = 'general',      // Texto libre completo

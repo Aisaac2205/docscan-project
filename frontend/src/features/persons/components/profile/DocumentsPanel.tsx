@@ -13,7 +13,7 @@ interface DocumentsPanelProps {
 
 const DOC_TYPE_LABEL: Record<string, string> = {
   id_card: 'DPI / Pasaporte',
-  fiscal_social: 'RTU / NIT',
+  fiscal_social: 'RTU',
   background_check: 'Antecedentes',
   medical_cert: 'Constancia médica',
   cv: 'Currículum',

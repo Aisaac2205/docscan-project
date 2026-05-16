@@ -21,7 +21,7 @@ const BUCKET_META: Record<
 > = {
   cv:               { label: 'Currículum Vitae',     color: CHART_COLORS[0] },
   id_card:          { label: 'DPI / Pasaporte',      color: CHART_COLORS[1] },
-  fiscal_social:    { label: 'NIT / IGSS',           color: CHART_COLORS[2] },
+  fiscal_social:    { label: 'RTU',                  color: CHART_COLORS[2] },
   medical_cert:     { label: 'Constancia Médica',    color: CHART_COLORS[3] },
   background_check: { label: 'Antecedentes',         color: CHART_COLORS[4] },
 };

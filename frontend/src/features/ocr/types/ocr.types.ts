@@ -17,7 +17,7 @@ export type ProviderInfo = {
 export const EXTRACTION_MODE_LABELS: Record<ExtractionMode, string> = {
   cv:           'Currículum Vitae',
   id_card:      'DPI / Pasaporte',
-  fiscal_social: 'NIT / IGSS',
+  fiscal_social: 'RTU',
   medical_cert: 'Constancia Médica',
   background_check: 'Antecedentes Penales/Policiacos',
   general:      'General',

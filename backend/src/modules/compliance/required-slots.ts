@@ -21,7 +21,7 @@ export const SLOT_LABELS: Record<SlotId, string> = {
   id_card: 'Identificación (DPI o Pasaporte)',
   background_penal: 'Antecedentes Penales',
   background_policial: 'Antecedentes Policíacos',
-  fiscal_social: 'RTU / NIT',
+  fiscal_social: 'RTU',
 };
 
 // Maps a slot to the validator rule id (in compliance.validator) that asserts
