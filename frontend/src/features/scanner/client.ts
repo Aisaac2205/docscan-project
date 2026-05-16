@@ -1,6 +1,22 @@
 import { api } from '@/shared/api/client';
 import type { ScannerConfig } from './types/scanner.types';
 
+export interface NetworkScanOptions {
+  ipAddress: string;
+  port?: number;
+  useTls?: boolean;
+  verifyTls?: boolean;
+  personId?: string;
+}
+
+export interface CreateScannerConfigInput {
+  name: string;
+  ip: string;
+  port?: number;
+  useTls?: boolean;
+  verifyTls?: boolean;
+}
+
 export const scannerClient = {
   async captureFromCamera(
     base64: string,
@@ -11,11 +27,9 @@ export const scannerClient = {
   },
 
   async captureFromNetwork(
-    ipAddress: string,
-    port = 80,
-    personId?: string,
+    opts: NetworkScanOptions,
   ): Promise<{ documentId: string; url: string; originalName: string }> {
-    const res = await api.post('/api/scanner/network-scan', { ipAddress, port, personId });
+    const res = await api.post('/api/scanner/network-scan', opts);
     return res.data;
   },
 
@@ -24,7 +38,7 @@ export const scannerClient = {
     return res.data;
   },
 
-  async createConfig(data: { name: string; ip: string; port: number }): Promise<ScannerConfig> {
+  async createConfig(data: CreateScannerConfigInput): Promise<ScannerConfig> {
     const res = await api.post('/api/scanner/configs', data);
     return res.data;
   },

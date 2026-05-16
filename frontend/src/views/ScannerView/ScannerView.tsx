@@ -17,7 +17,7 @@ import { WifiModal } from '@/features/scanner/components/WifiModal';
 import { SourceCard } from '@/features/scanner/components/SourceCard';
 import { ResultPanel } from '@/features/scanner/components/ResultPanel';
 import { ScanResultBar } from '@/features/scanner/components/ScanResultBar';
-import { CameraIcon, WifiIcon } from '@/shared/ui/icons';
+import { CameraIcon, ScannerDeviceIcon, ScanIcon } from '@/shared/ui/icons';
 import { Heading } from '@/shared/components/Layout';
 
 export function ScannerView() {
@@ -130,6 +130,13 @@ export function ScannerView() {
           onShowAddForm={wifi.setShowAddForm}
           saveName={wifi.saveName}
           onSaveNameChange={wifi.setSaveName}
+          savePort={wifi.savePort}
+          onSavePortChange={wifi.setSavePort}
+          effectivePort={wifi.effectivePort}
+          saveUseTls={wifi.saveUseTls}
+          onSaveUseTlsChange={wifi.setSaveUseTls}
+          saveVerifyTls={wifi.saveVerifyTls}
+          onSaveVerifyTlsChange={wifi.setSaveVerifyTls}
           saving={wifi.saving}
           onScanFromConfig={wifi.handleScanFromConfig}
           onSaveConfig={wifi.handleSaveConfig}
@@ -154,11 +161,27 @@ export function ScannerView() {
           action={{ label: <><CameraIcon />Abrir cámara</>, onClick: camera.openCamera, disabled: scanning }}
         />
         <SourceCard
-          icon={<WifiIcon />}
-          title="Escáner en red"
-          subtitle="WiFi · AirScan / eSCL"
-          description="Conecta con cualquier escáner o multifunción en tu red local mediante el protocolo AirScan."
-          action={{ label: <><WifiIcon size={14} />Conectar escáner WiFi</>, onClick: wifi.openWifiModal }}
+          icon={<ScannerDeviceIcon />}
+          title="Escáner físico"
+          subtitle={
+            wifi.configs.length === 0
+              ? 'AirScan / eSCL · Sin configurar'
+              : wifi.hasOnlineConfig
+                ? `AirScan / eSCL · ${wifi.configs.length} guardado${wifi.configs.length === 1 ? '' : 's'}`
+                : 'AirScan / eSCL · Sin conexión'
+          }
+          description="Escanea directamente desde una impresora o multifunción en tu red local. El documento se procesa con OCR automáticamente al escanear."
+          action={{
+            label: wifi.configs.length === 0 ? (
+              <><ScannerDeviceIcon size={14} />Configurar escáner</>
+            ) : wifi.hasOnlineConfig ? (
+              <><ScanIcon size={14} />Escanear ahora</>
+            ) : (
+              <><ScannerDeviceIcon size={14} />Reintentar conexión</>
+            ),
+            onClick: wifi.openWifiModal,
+            disabled: scanning,
+          }}
         />
       </div>
 

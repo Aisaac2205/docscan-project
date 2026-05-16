@@ -16,6 +16,8 @@ export interface ScannerConfig {
   name: string;
   ip: string;
   port: number;
+  useTls: boolean;
+  verifyTls: boolean;
   lastSeenAt: string | null;
   createdAt: string;
 }

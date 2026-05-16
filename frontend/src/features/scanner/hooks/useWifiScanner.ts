@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { scannerClient } from '../client';
 import { useScannerStore } from '../store';
 import { toast } from '@/shared/ui/toast/store';
@@ -15,7 +15,13 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
   const [pingStatus, setPingStatus] = useState<Record<string, boolean | null>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [saveName, setSaveName] = useState('');
+  const [savePort, setSavePort] = useState<number | null>(null);
+  const [saveUseTls, setSaveUseTls] = useState(false);
+  const [saveVerifyTls, setSaveVerifyTls] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Smart default for port: 443 if TLS, 80 otherwise. User can override.
+  const effectivePort = savePort ?? (saveUseTls ? 443 : 80);
 
   const loadConfigs = useCallback(async () => {
     try {
@@ -26,12 +32,19 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     }
   }, []);
 
-  const openWifiModal = () => {
-    setWifiStatus('idle');
-    setWifiError(null);
+  const resetAddForm = useCallback(() => {
     setShowAddForm(false);
     setSaveName('');
     setWifiIp('');
+    setSavePort(null);
+    setSaveUseTls(false);
+    setSaveVerifyTls(true);
+  }, []);
+
+  const openWifiModal = () => {
+    setWifiStatus('idle');
+    setWifiError(null);
+    resetAddForm();
     setWifiModal(true);
     loadConfigs();
   };
@@ -56,18 +69,36 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     );
   }, []);
 
+  // Always-on: load configs on mount + poll their online state every 30s,
+  // so the parent view can decide whether to surface the scanner option.
   useEffect(() => {
-    if (wifiModal && configs.length > 0) {
-      pingAll(configs);
-    }
-  }, [wifiModal, configs, pingAll]);
+    loadConfigs();
+  }, [loadConfigs]);
+
+  useEffect(() => {
+    if (configs.length === 0) return;
+    pingAll(configs);
+    const interval = window.setInterval(() => pingAll(configs), 30_000);
+    return () => window.clearInterval(interval);
+  }, [configs, pingAll]);
+
+  const hasOnlineConfig = useMemo(
+    () => Object.values(pingStatus).some((v) => v === true),
+    [pingStatus],
+  );
 
   const handleScanFromConfig = async (config: ScannerConfig) => {
     const personId = useScannerStore.getState().targetPersonId ?? undefined;
     setWifiStatus('scanning');
     setWifiError(null);
     try {
-      const res = await scannerClient.captureFromNetwork(config.ip, config.port, personId);
+      const res = await scannerClient.captureFromNetwork({
+        ipAddress: config.ip,
+        port: config.port,
+        useTls: config.useTls,
+        verifyTls: config.verifyTls,
+        personId,
+      });
       if (applyResult(res)) {
         toast.success(`Documento escaneado desde ${config.name}`);
         closeWifiModal();
@@ -85,7 +116,13 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     setWifiStatus('scanning');
     setWifiError(null);
     try {
-      const res = await scannerClient.captureFromNetwork(ip, 80, personId);
+      const res = await scannerClient.captureFromNetwork({
+        ipAddress: ip,
+        port: effectivePort,
+        useTls: saveUseTls,
+        verifyTls: saveVerifyTls,
+        personId,
+      });
       if (applyResult(res)) {
         toast.success('Documento escaneado desde la red');
         closeWifiModal();
@@ -103,11 +140,15 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     if (!ip) { setWifiError('Ingresa la dirección IP'); return; }
     setSaving(true);
     try {
-      const created = await scannerClient.createConfig({ name, ip, port: 80 });
+      const created = await scannerClient.createConfig({
+        name,
+        ip,
+        port: effectivePort,
+        useTls: saveUseTls,
+        verifyTls: saveVerifyTls,
+      });
       setConfigs((prev) => [...prev, created]);
-      setShowAddForm(false);
-      setSaveName('');
-      setWifiIp('');
+      resetAddForm();
       toast.success('Escáner guardado');
     } catch {
       toast.error('No se pudo guardar el escáner');
@@ -120,6 +161,11 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     try {
       await scannerClient.deleteConfig(id);
       setConfigs((prev) => prev.filter((c) => c.id !== id));
+      setPingStatus((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
       toast.success('Escáner eliminado');
     } catch {
       toast.error('No se pudo eliminar el escáner');
@@ -138,10 +184,18 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     // configs
     configs,
     pingStatus,
+    hasOnlineConfig,
     showAddForm,
     setShowAddForm,
     saveName,
     setSaveName,
+    savePort,
+    setSavePort,
+    effectivePort,
+    saveUseTls,
+    setSaveUseTls,
+    saveVerifyTls,
+    setSaveVerifyTls,
     saving,
     handleScanFromConfig,
     handleSaveConfig,
