@@ -33,6 +33,11 @@ export class ScannerController {
 
   /* ── Scanner configs ── */
 
+  @Get('feature-state')
+  getFeatureState() {
+    return this.scannerService.getFeatureState();
+  }
+
   @Get('configs')
   async getConfigs(@CurrentUser() user: { id: string }) {
     return this.scannerService.getConfigs(user.id);

@@ -10,6 +10,9 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
   const [wifiStatus, setWifiStatus] = useState<WifiStatus>('idle');
   const [wifiError, setWifiError] = useState<string | null>(null);
 
+  // Master switch from backend: when false, skip env-sync AND polling.
+  const [featureEnabled, setFeatureEnabled] = useState<boolean | null>(null);
+
   // Saved configs
   const [configs, setConfigs] = useState<ScannerConfig[]>([]);
   const [pingStatus, setPingStatus] = useState<Record<string, boolean | null>>({});
@@ -69,18 +72,29 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     );
   }, []);
 
+  // Resolve master switch once on mount.
+  useEffect(() => {
+    scannerClient
+      .getFeatureState()
+      .then(({ enabled }) => setFeatureEnabled(enabled))
+      .catch(() => setFeatureEnabled(true));
+  }, []);
+
   // Always-on: load configs on mount + poll their online state every 30s,
   // so the parent view can decide whether to surface the scanner option.
+  // Skipped entirely when the feature is disabled via SCANNER_ENABLED=false.
   useEffect(() => {
+    if (featureEnabled === false) return;
     loadConfigs();
-  }, [loadConfigs]);
+  }, [featureEnabled, loadConfigs]);
 
   useEffect(() => {
+    if (featureEnabled === false) return;
     if (configs.length === 0) return;
     pingAll(configs);
     const interval = window.setInterval(() => pingAll(configs), 30_000);
     return () => window.clearInterval(interval);
-  }, [configs, pingAll]);
+  }, [featureEnabled, configs, pingAll]);
 
   const hasOnlineConfig = useMemo(
     () => Object.values(pingStatus).some((v) => v === true),

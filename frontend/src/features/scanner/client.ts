@@ -51,4 +51,9 @@ export const scannerClient = {
     const res = await api.get(`/api/scanner/configs/${id}/ping`);
     return res.data;
   },
+
+  async getFeatureState(): Promise<{ enabled: boolean }> {
+    const res = await api.get('/api/scanner/feature-state');
+    return res.data;
+  },
 };

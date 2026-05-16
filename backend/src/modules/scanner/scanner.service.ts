@@ -21,6 +21,10 @@ export class ScannerService {
 
   /* ── Scanner configs ── */
 
+  getFeatureState(): { enabled: boolean } {
+    return { enabled: appConfig.scanner.enabled };
+  }
+
   async getConfigs(userId: string) {
     // Sync the env-driven default scanner (if configured) for this user before listing.
     await this.syncDefaultConfigFromEnv(userId);
@@ -36,8 +40,9 @@ export class ScannerService {
    * without touching the UI. No-op when env vars are not set.
    */
   private async syncDefaultConfigFromEnv(userId: string): Promise<void> {
-    const { defaultName, defaultIp, defaultPort, defaultUseTls, defaultVerifyTls } =
+    const { enabled, defaultName, defaultIp, defaultPort, defaultUseTls, defaultVerifyTls } =
       appConfig.scanner;
+    if (!enabled) return;
     if (!defaultName || !defaultIp) return;
 
     const port = defaultPort ?? (defaultUseTls ? 443 : 80);

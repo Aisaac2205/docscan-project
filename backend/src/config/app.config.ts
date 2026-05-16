@@ -44,8 +44,13 @@ export const appConfig = {
    * Default eSCL scanner. If `name` AND `ip` are both set, the backend will
    * upsert a matching ScannerConfig for every user on each getConfigs() call.
    * Leave empty in production / multi-user setups.
+   *
+   * `enabled` is the master switch: when false, the env-driven sync is skipped
+   * and the frontend stops polling pings. Lets you keep IPs in .env as
+   * reference while the physical scanner is unavailable.
    */
   scanner: {
+    enabled: process.env.SCANNER_ENABLED !== 'false',
     defaultName: process.env.ESCL_DEFAULT_SCANNER_NAME || '',
     defaultIp: process.env.ESCL_DEFAULT_SCANNER_IP || '',
     defaultPort: process.env.ESCL_DEFAULT_SCANNER_PORT
