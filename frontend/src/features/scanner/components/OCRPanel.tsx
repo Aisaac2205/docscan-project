@@ -10,7 +10,7 @@ import { OCRChatPanel } from './OCRChatPanel';
 
 interface OCRPanelProps {
   documentId: string | null;
-  ocrMode: ExtractionMode;
+  ocrMode: ExtractionMode | null;
   setOcrMode: (mode: ExtractionMode) => void;
   customFields: string;
   setCustomFields: (v: string) => void;

@@ -22,7 +22,7 @@ export function useScanResult() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [processingOcr, setProcessingOcr] = useState(false);
-  const [ocrMode, setOcrMode] = useState<ExtractionMode>('background_check');
+  const [ocrMode, setOcrMode] = useState<ExtractionMode | null>(null);
   const [customFields, setCustomFields] = useState('');
   const documentIdRef = useRef<string | null>(null);
 
@@ -115,7 +115,7 @@ export function useScanResult() {
     setPreviewUrl(res.url);
     documentIdRef.current = res.documentId;
     setDocumentId(res.documentId);
-    setOcrMode('background_check');
+    setOcrMode(null);
     setCustomFields('');
     addDocument({
       id: res.documentId,
@@ -142,22 +142,29 @@ export function useScanResult() {
 
   const handleExtract = async (fields?: string[]) => {
     if (!documentIdRef.current) return;
+
+    // Resolver el modo efectivo. Si no hay análisis ni selección manual, no podemos extraer.
+    let mode: ExtractionMode | null = ocrMode;
+    let customFieldsArr: string[] | undefined = fields;
+
+    if (analysisResult?.detectedType === 'cv') {
+      // Análisis detectó CV: forzar modo cv para preservar detalle completo.
+      mode = 'cv';
+      customFieldsArr = undefined;
+    } else if (fields && fields.length > 0) {
+      mode = 'custom';
+      customFieldsArr = fields;
+    } else if (ocrMode === 'custom') {
+      customFieldsArr = customFields.split(',').map((f) => f.trim()).filter(Boolean);
+    }
+
+    if (!mode) {
+      toast.error('Elegí un tipo de extracción o analizá el documento con IA antes de extraer.');
+      return;
+    }
+
     setProcessingOcr(true);
     try {
-      let mode: ExtractionMode = ocrMode;
-      let customFieldsArr: string[] | undefined = fields;
-
-      // Si el análisis detectó CV, forzar modo cv para preservar detalle completo
-      // (experiencia, proyectos, voluntariado, etc.) en lugar de recortarlo a custom fields.
-      if (analysisResult?.detectedType === 'cv') {
-        mode = 'cv';
-        customFieldsArr = undefined;
-      } else if (fields && fields.length > 0) {
-        mode = 'custom';
-        customFieldsArr = fields;
-      } else if (ocrMode === 'custom') {
-        customFieldsArr = customFields.split(',').map((f) => f.trim()).filter(Boolean);
-      }
 
       const result = await processDocument(documentIdRef.current, mode, customFieldsArr, selectedProvider, selectedModel);
       if (result) {

@@ -19,7 +19,7 @@ function confidenceBadge(c: number): string {
 
 interface ExtractionConfigPanelProps {
   documentId: string | null;
-  ocrMode: ExtractionMode;
+  ocrMode: ExtractionMode | null;
   setOcrMode: (mode: ExtractionMode) => void;
   customFields: string;
   setCustomFields: (v: string) => void;
@@ -221,12 +221,19 @@ export function ExtractionConfigPanel({
       {/* Extract button */}
       <button
         onClick={handleExtract}
-        disabled={!documentId || processingOcr || (analysisResult !== null && selectedFields.size === 0)}
+        disabled={
+          !documentId
+          || processingOcr
+          || (analysisResult !== null && selectedFields.size === 0)
+          || (analysisResult === null && !ocrMode)
+        }
         className="h-11 w-full flex items-center justify-center gap-2 bg-fg-primary text-fg-inverse text-button-lg rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         {processingOcr
           ? <><SpinnerIcon />Procesando{activeModelName ? ` con ${activeModelName}` : '…'}</>
-          : <><OcrIcon />Extraer datos con OCR</>}
+          : !analysisResult && !ocrMode
+            ? <><OcrIcon />Elegí un tipo o analizá con IA</>
+            : <><OcrIcon />Extraer datos con OCR</>}
       </button>
     </div>
   );

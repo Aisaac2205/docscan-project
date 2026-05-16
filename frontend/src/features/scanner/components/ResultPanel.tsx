@@ -15,7 +15,7 @@ interface ResultPanelProps {
   previewUrl: string;
   ocrResult: OCRResponse | null;
   documentId: string | null;
-  ocrMode: ExtractionMode;
+  ocrMode: ExtractionMode | null;
   setOcrMode: (mode: ExtractionMode) => void;
   customFields: string;
   setCustomFields: (v: string) => void;

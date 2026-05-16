@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useScannerStore } from '@/features/scanner/store';
@@ -60,6 +60,21 @@ export function ScannerView() {
   const camera = useCameraCapture(applyResult);
   const wifi = useWifiScanner(applyResult);
   const handlePrint = () => printDocument(previewUrl, ocrResult);
+
+  // Cuando aparece un documento nuevo, llevar al usuario a la zona de extracción
+  // para que no tenga que scrollear manualmente. Solo se dispara cuando previewUrl
+  // pasa de null → string (un nuevo doc cargado), no en cada re-render.
+  const resultPanelRef = useRef<HTMLDivElement | null>(null);
+  const lastScrolledDocId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!previewUrl || !documentId) return;
+    if (lastScrolledDocId.current === documentId) return;
+    lastScrolledDocId.current = documentId;
+    // requestAnimationFrame asegura que el panel ya está pintado antes de scrollear.
+    requestAnimationFrame(() => {
+      resultPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [previewUrl, documentId]);
 
   return (
     <div>
@@ -190,9 +205,6 @@ export function ScannerView() {
         <ScannerDropZone applyResult={applyResult} />
       </div>
 
-      {/* Recent scans feed */}
-      <RecentScansFeed />
-
       {(error || cameraError) && (
         <div className="mb-5 px-4 py-3 bg-danger-bg border border-danger-border rounded-md text-danger-fg text-body-sm">
           {error || cameraError}
@@ -200,7 +212,7 @@ export function ScannerView() {
       )}
 
       {previewUrl && (
-        <>
+        <div ref={resultPanelRef} className="scroll-mt-20">
           <ScanResultBar
             autoOpenResult={autoOpenResult}
             onAutoOpenChange={setAutoOpenResult}
@@ -233,8 +245,14 @@ export function ScannerView() {
             onQuery={handleQuery}
             onPrint={handlePrint}
           />
-        </>
+        </div>
       )}
+
+      {/* Recent scans feed — siempre al final: contenido secundario,
+          jamás debe empujar el flujo activo de captura hacia abajo. */}
+      <div className="mt-8">
+        <RecentScansFeed />
+      </div>
     </div>
   );
 }

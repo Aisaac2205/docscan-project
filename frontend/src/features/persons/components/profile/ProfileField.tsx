@@ -18,8 +18,15 @@ export function ProfileField({ label, value, emptyText = '—' }: ProfileFieldPr
 
 function formatValue(value: unknown, emptyText: string): string {
   if (value === null || value === undefined) return emptyText;
-  if (typeof value === 'string') return value.trim().length > 0 ? value : emptyText;
   if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return emptyText;
+    const lower = trimmed.toLowerCase();
+    if (lower === 'true') return 'Sí';
+    if (lower === 'false') return 'No';
+    return trimmed;
+  }
   if (typeof value === 'number') return String(value);
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);

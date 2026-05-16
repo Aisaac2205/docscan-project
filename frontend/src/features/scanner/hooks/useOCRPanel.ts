@@ -8,7 +8,7 @@ interface UseOCRPanelOptions {
   analysisResult: AnalyzeResult | null;
   ocrResult: OCRResponse | null;
   querying: boolean;
-  ocrMode: ExtractionMode;
+  ocrMode: ExtractionMode | null;
   customFields: string;
   onExtract: (fields?: string[]) => void;
   onQuery: (question: string) => void;
