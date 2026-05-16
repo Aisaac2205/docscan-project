@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -19,6 +20,7 @@ import { appConfig } from './config/app.config';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot({ wildcard: false, maxListeners: 10 }),
     ThrottlerModule.forRoot([
       {
         name: 'default',

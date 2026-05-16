@@ -1,14 +1,25 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
 import { DocumentsRepository } from './repositories/documents.repository';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto';
+import { DOCUMENT_CREATED, DocumentCreatedEvent } from './events/document.events';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private repository: DocumentsRepository) { }
+  private readonly logger = new Logger(DocumentsService.name);
 
-  async createDocument(userId: string, dto: CreateDocumentDto) {
-    return this.repository.create({
+  constructor(
+    private repository: DocumentsRepository,
+    private readonly events: EventEmitter2,
+  ) { }
+
+  async createDocument(
+    userId: string,
+    dto: CreateDocumentDto,
+    source: DocumentCreatedEvent['source'] = 'upload',
+  ) {
+    const created = await this.repository.create({
       userId,
       originalName: dto.originalName,
       mimeType: dto.mimeType,
@@ -16,6 +27,16 @@ export class DocumentsService {
       documentType: dto.documentType || 'document',
       personId: dto.personId ?? null,
     });
+
+    const payload: DocumentCreatedEvent = {
+      documentId: created.id,
+      userId,
+      source,
+    };
+    this.events.emit(DOCUMENT_CREATED, payload);
+    this.logger.log(`Emitted ${DOCUMENT_CREATED} documentId=${created.id} source=${source}`);
+
+    return created;
   }
 
   async getDocuments(
