@@ -30,3 +30,6 @@ tsconfig.tsbuildinfo
 CLAUDE.md
 skills-lock.json
 openspec/
+
+# eSCL POC output
+backend/scripts/output/
