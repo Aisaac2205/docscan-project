@@ -1,4 +1,4 @@
-import { IsInt, IsIP, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsIP, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class NetworkScanDto {
   @IsIP()
@@ -9,6 +9,14 @@ export class NetworkScanDto {
   @Max(65535)
   @IsOptional()
   port?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  useTls?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  verifyTls?: boolean;
 
   @IsString()
   @IsNotEmpty()

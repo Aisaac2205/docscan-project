@@ -24,7 +24,11 @@ export class ScannerController {
     @Body() body: NetworkScanDto,
     @CurrentUser() user: { id: string },
   ) {
-    return this.scannerService.scanFromNetwork(body.ipAddress, body.port ?? 80, user.id, body.personId);
+    return this.scannerService.scanFromNetwork(
+      { ipAddress: body.ipAddress, port: body.port, useTls: body.useTls, verifyTls: body.verifyTls },
+      user.id,
+      body.personId,
+    );
   }
 
   /* ── Scanner configs ── */

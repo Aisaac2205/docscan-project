@@ -1,4 +1,4 @@
-import { IsInt, IsIP, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsIP, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class ScannerDeviceDto {
   id: string;
@@ -25,4 +25,12 @@ export class CreateScannerConfigDto {
   @Max(65535)
   @IsOptional()
   port?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  useTls?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  verifyTls?: boolean;
 }

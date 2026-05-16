@@ -26,6 +26,8 @@ model ScannerConfig {
   name       String
   ip         String
   port       Int       @default(80)
+  useTls     Boolean   @default(false)
+  verifyTls  Boolean   @default(true)
   lastSeenAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt

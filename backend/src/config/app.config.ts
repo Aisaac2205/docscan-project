@@ -40,4 +40,18 @@ export const appConfig = {
     default: { ttl: 60_000, limit: isDev ? 300 : 100 },
     ai: { ttl: 60_000, limit: isDev ? 30 : 10 },
   },
+  /**
+   * Default eSCL scanner. If `name` AND `ip` are both set, the backend will
+   * upsert a matching ScannerConfig for every user on each getConfigs() call.
+   * Leave empty in production / multi-user setups.
+   */
+  scanner: {
+    defaultName: process.env.ESCL_DEFAULT_SCANNER_NAME || '',
+    defaultIp: process.env.ESCL_DEFAULT_SCANNER_IP || '',
+    defaultPort: process.env.ESCL_DEFAULT_SCANNER_PORT
+      ? parseInt(process.env.ESCL_DEFAULT_SCANNER_PORT, 10)
+      : null,
+    defaultUseTls: process.env.ESCL_DEFAULT_SCANNER_USE_TLS === 'true',
+    defaultVerifyTls: process.env.ESCL_DEFAULT_SCANNER_VERIFY_TLS !== 'false',
+  },
 };
