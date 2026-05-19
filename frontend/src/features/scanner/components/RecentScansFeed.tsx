@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useDocumentStore } from '@/features/documents/store';
 import { ExtractedDataModal } from '@/features/documents/components/ExtractedDataModal';
-import { EyeIcon, TrashIcon, FileIcon } from '@/shared/ui/icons';
+import { EyeIcon, TrashIcon, FileIcon, PdfIcon } from '@/shared/ui/icons';
 import { Badge, type BadgeVariant } from '@/shared/components/ui';
 import type { Document } from '@/features/documents/types/document.types';
 
@@ -107,6 +107,8 @@ export function RecentScansFeed() {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
+              ) : doc.mimeType === 'application/pdf' ? (
+                <PdfIcon size={28} />
               ) : (
                 <FileIcon size={14} />
               )}

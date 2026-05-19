@@ -2,6 +2,7 @@
 
 import type { Document } from '@/features/documents/types/document.types';
 import { Badge, type BadgeVariant } from '@/shared/components/ui';
+import { PdfIcon } from '@/shared/ui/icons';
 
 interface RecentDocumentCardProps {
   document: Document;
@@ -21,12 +22,7 @@ function timeAgo(dateStr: string): string {
 
 function getFileIcon(mimeType: string) {
   if (mimeType === 'application/pdf') {
-    return (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-danger-fg">
-        <rect x="2" y="1" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M6 7h8M6 10h8M6 13h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-      </svg>
-    );
+    return <PdfIcon size={36} />;
   }
   if (mimeType.startsWith('image/')) {
     return (

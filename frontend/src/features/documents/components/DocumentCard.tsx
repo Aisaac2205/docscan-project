@@ -5,7 +5,7 @@ import { StatusBadge } from './StatusBadge';
 import { AssignPersonButton } from './AssignPersonButton';
 import { personsApi } from '@/features/persons/api/personsApi';
 import {
-  FileIcon, PrintIcon, TrashIcon,
+  FileIcon, PdfIcon, PrintIcon, TrashIcon,
 } from '@/shared/ui/icons';
 
 interface DocumentCardProps {
@@ -21,11 +21,16 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
   const [personName, setPersonName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!doc.personId) { setPersonName(null); return; }
     let cancelled = false;
-    personsApi.getOne(doc.personId)
-      .then((p) => { if (!cancelled) setPersonName(p.fullName); })
-      .catch(() => {});
+    const personId = doc.personId;
+
+    (personId
+      ? personsApi.getOne(personId).then((p) => p.fullName).catch(() => null)
+      : Promise.resolve(null)
+    ).then((name) => {
+      if (!cancelled) setPersonName(name);
+    });
+
     return () => { cancelled = true; };
   }, [doc.personId]);
 
@@ -50,8 +55,10 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
+          ) : isPdf ? (
+            <PdfIcon size={36} />
           ) : (
-            <FileIcon className={isPdf ? 'text-fg-tertiary' : 'text-fg-disabled'} />
+            <FileIcon className="text-fg-disabled" />
           )}
         </div>
 

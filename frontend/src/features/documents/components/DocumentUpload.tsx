@@ -94,7 +94,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         {selectedFile && !uploadedDoc && (
           <div className="mt-4 flex items-center gap-3 p-3 bg-surface-card border border-border rounded-md shadow-sm">
             <div className="w-9 h-9 rounded-md bg-surface-sunken border border-border flex items-center justify-center flex-shrink-0 text-fg-tertiary">
-              {isImage ? <ImageIcon /> : isPdf ? <PdfIcon /> : <FileIcon />}
+              {isImage ? <ImageIcon /> : isPdf ? <PdfIcon size={24} /> : <FileIcon />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-body-sm font-medium text-fg-primary truncate">{selectedFile.name}</p>

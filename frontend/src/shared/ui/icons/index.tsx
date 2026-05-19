@@ -1,3 +1,6 @@
+import Image from 'next/image';
+import pdfFileIconSrc from '@/shared/assets/PDF_file_icon.svg.png';
+
 interface IconProps {
   className?: string;
   size?: number;
@@ -178,11 +181,15 @@ export function ImageIcon({ className = '', size = 16 }: IconProps) {
 
 export function PdfIcon({ className = '', size = 16 }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className={className}>
-      <path d="M3 1h7l3 3v11H3V1z" stroke="#A8A29E" strokeWidth="1.3" />
-      <path d="M10 1v3h3" stroke="#A8A29E" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 8h6M5 10.5h4" stroke="#A8A29E" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
+    <Image
+      src={pdfFileIconSrc}
+      alt=""
+      height={size}
+      width={size}
+      className={className}
+      aria-hidden="true"
+      style={{ width: 'auto', height: size }}
+    />
   );
 }
 
