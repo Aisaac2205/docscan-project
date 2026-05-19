@@ -18,8 +18,10 @@ export function useInboxDocuments(): UseInboxDocumentsResult {
     setLoading(true);
     setError(null);
     try {
-      const docs = await documentsClient.list({ unassigned: true });
-      setDocuments(docs);
+      // limit=100: la bandeja se muestra completa, sin paginación visible.
+      // Si crece más allá, hay que paginarla — por ahora cubre el caso real.
+      const response = await documentsClient.list({ unassigned: true, limit: 100 });
+      setDocuments(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar la bandeja');
     } finally {

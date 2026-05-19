@@ -1,28 +1,38 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useDocumentStore } from '@/features/documents/store';
+import { useEffect, useState } from 'react';
+import { documentsClient } from '@/features/documents/client';
+import type { Document } from '@/features/documents/types/document.types';
 import { DocumentDetailView } from '@/views/DocumentDetailView/DocumentDetailView';
 
 export default function Page() {
   const params = useParams();
   const router = useRouter();
-  const { documents, loading, fetchDocuments } = useDocumentStore();
   const id = typeof params.id === 'string' ? params.id : '';
-  const doc = documents.find((d) => d.id === id);
+
+  const [doc, setDoc] = useState<Document | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (documents.length === 0 && !loading) {
-      fetchDocuments();
-    }
-  }, [documents.length, loading, fetchDocuments]);
-
-  useEffect(() => {
-    if (!loading && documents.length > 0 && !doc) {
-      router.push('/documents');
-    }
-  }, [loading, documents.length, doc, router]);
+    if (!id) return;
+    let active = true;
+    setLoading(true);
+    documentsClient
+      .get(id)
+      .then((fetched) => {
+        if (active) setDoc(fetched);
+      })
+      .catch(() => {
+        if (active) router.push('/documents');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [id, router]);
 
   if (loading && !doc) {
     return (

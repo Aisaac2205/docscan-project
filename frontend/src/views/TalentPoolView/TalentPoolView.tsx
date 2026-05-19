@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ocrClient } from '@/features/ocr/client';
 import type { ProviderId, ProviderInfo } from '@/features/ocr/types/ocr.types';
 import { toast } from '@/shared/ui/toast/store';
 import { SpinnerIcon } from '@/shared/ui/icons';
 import { Heading } from '@/shared/components/Layout';
 import { useTalentPoolStore } from '@/features/talent-pool/store';
-import { useDocumentStore } from '@/features/documents/store';
+import { documentsClient } from '@/features/documents/client';
+import type { Document } from '@/features/documents/types/document.types';
 import { CriteriaForm } from '@/features/talent-pool/components/CriteriaForm';
 import { EvaluationPanel } from '@/features/talent-pool/components/EvaluationPanel';
 import { DocumentPicker } from '@/features/talent-pool/components/DocumentPicker';
@@ -36,13 +37,13 @@ export function TalentPoolView() {
     togglePinned,
     clearHistory,
   } = useTalentPoolStore();
-  const { documents, loading: loadingDocuments, fetchDocuments } = useDocumentStore();
-
-  /** Solo CVs para la bolsa de talento — un RTU o constancia médica no aplica. */
-  const cvDocuments = useMemo(
-    () => documents.filter((d) => d.documentType === 'cv'),
-    [documents],
-  );
+  /**
+   * Solo CVs. Fetch local desacoplado del store global para no contaminar
+   * otras vistas con el filtro `type=cv`. limit=200 cubre el caso real;
+   * el día que se supere, paginar el picker.
+   */
+  const [cvDocuments, setCvDocuments] = useState<Document[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
 
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<ProviderId>('gemini');
@@ -80,10 +81,23 @@ export function TalentPoolView() {
   }, []);
 
   useEffect(() => {
-    fetchDocuments().catch(() => {
-      toast.info('No pudimos cargar los CV/documentos escaneados por ahora.');
-    });
-  }, [fetchDocuments]);
+    let active = true;
+    setLoadingDocuments(true);
+    documentsClient
+      .list({ type: 'cv', limit: 200, sort: 'createdAt', order: 'desc' })
+      .then((response) => {
+        if (active) setCvDocuments(response.data);
+      })
+      .catch(() => {
+        if (active) toast.info('No pudimos cargar los CV/documentos escaneados por ahora.');
+      })
+      .finally(() => {
+        if (active) setLoadingDocuments(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     loadHistory(20).catch(() => {
