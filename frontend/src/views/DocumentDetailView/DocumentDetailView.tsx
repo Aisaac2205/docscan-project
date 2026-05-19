@@ -41,6 +41,34 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
     toast.success(personId ? 'Persona asignada.' : 'Asignación quitada.');
   };
 
+  // El hook de OCR escribe en el Zustand store pero esta vista usa state
+  // local (`doc`). Después de cada extracción re-fetcheamos para que el badge,
+  // el panel de campos y el chat se sincronicen con la BD.
+  const refreshAfterExtract = async () => {
+    try {
+      const fresh = await documentsClient.get(doc.id);
+      setDoc(fresh);
+      updateDocument(doc.id, fresh);
+      if (fresh.status === 'completed') {
+        toast.success('Datos extraídos correctamente.');
+      } else if (fresh.status === 'failed') {
+        toast.error('No se pudieron extraer los datos.');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No pudimos actualizar el documento.');
+    }
+  };
+
+  const runExtract = async () => {
+    await documentAction.handleExtract();
+    await refreshAfterExtract();
+  };
+
+  const runSmartExtract = async () => {
+    await documentAction.handleSmartExtract();
+    await refreshAfterExtract();
+  };
+
   useEffect(() => {
     documentsClient.get(initialDoc.id)
       .then((fresh) => {
@@ -93,16 +121,17 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
           {!isCompleted && (
             <>
               <button
-                onClick={() => documentAction.handleSmartExtract()}
-                disabled={doc.status === 'processing'}
+                onClick={() => runSmartExtract()}
+                disabled={doc.status === 'processing' || documentAction.isProcessingLocal}
                 className="h-9 px-3 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
               >
-                <SparkleIcon size={12} />Extraer con IA
+                <SparkleIcon size={12} />
+                {documentAction.isProcessingLocal ? 'Extrayendo…' : 'Extraer con IA'}
               </button>
               <button
-                onClick={() => documentAction.handleExtract()}
-                disabled={doc.status === 'processing'}
-                className="h-9 px-3 text-button-sm font-medium border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken transition-colors flex items-center gap-1.5"
+                onClick={() => runExtract()}
+                disabled={doc.status === 'processing' || documentAction.isProcessingLocal}
+                className="h-9 px-3 text-button-sm font-medium border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
               >
                 <OcrIcon size={12} />OCR
               </button>
@@ -162,10 +191,12 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
               <p className="text-body">{!isCompleted ? 'Procesando documento…' : 'No hay datos extraídos'}</p>
               {!isCompleted && doc.status !== 'processing' && (
                 <button
-                  onClick={() => documentAction.handleSmartExtract()}
-                  className="mt-2 h-9 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 transition-colors flex items-center gap-1.5"
+                  onClick={() => runSmartExtract()}
+                  disabled={documentAction.isProcessingLocal}
+                  className="mt-2 h-9 px-4 text-button-sm font-medium bg-fg-primary text-fg-inverse rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
                 >
-                  <SparkleIcon size={12} />Extraer con IA
+                  <SparkleIcon size={12} />
+                  {documentAction.isProcessingLocal ? 'Extrayendo…' : 'Extraer con IA'}
                 </button>
               )}
             </div>
