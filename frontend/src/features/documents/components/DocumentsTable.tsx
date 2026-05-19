@@ -13,7 +13,7 @@ import { ConfidenceText } from './ConfidenceText';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
 import { DocumentTypeTag } from './DocumentTypeTag';
 import { DocumentsActionsMenu } from './DocumentsActionsMenu';
-import { PdfIcon } from './PdfIcon';
+import { DocumentFileIcon } from './DocumentFileIcon';
 import { PersonCell } from './PersonCell';
 
 interface DocumentsTableProps {
@@ -50,10 +50,15 @@ export function DocumentsTable({
           <span
             className={cn(
               'inline-flex items-center justify-center h-9 w-9 rounded-md',
-              'bg-surface-card-hover',
+              'bg-surface-card-hover overflow-hidden',
             )}
           >
-            <PdfIcon size={20} />
+            <DocumentFileIcon
+              mimeType={doc.mimeType}
+              fileName={doc.originalName}
+              imageUrl={doc.filePath}
+              size={28}
+            />
           </span>
           <span
             className="truncate text-body text-fg-primary"

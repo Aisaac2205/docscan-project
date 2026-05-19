@@ -43,10 +43,10 @@ export {
 
 // Componentes reusables.
 export { ConfidenceText } from './components/ConfidenceText';
+export { DocumentFileIcon } from './components/DocumentFileIcon';
 export { DocumentStatusBadge } from './components/DocumentStatusBadge';
 export { DocumentTypeTag } from './components/DocumentTypeTag';
 export { DocumentsMetricsRow } from './components/DocumentsMetricsRow';
-export { PdfIcon } from './components/PdfIcon';
 export { PersonCell } from './components/PersonCell';
 
 // Hooks.

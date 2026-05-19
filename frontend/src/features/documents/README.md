@@ -34,7 +34,7 @@ documento ocupa toda la pantalla con su chat panel + acciones OCR.
 | Badge estado  | `DocumentStatusBadge`    | success / warning / info / danger según `getDisplayStatus`. |
 | Confianza     | `ConfidenceText`         | texto coloreado (no badge): high ≥95% → success-fg · 85–94% → warning-fg · <85% → danger-fg · null → fg-tertiary. |
 | Persona       | `PersonCell`             | Avatar (iniciales) sobre `--color-surface-card-hover` + nombre o "Sin asignar". |
-| Ícono PDF     | `PdfIcon`                | SVG propio con `fill currentColor` (fg-secondary). CERO rojo Adobe. |
+| Ícono archivo | `DocumentFileIcon`       | PNG oficiales `PDF_file_icon.svg.png` / `docx_icon.svg.png` según mime. Imágenes → mini-preview del CDN. CERO rojo Adobe. |
 
 ## URL state
 
