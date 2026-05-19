@@ -27,9 +27,9 @@ export function DocumentPicker({ documents, loading, selectedIds, onToggle, onAd
   return (
     <div className="rounded-md border border-border bg-surface-sunken/60 p-3 lg:p-4 space-y-3">
       <div className="space-y-1">
-        <Heading level={4} as="h3" className="text-fg-primary">Agregar desde CV/documentos escaneados</Heading>
+        <Heading level={4} as="h3" className="text-fg-primary">Agregar desde CVs escaneados</Heading>
         <p className="text-caption text-fg-secondary">
-          Podés traer candidatos desde documentos ya cargados. Priorizamos los que están completos.
+          Podés traer candidatos desde CVs ya procesados. Solo se muestran documentos clasificados como Currículum.
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export function DocumentPicker({ documents, loading, selectedIds, onToggle, onAd
         </div>
       ) : sorted.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-surface-card px-3 py-3 text-body-sm text-fg-secondary">
-          Todavía no tenés documentos escaneados para usar en esta evaluación.
+          No tenés CVs escaneados todavía. Subí un currículum desde el escáner o documentos y se mostrará acá.
         </div>
       ) : (
         <>

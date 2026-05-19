@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ocrClient } from '@/features/ocr/client';
 import type { ProviderId, ProviderInfo } from '@/features/ocr/types/ocr.types';
 import { toast } from '@/shared/ui/toast/store';
@@ -37,6 +37,12 @@ export function TalentPoolView() {
     clearHistory,
   } = useTalentPoolStore();
   const { documents, loading: loadingDocuments, fetchDocuments } = useDocumentStore();
+
+  /** Solo CVs para la bolsa de talento — un RTU o constancia médica no aplica. */
+  const cvDocuments = useMemo(
+    () => documents.filter((d) => d.documentType === 'cv'),
+    [documents],
+  );
 
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<ProviderId>('gemini');
@@ -121,11 +127,11 @@ export function TalentPoolView() {
 
   const handleAddFromDocuments = () => {
     if (selectedDocumentIds.length === 0) {
-      toast.info('Seleccioná al menos un CV/documento para agregarlo.');
+      toast.info('Seleccioná al menos un CV para agregarlo.');
       return;
     }
 
-    const selected = documents.filter((d) => selectedDocumentIds.includes(d.id));
+    const selected = cvDocuments.filter((d) => selectedDocumentIds.includes(d.id));
     const result = addCandidatesFromDocuments(selected);
 
     if (result.agregados > 0) {
@@ -224,7 +230,7 @@ export function TalentPoolView() {
         </div>
 
         <DocumentPicker
-          documents={documents}
+          documents={cvDocuments}
           loading={loadingDocuments}
           selectedIds={selectedDocumentIds}
           onToggle={handleToggleDocument}
