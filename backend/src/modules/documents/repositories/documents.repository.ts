@@ -99,6 +99,9 @@ export class DocumentsRepository {
         orderBy,
         skip,
         take: options.limit,
+        include: {
+          person: { select: { id: true, fullName: true } },
+        },
       }),
       this.prisma.document.count({ where }),
     ]);

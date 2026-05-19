@@ -1,7 +1,14 @@
+export interface DocumentPersonSummary {
+  id: string;
+  fullName: string;
+}
+
 export interface Document {
   id: string;
   userId: string;
   personId: string | null;
+  /** Presente cuando el listado paginado incluye el join con Person. */
+  person?: DocumentPersonSummary | null;
   originalName: string;
   mimeType: string;
   filePath: string;

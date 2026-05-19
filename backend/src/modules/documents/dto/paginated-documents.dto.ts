@@ -7,7 +7,16 @@ export interface PaginationMeta {
   pages: number;
 }
 
+export interface DocumentPersonSummary {
+  id: string;
+  fullName: string;
+}
+
+export type DocumentListItem = Document & {
+  person: DocumentPersonSummary | null;
+};
+
 export interface PaginatedDocuments {
-  data: Document[];
+  data: DocumentListItem[];
   pagination: PaginationMeta;
 }
