@@ -77,16 +77,17 @@ export function ScannerView() {
   }, [previewUrl, documentId]);
 
   return (
-    <div>
-      {/* ── KPI metrics bar ── */}
-      <ScannerMetricsBar />
-
-      <div className="mb-4 md:mb-6">
+    <div className="animate-fade-in">
+      {/* ── Header ── */}
+      <div className="mb-5 md:mb-7">
         <Heading level={1}>Captura de documentos</Heading>
         <p className="text-body-sm text-fg-tertiary mt-0.5">
           Fotografía o escanea el documento y extrae su contenido con OCR
         </p>
       </div>
+
+      {/* ── KPI metrics bar ── */}
+      <ScannerMetricsBar />
 
       {/* Banner contextual: persona pre-seleccionada */}
       {targetPersonId && (

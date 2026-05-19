@@ -74,7 +74,7 @@ export function RecentScansFeed() {
         <h3 className="text-overline text-overline-uppercase text-fg-tertiary mb-3">
           Escaneos recientes
         </h3>
-        <div className="bg-surface-card border border-border rounded-md px-5 py-8 text-center">
+        <div className="bg-surface-card border border-border rounded-lg px-5 py-8 text-center">
           <FileIcon size={28} className="mx-auto text-border-strong mb-3" />
           <p className="text-body-sm text-fg-tertiary">
             Aún no hay documentos. Subí tu primer archivo arriba.
@@ -90,7 +90,7 @@ export function RecentScansFeed() {
         Escaneos recientes
       </h3>
 
-      <div className="bg-surface-card border border-border rounded-md stagger-children overflow-hidden">
+      <div className="bg-surface-card border border-border rounded-lg stagger-children overflow-hidden">
         {recent.map((doc) => (
           <div
             key={doc.id}

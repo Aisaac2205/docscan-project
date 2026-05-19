@@ -96,7 +96,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
         </div>
       ) : selectedFile ? (
         /* ── File preview state ── */
-        <div className="bg-surface-card border border-border rounded-md px-4 py-4">
+        <div className="bg-surface-card border border-border rounded-lg p-4 md:p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center flex-shrink-0 text-fg-tertiary">
               {selectedFile.type === 'application/pdf' ? <PdfIcon size={36} /> : <FileIcon size={16} />}

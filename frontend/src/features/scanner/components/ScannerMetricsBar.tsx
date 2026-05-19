@@ -65,7 +65,7 @@ function TrendDownIcon({ className = '' }: { className?: string }) {
 
 function MiniBar({ value, colorClass }: { value: number; colorClass: string }) {
   return (
-    <div className="w-full h-1.5 bg-surface-sunken rounded-full overflow-hidden mt-2">
+    <div className="w-full h-1.5 bg-surface-sunken rounded-full overflow-hidden">
       <div
         className={`h-full rounded-full ${colorClass} transition-all duration-500`}
         style={{ width: `${Math.round(value * 100)}%` }}
@@ -135,40 +135,44 @@ export function ScannerMetricsBar() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 md:mb-7 stagger-children">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-7 stagger-children">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="bg-surface-card border border-border rounded-md px-4 py-4 card-interactive"
+          className="bg-surface-card border border-border rounded-lg p-4 md:p-5 flex flex-col gap-3"
         >
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="text-display-lg text-fg-primary leading-none tracking-tight">
-                {card.value}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                {'pulse' in card && card.pulse && (
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-fg opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-warning-fg" />
-                  </span>
-                )}
-                {'pulse' in card && !card.pulse && trend !== 0 && card.key === 'docs-today' && (
-                  trend > 0
-                    ? <TrendUpIcon className="text-success-fg" />
-                    : <TrendDownIcon className="text-danger-fg" />
-                )}
-                <p className={`text-overline font-medium ${card.subtextColor}`}>
-                  {card.subtext}
-                </p>
-              </div>
-            </div>
-            <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${card.iconBg}`}>
+          {/* Row 1: label + icon */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-body-sm text-fg-secondary leading-none truncate">
+              {card.label}
+            </span>
+            <span className="text-fg-tertiary flex-shrink-0" aria-hidden="true">
               {card.icon}
+            </span>
+          </div>
+
+          {/* Row 2: value + subtext */}
+          <div>
+            <p className="text-h1 text-fg-primary leading-none">{card.value}</p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              {'pulse' in card && card.pulse && (
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-fg opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-warning-fg" />
+                </span>
+              )}
+              {'pulse' in card && !card.pulse && trend !== 0 && card.key === 'docs-today' && (
+                trend > 0
+                  ? <TrendUpIcon className="text-success-fg" />
+                  : <TrendDownIcon className="text-danger-fg" />
+              )}
+              <p className={`text-caption font-medium ${card.subtextColor}`}>
+                {card.subtext}
+              </p>
             </div>
           </div>
 
-          {/* Mini progress bar */}
+          {/* Row 3: mini progress bar */}
           {card.bar && <MiniBar value={card.bar.value} colorClass={card.bar.color} />}
         </div>
       ))}
