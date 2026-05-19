@@ -22,6 +22,11 @@ export interface DocumentsQueryState {
   type: string | null;
   /** Estado visible (incluye "review" como bucket derivado). */
   status: DisplayStatus | null;
+  /** Documentos sin persona asignada. Reemplaza el Select de persona. */
+  unassigned: boolean;
+  /** Filtro por persona específica. Sin UI por ahora — la ruta canónica
+   *  para ver docs de una persona es /persons/[id]. Se mantiene en el
+   *  state por deep-linking externo. */
   personId: string | null;
   dateFrom: string | null;
   dateTo: string | null;
@@ -35,6 +40,7 @@ export interface DocumentsQueryState {
 export interface DocumentsQueryUpdates {
   type?: string | null;
   status?: DisplayStatus | null;
+  unassigned?: boolean;
   personId?: string | null;
   dateFrom?: string | null;
   dateTo?: string | null;
@@ -69,6 +75,7 @@ export function useDocumentsQuery() {
     return {
       type: searchParams.get('type'),
       status: isDisplayStatus(statusRaw) ? statusRaw : null,
+      unassigned: searchParams.get('unassigned') === 'true',
       personId: searchParams.get('personId'),
       dateFrom: searchParams.get('dateFrom'),
       dateTo: searchParams.get('dateTo'),
@@ -91,7 +98,7 @@ export function useDocumentsQuery() {
       const params = new URLSearchParams(searchParams.toString());
 
       const resetsPage = (
-        ['type', 'status', 'personId', 'dateFrom', 'dateTo', 'search', 'limit'] as const
+        ['type', 'status', 'unassigned', 'personId', 'dateFrom', 'dateTo', 'search', 'limit'] as const
       ).some((key) => key in updates);
 
       const setParam = (key: string, value: string | number | null | undefined) => {
@@ -104,6 +111,7 @@ export function useDocumentsQuery() {
 
       if ('type' in updates) setParam('type', updates.type ?? null);
       if ('status' in updates) setParam('status', updates.status ?? null);
+      if ('unassigned' in updates) setParam('unassigned', updates.unassigned ? 'true' : null);
       if ('personId' in updates) setParam('personId', updates.personId ?? null);
       if ('dateFrom' in updates) setParam('dateFrom', updates.dateFrom ?? null);
       if ('dateTo' in updates) setParam('dateTo', updates.dateTo ?? null);
@@ -135,7 +143,10 @@ export function useDocumentsQuery() {
 export function toApiFilters(state: DocumentsQueryState): DocumentFilters {
   const filters: DocumentFilters = {
     type: state.type ?? undefined,
-    personId: state.personId ?? undefined,
+    // unassigned=true prevalece sobre personId; el backend ignora personId
+    // cuando unassigned=true (ver findByUserIdFiltered).
+    unassigned: state.unassigned || undefined,
+    personId: state.unassigned ? undefined : state.personId ?? undefined,
     dateFrom: state.dateFrom ?? undefined,
     dateTo: state.dateTo ?? undefined,
     search: state.search.trim() || undefined,

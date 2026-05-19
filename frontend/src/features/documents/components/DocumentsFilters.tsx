@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { UserX } from 'lucide-react';
 import { Select } from '@/shared/components/ui';
-import { personsApi } from '@/features/persons/api/personsApi';
 import { cn } from '@/shared/lib/cn';
 import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
 import type { DocumentsQueryState, DocumentsQueryUpdates } from '../hooks/useDocumentsQuery';
@@ -22,31 +21,7 @@ const STATUS_OPTIONS: { value: DisplayStatus; label: string }[] = [
   { value: 'error', label: 'Error' },
 ];
 
-interface PersonOption {
-  id: string;
-  fullName: string;
-}
-
 export function DocumentsFilters({ state, onChange, className }: DocumentsFiltersProps) {
-  const [persons, setPersons] = useState<PersonOption[]>([]);
-
-  // Personas precargadas (limit alto, suficiente para selector estático).
-  // Si en algún momento se necesita búsqueda async, migrar a Popover+Input.
-  useEffect(() => {
-    let active = true;
-    personsApi
-      .list({ pageSize: 200 })
-      .then((response) => {
-        if (active) setPersons(response.items.map((p) => ({ id: p.id, fullName: p.fullName })));
-      })
-      .catch(() => {
-        if (active) setPersons([]);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       <Select
@@ -69,9 +44,7 @@ export function DocumentsFilters({ state, onChange, className }: DocumentsFilter
         value={state.status ?? ''}
         onChange={(e) => {
           const next = e.target.value;
-          onChange({
-            status: next === '' ? null : (next as DisplayStatus),
-          });
+          onChange({ status: next === '' ? null : (next as DisplayStatus) });
         }}
       >
         <option value="">Todos los estados</option>
@@ -82,25 +55,48 @@ export function DocumentsFilters({ state, onChange, className }: DocumentsFilter
         ))}
       </Select>
 
-      <Select
-        aria-label="Filtrar por persona"
-        selectSize="sm"
-        value={state.personId ?? ''}
-        onChange={(e) => onChange({ personId: e.target.value || null })}
-      >
-        <option value="">Todas las personas</option>
-        {persons.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.fullName}
-          </option>
-        ))}
-      </Select>
-
       <DateRangeFilter
         dateFrom={state.dateFrom}
         dateTo={state.dateTo}
         onChange={(range) => onChange(range)}
       />
+
+      <UnassignedToggle
+        active={state.unassigned}
+        onToggle={(next) => onChange({ unassigned: next })}
+      />
     </div>
+  );
+}
+
+interface UnassignedToggleProps {
+  active: boolean;
+  onToggle: (next: boolean) => void;
+}
+
+/**
+ * Toggle pill "Solo sin asignar". Reemplaza al Select de persona — para
+ * ver documentos de UNA persona específica, la ruta canónica es
+ * /persons/[id] · tab Documentos. Acá el caso de uso real es encontrar
+ * docs huérfanos para clasificarlos.
+ */
+function UnassignedToggle({ active, onToggle }: UnassignedToggleProps) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={active}
+      onClick={() => onToggle(!active)}
+      className={cn(
+        'inline-flex items-center gap-1.5 h-8 px-3 rounded-md border text-body-sm transition-colors',
+        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]',
+        active
+          ? 'bg-warning-bg text-warning-fg border-warning-border'
+          : 'bg-surface-card text-fg-secondary border-border hover:bg-surface-sunken',
+      )}
+    >
+      <UserX width={14} height={14} aria-hidden="true" />
+      Solo sin asignar
+    </button>
   );
 }
