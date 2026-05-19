@@ -3,7 +3,14 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
 import { DocumentsRepository } from './repositories/documents.repository';
 import { PersonsRepository } from '../persons/persons.repository';
-import { CreateDocumentDto, UpdateDocumentDto } from './dto';
+import {
+  CreateDocumentDto,
+  UpdateDocumentDto,
+  ListDocumentsQueryDto,
+  DEFAULT_LIST_LIMIT,
+  DEFAULT_LIST_PAGE,
+  type PaginatedDocuments,
+} from './dto';
 import { DOCUMENT_CREATED, DocumentCreatedEvent } from './events/document.events';
 
 @Injectable()
@@ -46,6 +53,42 @@ export class DocumentsService {
     filters?: { personId?: string; unassigned?: boolean; type?: string; status?: string },
   ) {
     return this.repository.findByUserIdFiltered(userId, filters ?? {});
+  }
+
+  async getDocumentsPaginated(
+    userId: string,
+    query: ListDocumentsQueryDto,
+  ): Promise<PaginatedDocuments> {
+    const page = query.page ?? DEFAULT_LIST_PAGE;
+    const limit = query.limit ?? DEFAULT_LIST_LIMIT;
+    const sort = query.sort ?? 'createdAt';
+    const order = query.order ?? 'desc';
+
+    const { data, total } = await this.repository.findPaginated(userId, {
+      page,
+      limit,
+      sort,
+      order,
+      personId: query.personId,
+      unassigned: query.unassigned === 'true',
+      type: query.type,
+      status: query.status,
+      search: query.search,
+      dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
+      dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
+      confidenceMax: query.confidenceMax,
+      confidenceMin: query.confidenceMin,
+    });
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.max(1, Math.ceil(total / limit)),
+      },
+    };
   }
 
   async assignToPerson(id: string, userId: string, personId: string | null) {

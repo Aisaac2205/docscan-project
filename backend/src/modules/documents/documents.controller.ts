@@ -17,11 +17,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { DocumentsService } from './documents.service';
+import { DocumentsStatsService } from './documents-stats.service';
 import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { appConfig } from '../../config';
-import { ClassifyBackgroundDto } from './dto';
+import {
+  ClassifyBackgroundDto,
+  DocumentsStatsQueryDto,
+  ListDocumentsQueryDto,
+} from './dto';
 import { decodeMulterFilename } from '../../common/utils/decode-filename';
 
 @Controller('documents')
@@ -29,23 +34,24 @@ import { decodeMulterFilename } from '../../common/utils/decode-filename';
 export class DocumentsController {
   constructor(
     private readonly documentsService: DocumentsService,
+    private readonly documentsStatsService: DocumentsStatsService,
     private readonly storageService: StorageService,
   ) {}
 
   @Get()
   async getAll(
     @CurrentUser() user: { id: string },
-    @Query('personId') personId?: string,
-    @Query('unassigned') unassigned?: string,
-    @Query('type') type?: string,
-    @Query('status') status?: string,
+    @Query() query: ListDocumentsQueryDto,
   ) {
-    return this.documentsService.getDocuments(user.id, {
-      personId,
-      unassigned: unassigned === 'true',
-      type,
-      status,
-    });
+    return this.documentsService.getDocumentsPaginated(user.id, query);
+  }
+
+  @Get('stats')
+  async getStats(
+    @CurrentUser() user: { id: string },
+    @Query() query: DocumentsStatsQueryDto,
+  ) {
+    return this.documentsStatsService.getStats(user.id, query.dateFrom, query.dateTo);
   }
 
   @Get(':id')

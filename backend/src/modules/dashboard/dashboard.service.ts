@@ -6,10 +6,16 @@ import {
   DOCUMENT_STATUS,
   DOCUMENT_TYPE_BUCKET_MAP,
   type DocumentTypeBucket,
-  OCR_REVIEW_CONFIDENCE_THRESHOLD,
+  CONFIDENCE_REVIEW_THRESHOLD,
   type ProcessingStatusBucket,
   WEEK_DAY_LABELS_ES,
 } from './dashboard.constants';
+import {
+  addDays,
+  round1,
+  signedDeltaPercent,
+  startOfDay,
+} from '../documents/aggregates/document-aggregates.util';
 
 // ---------------------------------------------------------------------------
 // Response shape — keep in sync with frontend `dashboardApi.ts`.
@@ -78,18 +84,6 @@ export interface DashboardStats {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function startOfDay(d: Date): Date {
-  const out = new Date(d);
-  out.setHours(0, 0, 0, 0);
-  return out;
-}
-
-function addDays(d: Date, days: number): Date {
-  const out = new Date(d);
-  out.setDate(out.getDate() + days);
-  return out;
-}
-
 /**
  * Returns the lunes-first weekday index (0 = lun, 6 = dom) for a given date.
  * JS's getDay() is sunday-first (0 = sun, 6 = sat), so we shift.
@@ -97,23 +91,6 @@ function addDays(d: Date, days: number): Date {
 function weekdayIndexEs(d: Date): number {
   const js = d.getDay(); // 0 sun … 6 sat
   return (js + 6) % 7;   // 0 lun … 6 dom
-}
-
-/**
- * Computes signed delta % between today and yesterday.
- * - both 0    → 0
- * - prev 0    → +100 if curr > 0
- * - else      → ((curr - prev) / prev) * 100, rounded to 1 decimal
- */
-function signedDeltaPercent(current: number, previous: number): number {
-  if (current === previous) return 0;
-  if (previous === 0) return current > 0 ? 100 : -100;
-  const raw = ((current - previous) / previous) * 100;
-  return Math.round(raw * 10) / 10;
-}
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
 }
 
 // Minimal slice from Document needed for in-memory aggregation.
@@ -207,7 +184,7 @@ export class DashboardService {
           userId,
           status: DOCUMENT_STATUS.COMPLETED,
           OR: [
-            { confidence: { lt: OCR_REVIEW_CONFIDENCE_THRESHOLD } },
+            { confidence: { lt: CONFIDENCE_REVIEW_THRESHOLD } },
             { confidence: null },
           ],
         },
@@ -222,7 +199,7 @@ export class DashboardService {
           status: DOCUMENT_STATUS.COMPLETED,
           processedAt: { lt: todayStart },
           OR: [
-            { confidence: { lt: OCR_REVIEW_CONFIDENCE_THRESHOLD } },
+            { confidence: { lt: CONFIDENCE_REVIEW_THRESHOLD } },
             { confidence: null },
           ],
         },
@@ -269,7 +246,7 @@ export class DashboardService {
           }
           const needsReview =
             doc.status === DOCUMENT_STATUS.COMPLETED &&
-            (doc.confidence === null || doc.confidence < OCR_REVIEW_CONFIDENCE_THRESHOLD);
+            (doc.confidence === null || doc.confidence < CONFIDENCE_REVIEW_THRESHOLD);
           if (needsReview) reviewByDay[dayOffset] += 1;
         }
       }
@@ -366,7 +343,7 @@ export class DashboardService {
         statusBucketCounts.error += 1;
       } else if (doc.status === DOCUMENT_STATUS.COMPLETED) {
         const lowConfidence =
-          doc.confidence === null || doc.confidence < OCR_REVIEW_CONFIDENCE_THRESHOLD;
+          doc.confidence === null || doc.confidence < CONFIDENCE_REVIEW_THRESHOLD;
         if (lowConfidence) statusBucketCounts.revision += 1;
         else statusBucketCounts.completado += 1;
       }
