@@ -346,11 +346,37 @@
   to   { transform: scaleY(1); }
 }
 
+/* Network scanner — feedback animation while a wifi scan is running. */
+@keyframes scannerPaperFeed {
+  0%   { transform: translateY(-40%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
+@keyframes scannerLightSweep {
+  0%   { transform: translateX(-110%); opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0.4; }
+}
+@keyframes scannerLedBlink {
+  0%, 60%, 100% { opacity: 1; }
+  30%           { opacity: 0.25; }
+}
+@keyframes scannerProgressIndeterminate {
+  0%   { left: -40%; right: 100%; }
+  50%  { left: 25%;  right: 25%; }
+  100% { left: 100%; right: -40%; }
+}
+
 @layer utilities {
   .animate-slide-up  { animation: slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1); }
   .animate-fade-in   { animation: fadeIn  180ms ease-out; }
   .animate-spin-slow { animation: spin    1.2s linear infinite; }
   .animate-toast-in  { animation: toastIn 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .animate-scanner-paper { animation: scannerPaperFeed 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  .animate-scanner-light { animation: scannerLightSweep 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  .animate-scanner-led   { animation: scannerLedBlink 1.2s ease-in-out infinite; }
+  .animate-scanner-progress { animation: scannerProgressIndeterminate 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
 
   .stagger-children > * {
     animation: fadeSlideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both;

@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { scannerClient } from '../client';
 import { useScannerStore } from '../store';
 import { toast } from '@/shared/ui/toast/store';
 import type { WifiStatus, ScannerConfig } from '../types/scanner.types';
 
 export function useWifiScanner(applyResult: (res: { documentId: string; url: string; originalName: string } | null) => boolean) {
+  // applyResult is retained in the hook signature to preserve the caller API,
+  // even though the wifi flow now hands the result off via the store + sub-route.
+  void applyResult;
+  const router = useRouter();
   const [wifiModal, setWifiModal] = useState(false);
   const [wifiIp, setWifiIp] = useState('');
   const [wifiStatus, setWifiStatus] = useState<WifiStatus>('idle');
@@ -102,50 +107,36 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     [pingStatus],
   );
 
-  const handleScanFromConfig = async (config: ScannerConfig) => {
-    const personId = useScannerStore.getState().targetPersonId ?? undefined;
-    setWifiStatus('scanning');
-    setWifiError(null);
-    try {
-      const res = await scannerClient.captureFromNetwork({
-        ipAddress: config.ip,
-        port: config.port,
-        useTls: config.useTls,
-        verifyTls: config.verifyTls,
-        personId,
-      });
-      if (applyResult(res)) {
-        toast.success(`Documento escaneado desde ${config.name}`);
-        closeWifiModal();
-      }
-    } catch (err: unknown) {
-      setWifiStatus('error');
-      setWifiError(err instanceof Error ? err.message : 'No se pudo conectar al escáner');
-    }
+  // Both scan handlers hand off control to /scan/network: they stash the request
+  // in the store and navigate. The sub-route does the actual API call and shows
+  // a full-screen animation while it runs.
+  const handleScanFromConfig = (config: ScannerConfig) => {
+    useScannerStore.getState().setPendingNetworkScan({
+      kind: 'config',
+      configId: config.id,
+      label: config.name,
+      ip: config.ip,
+      port: config.port,
+      useTls: config.useTls,
+      verifyTls: config.verifyTls,
+    });
+    closeWifiModal();
+    router.push('/scan/network');
   };
 
-  const handleNetworkScan = async () => {
+  const handleNetworkScan = () => {
     const ip = wifiIp.trim();
     if (!ip) { setWifiError('Ingresa la dirección IP del escáner'); return; }
-    const personId = useScannerStore.getState().targetPersonId ?? undefined;
-    setWifiStatus('scanning');
-    setWifiError(null);
-    try {
-      const res = await scannerClient.captureFromNetwork({
-        ipAddress: ip,
-        port: effectivePort,
-        useTls: saveUseTls,
-        verifyTls: saveVerifyTls,
-        personId,
-      });
-      if (applyResult(res)) {
-        toast.success('Documento escaneado desde la red');
-        closeWifiModal();
-      }
-    } catch (err: unknown) {
-      setWifiStatus('error');
-      setWifiError(err instanceof Error ? err.message : 'No se pudo conectar al escáner');
-    }
+    useScannerStore.getState().setPendingNetworkScan({
+      kind: 'adhoc',
+      label: ip,
+      ip,
+      port: effectivePort,
+      useTls: saveUseTls,
+      verifyTls: saveVerifyTls,
+    });
+    closeWifiModal();
+    router.push('/scan/network');
   };
 
   const handleSaveConfig = async () => {
