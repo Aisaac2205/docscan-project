@@ -89,11 +89,12 @@
    ---------------------------------------------------------------------------- */
 @theme {
   /* Surfaces */
-  --color-surface-page:     var(--color-neutral-50);
-  --color-surface-card:     var(--color-neutral-0);
-  --color-surface-elevated: var(--color-neutral-0);
-  --color-surface-sunken:   var(--color-neutral-100);
-  --color-surface-overlay:  rgb(6 18 26 / 0.5);   /* brand-ink-900 @ 50% */
+  --color-surface-page:        var(--color-neutral-50);
+  --color-surface-card:        var(--color-neutral-0);
+  --color-surface-card-hover:  var(--color-neutral-100);
+  --color-surface-elevated:    var(--color-neutral-0);
+  --color-surface-sunken:      var(--color-neutral-100);
+  --color-surface-overlay:     rgb(6 18 26 / 0.5);   /* brand-ink-900 @ 50% */
 
   /* Borders · "border" sin sufijo = utility .border default */
   --color-border:        var(--color-neutral-200);
@@ -340,6 +341,10 @@
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+@keyframes barRise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
 
 @layer utilities {
   .animate-slide-up  { animation: slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1); }
@@ -356,6 +361,18 @@
   .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
   .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
   .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+}
+
+/* Reduced motion — anula animaciones y transiciones globalmente.
+   Mantiene scroll y :focus-visible accesibles. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
 }
 
 /* ----------------------------------------------------------------------------

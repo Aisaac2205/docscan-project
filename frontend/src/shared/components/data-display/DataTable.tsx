@@ -1,4 +1,4 @@
-import { type ReactNode, type Key } from 'react';
+import { type ReactNode, type Key, type KeyboardEvent } from 'react';
 import { cn } from '@/shared/lib/cn';
 
 export type ColumnAlign = 'left' | 'center' | 'right';
@@ -18,6 +18,10 @@ export interface DataTableProps<T> {
   emptyState?: ReactNode;
   className?: string;
   ariaLabel?: string;
+  /** Si se pasa, la fila completa es interactiva (click + Enter/Espacio). */
+  onRowClick?: (row: T, index: number) => void;
+  /** Clases extra por fila (decoración: barra lateral de estado, énfasis, etc.). */
+  rowClassName?: (row: T, index: number) => string | undefined;
 }
 
 const ALIGN_CLASSES: Record<ColumnAlign, string> = {
@@ -42,10 +46,14 @@ export function DataTable<T>({
   emptyState,
   className,
   ariaLabel,
+  onRowClick,
+  rowClassName,
 }: DataTableProps<T>) {
   if (data.length === 0 && emptyState) {
     return <>{emptyState}</>;
   }
+
+  const clickable = typeof onRowClick === 'function';
 
   return (
     <div className={cn('w-full overflow-x-auto rounded-lg border border-border-subtle', className)}>
@@ -71,7 +79,25 @@ export function DataTable<T>({
           {data.map((row, rowIndex) => (
             <tr
               key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
-              className="border-b border-border-subtle last:border-b-0 transition-colors hover:bg-surface-sunken"
+              {...(clickable
+                ? {
+                    role: 'button',
+                    tabIndex: 0,
+                    onClick: () => onRowClick(row, rowIndex),
+                    onKeyDown: (e: KeyboardEvent<HTMLTableRowElement>) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRowClick(row, rowIndex);
+                      }
+                    },
+                  }
+                : {})}
+              className={cn(
+                'border-b border-border-subtle last:border-b-0 transition-colors hover:bg-surface-card-hover',
+                clickable &&
+                  'cursor-pointer focus-visible:bg-surface-card-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-border-focus)]',
+                rowClassName?.(row, rowIndex),
+              )}
             >
               {columns.map((col) => (
                 <td

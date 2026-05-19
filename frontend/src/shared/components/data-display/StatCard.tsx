@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { Sparkline, type SparklineVariant } from './Sparkline';
 
 const statCardVariants = cva(
   'flex flex-col gap-2 rounded-lg bg-surface-card p-5 border',
@@ -25,6 +26,12 @@ export interface StatCardProps
   delta?: number | null;
   deltaLabel?: string;
   icon?: ReactNode;
+  /** Serie temporal corta. Si trae <2 puntos, no se renderiza nada. */
+  sparkline?: number[];
+  /** Variante visual del sparkline. Default: 'line'. */
+  sparklineVariant?: SparklineVariant;
+  /** Color CSS del sparkline. Default: var(--color-chart-1). */
+  sparklineColor?: string;
 }
 
 const ArrowUp = () => (
@@ -57,9 +64,25 @@ function formatDelta(delta: number): string {
 }
 
 export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
-  ({ className, variant, label, value, delta, deltaLabel, icon, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      label,
+      value,
+      delta,
+      deltaLabel,
+      icon,
+      sparkline,
+      sparklineVariant = 'line',
+      sparklineColor,
+      ...props
+    },
+    ref,
+  ) => {
     const showDelta = typeof delta === 'number' && delta !== 0;
     const isPositive = (delta ?? 0) > 0;
+    const showSparkline = Array.isArray(sparkline) && sparkline.length >= 2;
 
     return (
       <div
@@ -78,19 +101,33 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
 
         <span className="text-display-lg text-fg-primary">{value}</span>
 
-        {showDelta && (
-          <div className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1 text-caption font-medium',
-                isPositive ? 'text-success-fg' : 'text-danger-fg'
-              )}
-            >
-              {isPositive ? <ArrowUp /> : <ArrowDown />}
-              {formatDelta(delta as number)}
-            </span>
-            {deltaLabel && (
-              <span className="text-caption text-fg-tertiary">{deltaLabel}</span>
+        {(showDelta || showSparkline) && (
+          <div className="flex items-center justify-between gap-3">
+            {showDelta ? (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 text-caption font-medium',
+                    isPositive ? 'text-success-fg' : 'text-danger-fg'
+                  )}
+                >
+                  {isPositive ? <ArrowUp /> : <ArrowDown />}
+                  {formatDelta(delta as number)}
+                </span>
+                {deltaLabel && (
+                  <span className="text-caption text-fg-tertiary">{deltaLabel}</span>
+                )}
+              </div>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            {showSparkline && (
+              <Sparkline
+                data={sparkline}
+                variant={sparklineVariant}
+                color={sparklineColor}
+                ariaLabel={`tendencia de ${label}`}
+              />
             )}
           </div>
         )}

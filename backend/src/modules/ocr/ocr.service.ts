@@ -240,7 +240,8 @@ case ExtractionMode.FISCAL_SOCIAL:
           'Extrae: nombre_paciente, nombre_medico, numero_colegiado (número de colegiado del Colegio de Médicos y Cirujanos de Guatemala), ' +
           'tiene_sello (true/false según si hay un sello visible), tiene_firma (true/false), ' +
           'diagnostico (si aparece), fecha_emision (YYYY-MM-DD), ' +
-          'fecha_inicio_reposo (YYYY-MM-DD), fecha_fin_reposo (YYYY-MM-DD), dias_reposo (número entero). ' +
+          'fecha_inicio_reposo (YYYY-MM-DD), fecha_fin_reposo (YYYY-MM-DD), dias_reposo (número entero), ' +
+          'institucion_emisora (nombre del hospital, clínica, IGSS, centro de salud o consultorio que emite la constancia). ' +
           'Si un campo no está presente, usa null. Incluye "_confidence" entre 0.0 y 1.0.'
         );
       case ExtractionMode.BACKGROUND_CHECK:

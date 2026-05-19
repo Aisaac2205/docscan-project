@@ -126,6 +126,7 @@ export const MedicalCertDataSchema = z
     fecha_inicio_reposo: nullableString,
     fecha_fin_reposo: nullableString,
     dias_reposo: nullableNumber,
+    institucion_emisora: nullableString,
   })
   .catchall(z.unknown());
 
