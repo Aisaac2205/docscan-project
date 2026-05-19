@@ -1,108 +1,195 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Heading } from '@/shared/components/Layout';
-import { useDocumentStore } from '@/features/documents/store';
-import { DocumentCard } from '@/features/documents/components/DocumentCard';
-import { printDocument } from '@/features/documents/utils/print';
-
-type FilterKey = 'all' | 'unassigned';
+import { Skeleton, TooltipProvider } from '@/shared/components/ui';
+import { toast } from '@/shared/ui/toast/store';
+import { documentsClient } from '@/features/documents/client';
+import { AssignPersonModal } from '@/features/documents/components/AssignPersonModal';
+import { DocumentsDetailPanel } from '@/features/documents/components/DocumentsDetailPanel';
+import { DocumentsFilters } from '@/features/documents/components/DocumentsFilters';
+import { DocumentsMetricsRow } from '@/features/documents/components/DocumentsMetricsRow';
+import { DocumentsPagination } from '@/features/documents/components/DocumentsPagination';
+import { DocumentsSearchInput } from '@/features/documents/components/DocumentsSearchInput';
+import { DocumentsTable } from '@/features/documents/components/DocumentsTable';
+import { useDocumentsMasterDetail } from '@/features/documents/hooks/useDocumentsMasterDetail';
+import {
+  toApiFilters,
+  useDocumentsQuery,
+  type LimitOption,
+} from '@/features/documents/hooks/useDocumentsQuery';
+import { useDocumentsStats } from '@/features/documents/hooks/useDocumentsStats';
+import type {
+  Document,
+  PaginationMeta,
+} from '@/features/documents/types/document.types';
+import { DocumentsMasterDetailShell } from './DocumentsMasterDetailShell';
 
 export function DocumentsView() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const filter: FilterKey = searchParams.get('filter') === 'unassigned' ? 'unassigned' : 'all';
+  const { state, update } = useDocumentsQuery();
+  const { selectedId, isDesktop, select, deselect } = useDocumentsMasterDetail();
 
-  const { documents, loading, fetchDocuments, deleteDocument } = useDocumentStore();
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [assignTarget, setAssignTarget] = useState<Document | null>(null);
+
+  const apiFilters = useMemo(() => toApiFilters(state), [state]);
+
+  const fetchList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await documentsClient.list(apiFilters);
+      setDocuments(response.data);
+      setPagination(response.pagination);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No pudimos cargar los documentos.');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFilters]);
 
   useEffect(() => {
-    fetchDocuments(filter === 'unassigned' ? { unassigned: true } : undefined);
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchList();
+  }, [fetchList]);
 
-  const handleDelete = (id: string) => {
-    deleteDocument(id);
+  const { stats, loading: loadingStats } = useDocumentsStats({
+    dateFrom: state.dateFrom ?? undefined,
+    dateTo: state.dateTo ?? undefined,
+  });
+
+  // Si cambian filtros/página y la selección queda fuera del set visible,
+  // limpiamos para evitar mostrar un panel con un doc que ya no está listado.
+  useEffect(() => {
+    if (!selectedId) return;
+    if (loading) return;
+    if (!documents.some((d) => d.id === selectedId)) {
+      deselect();
+    }
+  }, [documents, loading, selectedId, deselect]);
+
+  const selectedDoc = useMemo(
+    () => documents.find((d) => d.id === selectedId) ?? null,
+    [documents, selectedId],
+  );
+
+  const handleRowClick = (doc: Document) => {
+    select(doc.id);
   };
 
-  const setFilter = (next: FilterKey) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (next === 'all') params.delete('filter');
-    else params.set('filter', next);
-    const qs = params.toString();
-    router.replace(qs ? `/documents?${qs}` : '/documents');
+  const handleView = (doc: Document) => {
+    if (isDesktop) select(doc.id);
+    else window.location.assign(`/documents/${doc.id}`);
   };
 
-  const tabs: { key: FilterKey; label: string }[] = [
-    { key: 'all', label: 'Todos' },
-    { key: 'unassigned', label: 'Sin asignar' },
-  ];
+  const handleDownload = (doc: Document) => {
+    if (!doc.filePath) return;
+    window.open(doc.filePath, '_blank', 'noopener,noreferrer');
+  };
 
-  const emptyCopy =
-    filter === 'unassigned'
-      ? {
-          title: 'No hay documentos pendientes de asignar.',
-          hint: 'Cuando proceses un documento sin elegir persona, va a aparecer acá.',
-        }
-      : {
-          title: 'No hay documentos aún.',
-          hint: 'Sube o escanea uno para comenzar.',
-        };
+  const handleReassign = (doc: Document) => {
+    setAssignTarget(doc);
+  };
+
+  const handleDelete = async (doc: Document) => {
+    const ok = window.confirm(
+      `¿Eliminar "${doc.originalName}"? Esta acción no se puede deshacer.`,
+    );
+    if (!ok) return;
+    try {
+      await documentsClient.delete(doc.id);
+      toast.success('Documento eliminado.');
+      if (selectedId === doc.id) deselect();
+      fetchList();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No pudimos eliminar el documento.');
+    }
+  };
+
+  const handleAssignConfirm = async (personId: string | null) => {
+    if (!assignTarget) return;
+    await documentsClient.assignPerson(assignTarget.id, personId);
+    toast.success(personId ? 'Persona asignada.' : 'Asignación quitada.');
+    fetchList();
+  };
+
+  const detail = selectedDoc ? (
+    <DocumentsDetailPanel
+      doc={selectedDoc}
+      onClose={deselect}
+      onDownload={handleDownload}
+      onReassign={handleReassign}
+      onDelete={handleDelete}
+    />
+  ) : null;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <div>
+    <TooltipProvider>
+      <div className="space-y-5">
+        <header className="space-y-1">
           <Heading level={1}>Documentos</Heading>
-          <p className="text-body-sm text-fg-tertiary mt-0.5">
-            {filter === 'unassigned'
-              ? 'Documentos procesados que aún no están asociados a una persona.'
-              : `${documents.length} documento${documents.length !== 1 ? 's' : ''} en tu biblioteca`}
+          <p className="text-body-sm text-fg-secondary">
+            Listado paginado con búsqueda full-text, filtros y panel de detalle.
           </p>
-        </div>
-      </div>
+        </header>
 
-      <div role="tablist" aria-label="Filtros de documentos" className="flex gap-1 mb-4 border-b border-border">
-        {tabs.map((tab) => {
-          const active = filter === tab.key;
-          return (
-            <button
-              key={tab.key}
-              role="tab"
-              aria-selected={active}
-              onClick={() => setFilter(tab.key)}
-              className={`px-3 py-2 text-button-sm rounded-t-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] ${
-                active
-                  ? 'text-fg-primary border-b-2 border-fg-primary -mb-px'
-                  : 'text-fg-secondary hover:text-fg-primary'
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+        <DocumentsMetricsRow stats={stats} loading={loadingStats} />
 
-      {loading && documents.length === 0 ? (
-        <div className="flex items-center justify-center h-48 text-fg-tertiary text-body-sm">
-          Cargando documentos...
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <DocumentsSearchInput
+            value={state.search}
+            onChange={(search) => update({ search })}
+          />
+          <DocumentsFilters state={state} onChange={update} />
         </div>
-      ) : !loading && documents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 gap-2">
-          <p className="text-fg-secondary text-body-sm">{emptyCopy.title}</p>
-          <p className="text-fg-tertiary text-caption">{emptyCopy.hint}</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {documents.map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              doc={doc}
-              onDelete={handleDelete}
-              onPrint={printDocument}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+
+        <DocumentsMasterDetailShell
+          list={
+            <div className="space-y-3">
+              {loading && documents.length === 0 ? (
+                <Skeleton className="h-72 rounded-lg" />
+              ) : (
+                <DocumentsTable
+                  documents={documents}
+                  selectedId={selectedId}
+                  onRowClick={handleRowClick}
+                  onView={handleView}
+                  onDownload={handleDownload}
+                  onReassign={handleReassign}
+                  onDelete={handleDelete}
+                  emptyState={
+                    <div className="flex flex-col items-center justify-center gap-2 py-12 rounded-lg border border-border-subtle bg-surface-card">
+                      <p className="text-body-sm text-fg-secondary">
+                        No hay documentos con los filtros actuales.
+                      </p>
+                      <p className="text-caption text-fg-tertiary">
+                        Ajustá los filtros o subí un documento desde la sección Escaneo.
+                      </p>
+                    </div>
+                  }
+                />
+              )}
+
+              <DocumentsPagination
+                pagination={pagination}
+                limit={state.limit}
+                onPageChange={(page) => update({ page })}
+                onLimitChange={(limit: LimitOption) => update({ limit })}
+              />
+            </div>
+          }
+          detail={detail}
+        />
+
+        <AssignPersonModal
+          open={assignTarget !== null}
+          documentName={assignTarget?.originalName}
+          currentPersonId={assignTarget?.personId ?? null}
+          onClose={() => setAssignTarget(null)}
+          onConfirm={handleAssignConfirm}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
