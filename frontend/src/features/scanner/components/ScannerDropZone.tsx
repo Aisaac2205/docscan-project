@@ -99,7 +99,7 @@ export function ScannerDropZone({ applyResult }: ScannerDropZoneProps) {
         <div className="bg-surface-card border border-border rounded-md px-4 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center flex-shrink-0 text-fg-tertiary">
-              {selectedFile.type === 'application/pdf' ? <PdfIcon size={28} /> : <FileIcon size={16} />}
+              {selectedFile.type === 'application/pdf' ? <PdfIcon size={36} /> : <FileIcon size={16} />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-body-sm font-medium text-fg-primary truncate">

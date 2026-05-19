@@ -108,7 +108,7 @@ export function RecentScansFeed() {
                   }}
                 />
               ) : doc.mimeType === 'application/pdf' ? (
-                <PdfIcon size={28} />
+                <PdfIcon size={36} />
               ) : (
                 <FileIcon size={14} />
               )}

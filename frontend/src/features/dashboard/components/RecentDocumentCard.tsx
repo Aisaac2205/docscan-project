@@ -22,7 +22,7 @@ function timeAgo(dateStr: string): string {
 
 function getFileIcon(mimeType: string) {
   if (mimeType === 'application/pdf') {
-    return <PdfIcon size={36} />;
+    return <PdfIcon size={44} />;
   }
   if (mimeType.startsWith('image/')) {
     return (

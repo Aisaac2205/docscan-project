@@ -180,15 +180,17 @@ export function ImageIcon({ className = '', size = 16 }: IconProps) {
 }
 
 export function PdfIcon({ className = '', size = 16 }: IconProps) {
+  /** PNG original es ~330×406 → ratio ≈ 0.813 */
+  const aspectWidth = Math.round(size * 0.813);
   return (
     <Image
       src={pdfFileIconSrc}
       alt=""
+      width={aspectWidth}
       height={size}
-      width={size}
       className={className}
       aria-hidden="true"
-      style={{ width: 'auto', height: size }}
+      style={{ width: aspectWidth, height: size }}
     />
   );
 }

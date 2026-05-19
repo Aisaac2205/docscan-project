@@ -56,7 +56,7 @@ export function DocumentCard({ doc, onDelete, onPrint }: DocumentCardProps) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : isPdf ? (
-            <PdfIcon size={36} />
+            <PdfIcon size={44} />
           ) : (
             <FileIcon className="text-fg-disabled" />
           )}
