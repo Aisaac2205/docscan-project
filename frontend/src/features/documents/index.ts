@@ -45,14 +45,12 @@ export {
 export { ConfidenceText } from './components/ConfidenceText';
 export { DocumentStatusBadge } from './components/DocumentStatusBadge';
 export { DocumentTypeTag } from './components/DocumentTypeTag';
-export { DocumentsDetailPanel } from './components/DocumentsDetailPanel';
 export { DocumentsMetricsRow } from './components/DocumentsMetricsRow';
 export { PdfIcon } from './components/PdfIcon';
 export { PersonCell } from './components/PersonCell';
 
 // Hooks.
 export { useDocumentsStats } from './hooks/useDocumentsStats';
-export { useDocumentsMasterDetail } from './hooks/useDocumentsMasterDetail';
 export { useDocumentsQuery, toApiFilters } from './hooks/useDocumentsQuery';
 export type {
   DocumentsQueryState,

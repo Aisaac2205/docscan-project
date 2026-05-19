@@ -6,15 +6,17 @@ Módulo del listado de documentos: tabla paginada con búsqueda, filtros, KPIs y
 
 ```
 DocumentsView (orquestador, src/views/DocumentsView/)
-├── DocumentsMetricsRow         (3 KPIs uniformes, sparkline en --color-chart-1)
-├── DocumentsSearchInput        (debounce 300ms)
-├── DocumentsFilters            (tipo · estado · persona · rango fecha)
-├── DocumentsMasterDetailShell  (grid responsivo)
-│   ├── DocumentsTable          (DataTable<Document> con columnas semánticas)
-│   ├── DocumentsPagination     (range counter + size selector + paginación numérica)
-│   └── DocumentsDetailPanel    (preview imagen/placeholder PDF + datos + acciones)
-└── AssignPersonModal           (reuse del modal existente)
+├── DocumentsMetricsRow      (3 KPIs uniformes, sparkline en --color-chart-1)
+├── DocumentsSearchInput     (debounce 300ms)
+├── DocumentsFilters         (tipo · estado · persona · rango fecha)
+├── DocumentsTable           (DataTable<Document> con columnas semánticas)
+├── DocumentsPagination      (range counter + size selector + paginación numérica)
+└── AssignPersonModal        (reuse del modal existente)
 ```
+
+Click en una fila navega a `/documents/[id]` (vista full-screen,
+`DocumentDetailView`). No hay panel lateral persistente: la vista del
+documento ocupa toda la pantalla con su chat panel + acciones OCR.
 
 ## Reglas duras
 
@@ -44,17 +46,13 @@ Todo el state del listado vive en query params para permitir deep-linking:
 ```
 
 - `useDocumentsQuery()` lee/escribe filtros + paginación. Cualquier cambio de filtros resetea `page=1`.
-- `useDocumentsMasterDetail()` sincroniza `?selected=docId` y maneja el routing a `/documents/[id]` en mobile.
 - `toApiFilters(state)` traduce el state UI (con `status='review'` derivado) a los filtros del backend.
 
 ## Responsivo
 
-| Breakpoint   | Comportamiento                                                                    |
-| ---          | ---                                                                               |
-| `< 768px`    | Una columna. Click en fila → `router.push('/documents/[id]')` (ruta dedicada).    |
-| `≥ 768px`    | Grid `[1fr_560px]`. Click en fila abre/cambia panel derecho persistente.          |
-
-El panel derecho NO es un Sheet modal: es un `<aside>` persistente con scroll independiente. Cierra con la X o se descarta automáticamente si el doc seleccionado deja de estar en la página visible.
+Click en fila → `router.push('/documents/[id]')` en todos los breakpoints.
+La vista del documento (`DocumentDetailView`) ocupa toda la pantalla y
+trae chat panel + acciones OCR/smart-extract.
 
 ## Backend que consume
 

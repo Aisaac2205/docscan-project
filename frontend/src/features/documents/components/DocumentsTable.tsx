@@ -18,7 +18,6 @@ import { PersonCell } from './PersonCell';
 
 interface DocumentsTableProps {
   documents: Document[];
-  selectedId?: string | null;
   onRowClick: (doc: Document) => void;
   onView: (doc: Document) => void;
   onDownload: (doc: Document) => void;
@@ -29,7 +28,6 @@ interface DocumentsTableProps {
 
 export function DocumentsTable({
   documents,
-  selectedId,
   onRowClick,
   onView,
   onDownload,
@@ -124,11 +122,6 @@ export function DocumentsTable({
       data={documents}
       getRowKey={(doc) => doc.id}
       onRowClick={onRowClick}
-      rowClassName={(doc) =>
-        doc.id === selectedId
-          ? 'bg-surface-card-hover [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-brand-500)]'
-          : undefined
-      }
       emptyState={emptyState}
     />
   );
