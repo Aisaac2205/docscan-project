@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { Heading } from '@/shared/components/Layout';
 import { Dialog, DialogContent } from '@/shared/components/ui';
@@ -11,13 +11,29 @@ import { PersonDetailPanel } from '@/features/persons/components/PersonDetailPan
 import { PersonMetricsRow } from '@/features/persons/components/PersonMetricsRow';
 import { EmptyDetailState } from '@/features/persons/components/EmptyDetailState';
 import { usePersonsMasterDetail } from '@/features/persons/hooks/usePersonsMasterDetail';
-import { personsApi } from '@/features/persons/api/personsApi';
+import { personsApi, documentsAssignApi } from '@/features/persons/api/personsApi';
 import { PersonsMasterDetailShell } from './PersonsMasterDetailShell';
 
 export function PersonsView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { selectedId, select } = usePersonsMasterDetail();
   const [newOpen, setNewOpen] = useState(false);
+
+  // Prefill-from-OCR flow: si venís desde /health-absences con `from=health-record`,
+  // abrimos el dialog automáticamente, prefilleamos nombre, y al crear vinculamos
+  // la persona nueva a la constancia + redirigimos de vuelta a Salud.
+  const prefillFromHealth = useMemo(() => {
+    if (searchParams.get('from') !== 'health-record') return null;
+    const recordId = searchParams.get('recordId');
+    const fullName = searchParams.get('fullName');
+    if (!recordId) return null;
+    return { recordId, fullName: fullName ?? '' };
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (prefillFromHealth) setNewOpen(true);
+  }, [prefillFromHealth]);
 
   const isDesktop = useIsDesktop();
 
@@ -72,18 +88,38 @@ export function PersonsView() {
 
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
         <DialogContent
-          title="Nueva persona"
-          description="Cargá los datos básicos. Vas a poder asignar documentos después."
+          title={prefillFromHealth ? 'Crear empleado desde constancia' : 'Nueva persona'}
+          description={
+            prefillFromHealth
+              ? 'Datos prefilleados desde el OCR. Revisalos y guardá para vincular automáticamente.'
+              : 'Cargá los datos básicos. Vas a poder asignar documentos después.'
+          }
           size="md"
         >
           <PersonForm
-            submitLabel="Crear persona"
+            key={prefillFromHealth?.recordId ?? 'blank'}
+            initialDraft={
+              prefillFromHealth
+                ? { fullName: prefillFromHealth.fullName, role: 'employee', status: 'active' }
+                : null
+            }
+            submitLabel={prefillFromHealth ? 'Crear y vincular' : 'Crear persona'}
             onSubmit={async (input) => {
               const created = await personsApi.create(input);
+              if (prefillFromHealth) {
+                // Vincular la persona recién creada a la constancia y volver a Salud.
+                await documentsAssignApi.assign(prefillFromHealth.recordId, created.id);
+                setNewOpen(false);
+                router.push('/health-absences');
+                return;
+              }
               setNewOpen(false);
               handleSelect(created.id);
             }}
-            onCancel={() => setNewOpen(false)}
+            onCancel={() => {
+              setNewOpen(false);
+              if (prefillFromHealth) router.push('/health-absences');
+            }}
           />
         </DialogContent>
       </Dialog>

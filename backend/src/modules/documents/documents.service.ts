@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nest
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
 import { DocumentsRepository } from './repositories/documents.repository';
+import { PersonsRepository } from '../persons/persons.repository';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto';
 import { DOCUMENT_CREATED, DocumentCreatedEvent } from './events/document.events';
 
@@ -11,6 +12,7 @@ export class DocumentsService {
 
   constructor(
     private repository: DocumentsRepository,
+    private readonly personsRepository: PersonsRepository,
     private readonly events: EventEmitter2,
   ) { }
 
@@ -50,6 +52,15 @@ export class DocumentsService {
     const document = await this.repository.findByIdAndUserId(id, userId);
     if (!document) {
       throw new NotFoundException('Documento no encontrado');
+    }
+    // Verificar que la persona existe Y pertenece al mismo userId.
+    // Sin este check, la FK de Prisma falla con error genérico de DB. Validar
+    // explícito da mejor UX y respeta el principio "validate at boundaries".
+    if (personId !== null) {
+      const person = await this.personsRepository.findById(personId, userId);
+      if (!person) {
+        throw new NotFoundException('Persona no encontrada');
+      }
     }
     return this.repository.update(id, { personId });
   }

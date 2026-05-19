@@ -8,7 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AbsencesService } from './absences.service';
-import { UpdateHealthStatusDto } from './dto/update-health-status.dto';
+import {
+  UpdateHealthStatusDto,
+  UpdateHealthRecordDto,
+} from './dto/update-health-status.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -26,6 +29,14 @@ export class AbsencesController {
     return this.absencesService.getHealthRecords(user.id, { personId, status });
   }
 
+  @Get(':id/person-suggestions')
+  async getPersonSuggestions(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.absencesService.getPersonSuggestions(id, user.id);
+  }
+
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
@@ -33,5 +44,14 @@ export class AbsencesController {
     @Body() dto: UpdateHealthStatusDto,
   ) {
     return this.absencesService.updateHealthStatus(id, user.id, dto.status, dto.notes);
+  }
+
+  @Patch(':id')
+  async patch(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+    @Body() dto: UpdateHealthRecordDto,
+  ) {
+    return this.absencesService.patchHealthRecord(id, user.id, dto);
   }
 }

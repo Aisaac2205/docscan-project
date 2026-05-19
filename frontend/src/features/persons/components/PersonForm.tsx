@@ -5,6 +5,8 @@ import type { CreatePersonInput, Person, PersonRole, PersonStatus } from '../typ
 
 interface PersonFormProps {
   initial?: Person | null;
+  /** Prefill parcial — útil para creación desde flujos externos (ej: OCR de constancia). */
+  initialDraft?: Partial<CreatePersonInput> | null;
   submitLabel?: string;
   onSubmit: (input: CreatePersonInput) => Promise<unknown>;
   onCancel?: () => void;
@@ -22,14 +24,20 @@ const STATUS_OPTIONS: { value: PersonStatus; label: string }[] = [
   { value: 'rejected', label: 'Descartado' },
 ];
 
-export function PersonForm({ initial, submitLabel = 'Guardar', onSubmit, onCancel }: PersonFormProps) {
-  const [fullName, setFullName] = useState(initial?.fullName ?? '');
-  const [cui, setCui] = useState(initial?.cui ?? '');
-  const [email, setEmail] = useState(initial?.email ?? '');
-  const [phone, setPhone] = useState(initial?.phone ?? '');
-  const [role, setRole] = useState<PersonRole>(initial?.role ?? 'candidate');
-  const [status, setStatus] = useState<PersonStatus>(initial?.status ?? 'active');
-  const [notes, setNotes] = useState(initial?.notes ?? '');
+export function PersonForm({
+  initial,
+  initialDraft,
+  submitLabel = 'Guardar',
+  onSubmit,
+  onCancel,
+}: PersonFormProps) {
+  const [fullName, setFullName] = useState(initial?.fullName ?? initialDraft?.fullName ?? '');
+  const [cui, setCui] = useState(initial?.cui ?? initialDraft?.cui ?? '');
+  const [email, setEmail] = useState(initial?.email ?? initialDraft?.email ?? '');
+  const [phone, setPhone] = useState(initial?.phone ?? initialDraft?.phone ?? '');
+  const [role, setRole] = useState<PersonRole>(initial?.role ?? initialDraft?.role ?? 'candidate');
+  const [status, setStatus] = useState<PersonStatus>(initial?.status ?? initialDraft?.status ?? 'active');
+  const [notes, setNotes] = useState(initial?.notes ?? initialDraft?.notes ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
