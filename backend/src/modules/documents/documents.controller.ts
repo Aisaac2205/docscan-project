@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { appConfig } from '../../config';
 import { ClassifyBackgroundDto } from './dto';
+import { decodeMulterFilename } from '../../common/utils/decode-filename';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
@@ -83,7 +84,7 @@ export class DocumentsController {
     // mimeType: PDFs are stored as-is; images are always converted to webp by Sharp
     const storedMimeType = file.mimetype === 'application/pdf' ? 'application/pdf' : 'image/webp';
     return this.documentsService.createDocument(user.id, {
-      originalName: file.originalname,
+      originalName: decodeMulterFilename(file.originalname),
       mimeType: storedMimeType,
       filePath: uploaded.url,
       personId: body.personId,

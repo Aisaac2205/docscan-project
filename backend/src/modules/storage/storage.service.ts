@@ -3,6 +3,7 @@ import * as sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { decodeMulterFilename } from '../../common/utils/decode-filename';
 
 export interface UploadedFile {
   url: string;
@@ -50,7 +51,8 @@ export class StorageService {
     if (file.mimetype === 'application/pdf') {
       try {
         const pdfBuffer = fs.readFileSync(tempPath);
-        const remotePath = `/${file.originalname.replace(/\.[^.]+$/, '')}_${fileId}.pdf`;
+        const safeName = decodeMulterFilename(file.originalname).replace(/\.[^.]+$/, '');
+        const remotePath = `/${safeName}_${fileId}.pdf`;
         const uploadSuccess = await this.uploadToBunny(remotePath, pdfBuffer);
         if (!uploadSuccess) {
           throw new HttpException('Failed to upload to storage', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -84,7 +86,8 @@ export class StorageService {
 
       const metadata = await sharp(optimizedBuffer).metadata();
 
-      const remotePath = `/${file.originalname.split('.')[0]}_${fileId}.webp`;
+      const safeName = decodeMulterFilename(file.originalname).split('.')[0];
+      const remotePath = `/${safeName}_${fileId}.webp`;
       const uploadSuccess = await this.uploadToBunny(remotePath, optimizedBuffer);
 
       if (!uploadSuccess) {
