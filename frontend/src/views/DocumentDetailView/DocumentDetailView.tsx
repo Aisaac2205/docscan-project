@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { UserPlus } from 'lucide-react';
 import type { Document } from '@/features/documents/types/document.types';
 import { useDocumentChat } from '@/features/documents/hooks/useDocumentChat';
 import { useExtractedFields } from '@/features/documents/hooks/useExtractedFields';
@@ -9,9 +10,11 @@ import { useDocumentAction } from '@/features/documents/hooks/useDocumentAction'
 import { ExtractedFieldsPanel } from '@/features/documents/components/ExtractedFieldsPanel';
 import { DocumentChatPanel } from '@/features/documents/components/DocumentChatPanel';
 import { StatusBadge } from '@/features/documents/components/StatusBadge';
+import { AssignPersonModal } from '@/features/documents/components/AssignPersonModal';
 import { printDocument } from '@/features/documents/utils/print';
 import { documentsClient } from '@/features/documents/client';
 import { FileIcon, PrintIcon, TrashIcon, SparkleIcon, OcrIcon } from '@/shared/ui/icons';
+import { toast } from '@/shared/ui/toast/store';
 import { Heading } from '@/shared/components/Layout';
 import { useDocumentStore } from '@/features/documents/store';
 
@@ -23,12 +26,20 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
   const router = useRouter();
   const { deleteDocument, updateDocument } = useDocumentStore();
   const [doc, setDoc] = useState<Document>(initialDoc);
+  const [assignOpen, setAssignOpen] = useState(false);
   const documentChat = useDocumentChat(doc.id);
   const documentAction = useDocumentAction(doc);
   const extracted = doc.extractedData as Record<string, unknown> | null;
   const renderedFields = useExtractedFields(extracted);
   const isCompleted = doc.status === 'completed';
   const isImage = doc.filePath && !doc.filePath.toLowerCase().endsWith('.pdf');
+
+  const handleAssignConfirm = async (personId: string | null) => {
+    const updated = await documentsClient.assignPerson(doc.id, personId);
+    setDoc(updated);
+    updateDocument(doc.id, updated);
+    toast.success(personId ? 'Persona asignada.' : 'Asignación quitada.');
+  };
 
   useEffect(() => {
     documentsClient.get(initialDoc.id)
@@ -98,6 +109,14 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
             </>
           )}
           <button
+            onClick={() => setAssignOpen(true)}
+            className="h-9 px-3 text-button-sm font-medium border border-border text-fg-secondary bg-surface-card rounded-md hover:bg-surface-sunken transition-colors flex items-center gap-1.5"
+            title={doc.personId ? 'Reasignar persona' : 'Asignar persona'}
+          >
+            <UserPlus width={14} height={14} aria-hidden="true" />
+            {doc.personId ? 'Reasignar' : 'Asignar persona'}
+          </button>
+          <button
             onClick={() => printDocument(doc)}
             className="h-8 w-8 lg:h-9 lg:w-9 flex items-center justify-center text-fg-tertiary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
             title="Imprimir"
@@ -158,6 +177,14 @@ export function DocumentDetailView({ doc: initialDoc }: DocumentDetailViewProps)
       <div className="border-t border-border bg-surface-card flex-shrink-0">
         <DocumentChatPanel chat={documentChat} compact={false} />
       </div>
+
+      <AssignPersonModal
+        open={assignOpen}
+        documentName={doc.originalName}
+        currentPersonId={doc.personId ?? null}
+        onClose={() => setAssignOpen(false)}
+        onConfirm={handleAssignConfirm}
+      />
     </div>
   );
 }
