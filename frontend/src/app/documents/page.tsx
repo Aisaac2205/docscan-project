@@ -1,8 +1,10 @@
-'use client';
-
-import React from 'react';
+import { Suspense } from 'react';
 import { DocumentsView } from '@/views/DocumentsView/DocumentsView';
 
 export default function Page() {
-  return <DocumentsView />;
+  return (
+    <Suspense fallback={null}>
+      <DocumentsView />
+    </Suspense>
+  );
 }
