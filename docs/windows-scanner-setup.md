@@ -63,8 +63,10 @@ Reiniciá el backend. En el log deberías ver:
 
 ```
 [ScannerDiscovery] Using BonjourDiscoveryAdapter (SCANNER_DISCOVERY_ENABLED=true)
-[BonjourDiscoveryAdapter] Scanner discovery listening on _uscan._tcp
+[BonjourDiscoveryAdapter] Scanner discovery listening on _uscan._tcp + _uscans._tcp
 ```
+
+El adapter browsea **los dos service types en paralelo**: `_uscan._tcp` (eSCL sobre HTTP) y `_uscans._tcp` (eSCL sobre HTTPS). eSCL es una extensión de IPP que puede correr sobre HTTP o HTTPS según la configuración de seguridad del equipo: el firmware viejo (pre-2020) suele anunciar solo HTTP, mientras que las impresoras modernas (EPSON post-2020, HP/Brother nuevas, equipos enterprise) anuncian solo HTTPS o ambos. Si la misma impresora se anuncia en los dos, **HTTPS gana** y la fila queda con `useTls=true`.
 
 ### Aceptar el prompt del firewall de Windows
 
@@ -83,12 +85,20 @@ New-NetFirewallRule -DisplayName "DocScan mDNS" `
 
 ### Disparar el descubrimiento
 
-Cuando se prende un escáner eSCL en la LAN, su anuncio mDNS llega y el backend loguea:
+Cuando se prende un escáner eSCL en la LAN, su anuncio mDNS llega y el backend loguea (el ejemplo de abajo es para una impresora que solo expone HTTPS):
 
 ```
-[BonjourDiscoveryAdapter] Discovered scanner: EPSON L4360 Series @ 192.168.1.100:80 uuid=4509a320-...
-[ScannerConfigSyncListener] Registered discovered scanner: id=cmp... uuid=4509a320-... 192.168.1.100:80
+[BonjourDiscoveryAdapter] Discovered scanner: EPSON L4360 Series @ https://192.168.1.100:443 uuid=4509a320-...
+[ScannerConfigSyncListener] Registered discovered scanner: id=cmp... uuid=4509a320-... 192.168.1.100:443
 ```
+
+Para una impresora que solo expone HTTP cambia el esquema:
+
+```
+[BonjourDiscoveryAdapter] Discovered scanner: HP OfficeJet @ http://192.168.1.50:80 uuid=...
+```
+
+Si la impresora anuncia los dos transportes, vas a ver el log de HTTPS y, después, una línea `debug` de `HTTP announcement refresh (HTTPS preferred)` por cada renovación del anuncio HTTP.
 
 También podés forzar un sweep en cualquier momento desde el frontend o con curl:
 
@@ -110,6 +120,7 @@ Devuelve la lista de SYSTEM/MDNS conocidos con `online` actualizado por ping eSC
 | Bonjour Service de Apple ocupando 5353 | `Get-Service "Bonjour Service"` | El adapter usa `SO_REUSEADDR`; si pelea igual, parar el servicio: `Stop-Service "Bonjour Service"` |
 | Red WiFi de invitados con client isolation | El router no propaga multicast entre clientes | Usar la red WiFi principal o cable Ethernet |
 | Escáner anunciando sin TXT `UUID` (firmware muy viejo) | `dns-sd -B _uscan._tcp` lo lista pero sin UUID | Usar Camino B (manual) |
+| Impresora moderna que solo expone HTTPS y aparecía como no descubierta antes | Ver log `Discovered scanner @ https://...` o `dns-sd -B _uscans._tcp` | Resuelto: el adapter browsea `_uscan._tcp` y `_uscans._tcp` en paralelo |
 
 ---
 
@@ -190,7 +201,7 @@ Abrí `http://localhost:3000/scan` — el escáner aparece guardado y con punto 
 
 ### Con discovery activo (Camino A)
 
-Nada para hacer en el backend. Conectá la impresora a la nueva red WiFi (paso 1), prendela, esperá que anuncie. El listener actualiza la IP en DB matcheando por UUID — el `ScannerConfig` es el mismo, solo cambia su `ip`.
+Nada para hacer en el backend. Conectá la impresora a la nueva red WiFi (paso 1), prendela, esperá que anuncie. El listener actualiza la IP en DB matcheando por UUID — el `ScannerConfig` es el mismo, solo cambian las piezas del transporte (`ip`, `port`, `useTls`). Si la impresora también cambió de HTTP a HTTPS al cambiar de firmware o de red (las redes corporativas muchas veces fuerzan HTTPS), el listener actualiza los tres juntos como un set coherente.
 
 ### Con configuración manual (Camino B)
 
@@ -264,11 +275,16 @@ Get-Printer | Select-Object Name, PortName, DriverName
 # Dispositivos en la LAN
 arp -a
 
-# Estado eSCL directo
+# Estado eSCL directo (HTTPS o HTTP según expone el equipo)
 curl.exe -sk https://192.168.1.100/eSCL/ScannerStatus
+curl.exe -s  http://192.168.1.100/eSCL/ScannerStatus
 
 # Capabilities (modos, resoluciones, formatos)
 curl.exe -sk https://192.168.1.100/eSCL/ScannerCapabilities
+
+# Listar anuncios mDNS de ambos transportes (requiere Bonjour de Apple o dns-sd)
+dns-sd -B _uscan._tcp     # HTTP eSCL
+dns-sd -B _uscans._tcp    # HTTPS eSCL
 
 # Forzar discovery desde la API (requiere JWT)
 $token = "..."

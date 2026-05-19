@@ -36,20 +36,28 @@ export class ScannerConfigSyncListener {
       });
 
       if (existing) {
-        // Update only volatile fields. Do NOT overwrite `name` (user may have
-        // renamed it) or TLS settings (they came from a manual decision).
+        // The adapter is authoritative for the transport tuple (ip, port,
+        // useTls). They move together as a coherent unit — DHCP renews flip
+        // ip; a firmware switching from `_uscan` to `_uscans` flips port AND
+        // useTls. Refreshing only part of the tuple yields an inconsistent
+        // row (e.g. useTls=false + port=443) where ping fails forever.
+        //
+        // Name stays user-controlled (no UI to edit it yet, but we plan to).
+        // verifyTls is left alone because mDNS carries no signal about cert
+        // validity — defaults to true; users override per row when needed.
         await this.prisma.scannerConfig.update({
           where: { id: existing.id },
           data: {
             ip: scanner.ip,
             port: scanner.port,
+            useTls: scanner.useTls,
             mdnsName: scanner.mdnsName,
             online: true,
             lastSeenAt: scanner.observedAt,
           },
         });
         this.logger.debug(
-          `Refreshed discovered scanner ${existing.id}: ${scanner.ip}:${scanner.port}`,
+          `Refreshed discovered scanner ${existing.id}: ${scanner.useTls ? 'https' : 'http'}://${scanner.ip}:${scanner.port}`,
         );
         return;
       }

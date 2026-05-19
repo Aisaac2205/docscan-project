@@ -19,15 +19,27 @@ import {
 } from './discovered-scanner.types';
 
 /**
- * Browses `_uscan._tcp` on the local network and emits discovery events.
+ * Browses BOTH `_uscan._tcp` (HTTP) and `_uscans._tcp` (HTTPS) on the local
+ * network and emits discovery events.
  *
- * - HTTP-only (`_uscan._tcp`). HTTPS variant `_uscans._tcp` is not browsed in v1;
- *   add a second browser later if a deployment needs it.
+ * eSCL is HTTP-based but Mopria/AirScan split the service announcement in two
+ * mDNS service types according to the transport the device exposes:
+ *   - `_uscan._tcp`  → HTTP eSCL (older firmware, default on consumer printers pre-2020)
+ *   - `_uscans._tcp` → HTTPS eSCL (typical on EPSON post-2020, modern HP/Brother, enterprise)
+ *
+ * Browsing both in parallel matters because plenty of modern devices ONLY
+ * announce the HTTPS variant — they were invisible to auto-discovery before.
+ *
+ * Same UUID seen on both transports → HTTPS wins (self-signed certs on LAN are
+ * already handled via the `verifyTls` flag, and HTTPS is the device's preferred
+ * default). Losing only one transport while the other stays alive keeps the
+ * device registered; only when both go away do we emit `lost`.
+ *
  * - Crashes inside the mDNS stack (firewall denial, socket already bound by
  *   Apple Bonjour Service, no usable interface) are caught and logged. The
  *   backend keeps running with an empty snapshot — same UX as Noop.
  * - Emits via EventEmitter2 only. Never writes to the database directly.
- *   Reconciliation lives in a separate listener (Phase 3).
+ *   Reconciliation lives in `scanner-config-sync.listener`.
  */
 @Injectable()
 export class BonjourDiscoveryAdapter
@@ -35,10 +47,14 @@ export class BonjourDiscoveryAdapter
 {
   private readonly logger = new Logger(BonjourDiscoveryAdapter.name);
   private bonjour: Bonjour | null = null;
-  private browser: Browser | null = null;
+  private httpBrowser: Browser | null = null;
+  private httpsBrowser: Browser | null = null;
   private started = false;
-  /** Keyed by UUID (preferred) or fqdn fallback when UUID missing. */
+  /** Keyed by UUID. Holds the highest-priority announcement seen (HTTPS > HTTP). */
   private readonly devices = new Map<string, DiscoveredScanner>();
+  /** Per-transport presence sets — drive the `lost` semantics so a single-transport flap doesn't take the device offline. */
+  private readonly seenHttp = new Set<string>();
+  private readonly seenHttps = new Set<string>();
 
   constructor(private readonly events: EventEmitter2) {}
 
@@ -58,12 +74,18 @@ export class BonjourDiscoveryAdapter
       this.bonjour = new Bonjour(opts, (err: Error) => {
         this.logger.warn(`mDNS socket error: ${err.message}`);
       });
-      this.browser = this.bonjour.find({ type: 'uscan', protocol: 'tcp' });
-      this.browser.on('up', (svc) => this.onServiceUp(svc));
-      this.browser.on('down', (svc) => this.onServiceDown(svc));
+
+      this.httpBrowser = this.bonjour.find({ type: 'uscan', protocol: 'tcp' });
+      this.httpBrowser.on('up', (svc) => this.onServiceUp(svc, false));
+      this.httpBrowser.on('down', (svc) => this.onServiceDown(svc, false));
+
+      this.httpsBrowser = this.bonjour.find({ type: 'uscans', protocol: 'tcp' });
+      this.httpsBrowser.on('up', (svc) => this.onServiceUp(svc, true));
+      this.httpsBrowser.on('down', (svc) => this.onServiceDown(svc, true));
+
       this.started = true;
       this.logger.log(
-        `Scanner discovery listening on _uscan._tcp${iface ? ` (interface ${iface})` : ''}`,
+        `Scanner discovery listening on _uscan._tcp + _uscans._tcp${iface ? ` (interface ${iface})` : ''}`,
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -79,8 +101,9 @@ export class BonjourDiscoveryAdapter
   }
 
   async refresh(): Promise<DiscoveredScanner[]> {
-    if (!this.started || !this.browser) return this.snapshot();
-    this.browser.update();
+    if (!this.started) return this.snapshot();
+    this.httpBrowser?.update();
+    this.httpsBrowser?.update();
     await new Promise<void>((resolve) => setTimeout(resolve, 1500));
     return this.snapshot();
   }
@@ -89,21 +112,46 @@ export class BonjourDiscoveryAdapter
     return Array.from(this.devices.values());
   }
 
-  private onServiceUp(svc: Service): void {
-    const scanner = this.toDiscovered(svc);
+  private onServiceUp(svc: Service, useTls: boolean): void {
+    const scanner = this.toDiscovered(svc, useTls);
     if (!scanner) return;
-    const key = scanner.uuid;
-    this.devices.set(key, scanner);
+
+    (useTls ? this.seenHttps : this.seenHttp).add(scanner.uuid);
+
+    const existing = this.devices.get(scanner.uuid);
+    if (existing && existing.useTls && !useTls) {
+      // HTTPS already known for this UUID — refresh observedAt internally but
+      // do NOT emit a Discovered event with the HTTP variant. We never want to
+      // downgrade a device that's serving both transports.
+      this.devices.set(scanner.uuid, { ...existing, observedAt: scanner.observedAt });
+      this.logger.debug(
+        `HTTP announcement refresh (HTTPS preferred): ${scanner.modelName ?? scanner.mdnsName} uuid=${scanner.uuid}`,
+      );
+      return;
+    }
+
+    this.devices.set(scanner.uuid, scanner);
     this.logger.log(
-      `Discovered scanner: ${scanner.modelName ?? scanner.mdnsName} @ ${scanner.ip}:${scanner.port} uuid=${scanner.uuid}`,
+      `Discovered scanner: ${scanner.modelName ?? scanner.mdnsName} @ ${useTls ? 'https' : 'http'}://${scanner.ip}:${scanner.port} uuid=${scanner.uuid}`,
     );
     const payload: ScannerDiscoveredPayload = { scanner };
     this.events.emit(ScannerDiscoveryEvents.Discovered, payload);
   }
 
-  private onServiceDown(svc: Service): void {
+  private onServiceDown(svc: Service, useTls: boolean): void {
     const uuid = this.txtValue(svc, 'uuid') || svc.fqdn || svc.name;
     if (!uuid) return;
+
+    (useTls ? this.seenHttps : this.seenHttp).delete(uuid);
+
+    if (this.seenHttp.has(uuid) || this.seenHttps.has(uuid)) {
+      // The other transport still sees the device — don't flap offline.
+      this.logger.debug(
+        `Partial lost (${useTls ? 'https' : 'http'} only) — other transport still present: ${svc.name} uuid=${uuid}`,
+      );
+      return;
+    }
+
     const known = this.devices.get(uuid);
     this.devices.delete(uuid);
     const payload: ScannerLostPayload = {
@@ -118,7 +166,7 @@ export class BonjourDiscoveryAdapter
    * Maps a raw mDNS service to our domain shape.
    * Drops announcements that do not look like a valid eSCL device.
    */
-  private toDiscovered(svc: Service): DiscoveredScanner | null {
+  private toDiscovered(svc: Service, useTls: boolean): DiscoveredScanner | null {
     const ip = this.pickIPv4(svc.addresses);
     if (!ip) return null;
     const uuid = this.txtValue(svc, 'uuid');
@@ -137,7 +185,7 @@ export class BonjourDiscoveryAdapter
       modelName: this.txtValue(svc, 'ty'),
       ip,
       port: svc.port,
-      useTls: false,
+      useTls,
       rs,
       observedAt: new Date(),
     };
@@ -167,7 +215,12 @@ export class BonjourDiscoveryAdapter
 
   private async cleanup(): Promise<void> {
     try {
-      this.browser?.stop();
+      this.httpBrowser?.stop();
+    } catch {
+      /* ignore */
+    }
+    try {
+      this.httpsBrowser?.stop();
     } catch {
       /* ignore */
     }
@@ -176,9 +229,12 @@ export class BonjourDiscoveryAdapter
     } catch {
       /* ignore */
     }
-    this.browser = null;
+    this.httpBrowser = null;
+    this.httpsBrowser = null;
     this.bonjour = null;
     this.started = false;
     this.devices.clear();
+    this.seenHttp.clear();
+    this.seenHttps.clear();
   }
 }
