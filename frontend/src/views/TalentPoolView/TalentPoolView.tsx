@@ -1,14 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ocrClient } from '@/features/ocr/client';
-import type { ProviderId, ProviderInfo } from '@/features/ocr/types/ocr.types';
-import { toast } from '@/shared/ui/toast/store';
 import { SpinnerIcon } from '@/shared/ui/icons';
 import { Heading } from '@/shared/components/Layout';
-import { useTalentPoolStore } from '@/features/talent-pool/store';
-import { documentsClient } from '@/features/documents/client';
-import type { Document } from '@/features/documents/types/document.types';
+import { useTalentPoolPage } from '@/features/talent-pool/hooks/useTalentPoolPage';
 import { CriteriaForm } from '@/features/talent-pool/components/CriteriaForm';
 import { EvaluationPanel } from '@/features/talent-pool/components/EvaluationPanel';
 import { DocumentPicker } from '@/features/talent-pool/components/DocumentPicker';
@@ -16,301 +10,232 @@ import { CandidateCard } from '@/features/talent-pool/components/CandidateCard';
 import { RankingResult } from '@/features/talent-pool/components/RankingResult';
 import { HistorySection } from '@/features/talent-pool/components/HistorySection';
 
+const PRIMARY_BUTTON_CLASS =
+  'h-10 px-5 rounded-md bg-fg-primary text-fg-inverse text-button hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]';
+
 export function TalentPoolView() {
   const {
     criterios,
     candidatos,
-    resultado,
-    historial,
-    loadingHistorial,
-    clearingHistory,
-    updatingPinRunId,
-    evaluando,
-    error,
     setCriterio,
     addCandidate,
     removeCandidate,
     updateCandidate,
-    addCandidatesFromDocuments,
+    cvDocuments,
+    loadingDocuments,
+    selectedDocumentIds,
+    toggleDocument,
+    addFromDocuments,
+    providers,
+    selectedProvider,
+    selectedModel,
+    loadingProviders,
+    selectProvider,
+    selectModel,
     evaluate,
-    loadHistory,
+    evaluando,
+    evaluationError,
+    resultado,
+    clearResult,
+    resetForm,
+    historial,
+    loadingHistorial,
+    clearingHistory,
+    updatingPinRunId,
     togglePinned,
     clearHistory,
-  } = useTalentPoolStore();
-  /**
-   * Solo CVs. Fetch local desacoplado del store global para no contaminar
-   * otras vistas con el filtro `type=cv`. limit=200 cubre el caso real;
-   * el día que se supere, paginar el picker.
-   */
-  const [cvDocuments, setCvDocuments] = useState<Document[]>([]);
-  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  } = useTalentPoolPage();
 
-  const [providers, setProviders] = useState<ProviderInfo[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState<ProviderId>('gemini');
-  const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
-  const [loadingProviders, setLoadingProviders] = useState(false);
-  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    let mounted = true;
-    const loadProviders = async () => {
-      try {
-        setLoadingProviders(true);
-        const fetched = await ocrClient.getProviders();
-        if (!mounted) return;
-
-        const available = fetched.filter((p) => p.available);
-        setProviders(available);
-
-        const preferred = available.find((p) => p.id === 'gemini')
-          ?? available.find((p) => p.id === 'lmstudio');
-
-        if (preferred) {
-          setSelectedProvider(preferred.id);
-          setSelectedModel(preferred.models[0]?.id);
-        }
-      } catch {
-        if (mounted) toast.info('No pudimos cargar los modos de IA. Usaremos la configuración por defecto.');
-      } finally {
-        if (mounted) setLoadingProviders(false);
-      }
-    };
-
-    loadProviders();
-    return () => { mounted = false; };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    setLoadingDocuments(true);
-    documentsClient
-      .list({ type: 'cv', limit: 200, sort: 'createdAt', order: 'desc' })
-      .then((response) => {
-        if (active) setCvDocuments(response.data);
-      })
-      .catch(() => {
-        if (active) toast.info('No pudimos cargar los CV/documentos escaneados por ahora.');
-      })
-      .finally(() => {
-        if (active) setLoadingDocuments(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    loadHistory(20).catch(() => {
-      toast.info('No pudimos cargar el historial de evaluaciones por ahora.');
-    });
-  }, [loadHistory]);
-
-  const validate = (): string | null => {
-    if (!criterios.puesto.trim()) return 'Completá el campo "Puesto".';
-    if (!criterios.objetivoRol.trim()) return 'Completá el campo "Objetivo del rol".';
-    if (candidatos.length < 2) return 'Agregá al menos 2 candidatos para comparar.';
-
-    for (const candidate of candidatos) {
-      if (!candidate.nombre.trim()) return 'Cada candidato necesita nombre.';
-      if (!candidate.resumenCv.trim()) return `Falta el resumen/CV de ${candidate.nombre || 'un candidato'}.`;
-      if (candidate.resumenCv.trim().length > 7000) {
-        return `El resumen/CV de ${candidate.nombre} supera 7000 caracteres.`;
-      }
-    }
-    return null;
-  };
-
-  const handleEvaluate = async () => {
-    const validationError = validate();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    const result = await evaluate(selectedProvider, selectedModel);
-    if (result) {
-      toast.success('Evaluación completada. Ya tenés el ranking ordenado.');
-    }
-  };
-
-  const handleToggleDocument = (id: string) => {
-    setSelectedDocumentIds((prev) => (
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    ));
-  };
-
-  const handleAddFromDocuments = () => {
-    if (selectedDocumentIds.length === 0) {
-      toast.info('Seleccioná al menos un CV para agregarlo.');
-      return;
-    }
-
-    const selected = cvDocuments.filter((d) => selectedDocumentIds.includes(d.id));
-    const result = addCandidatesFromDocuments(selected);
-
-    if (result.agregados > 0) {
-      toast.success(`Se agregaron ${result.agregados} candidato(s) desde documentos escaneados.`);
-    }
-    if (result.omitidosSinContenido > 0) {
-      toast.info(`${result.omitidosSinContenido} documento(s) no tenían texto ni datos extraídos y se omitieron.`);
-    }
-    if (result.omitidosDuplicados > 0) {
-      toast.info(`${result.omitidosDuplicados} documento(s) ya estaban cargados o excedían el límite de 25 candidatos.`);
-    }
-    if (result.agregados === 0 && result.omitidosSinContenido === 0 && result.omitidosDuplicados === 0) {
-      toast.info('No hubo cambios para agregar.');
-    }
-
-    setSelectedDocumentIds([]);
-  };
-
-  const handleTogglePinned = async (runId: string, nextPinned: boolean) => {
-    const success = await togglePinned(runId, nextPinned);
-    if (success) {
-      toast.success(nextPinned ? 'Evaluación fijada en historial.' : 'Evaluación desfijada del historial.');
-      return;
-    }
-    toast.error('No pudimos actualizar el estado fijado de esta evaluación.');
-  };
-
-  const handleClearHistory = async () => {
-    if (historial.length === 0) {
-      toast.info('No hay evaluaciones en historial para eliminar.');
-      return;
-    }
-
-    const confirmation = window.prompt(
-      'Esta acción elimina TODO el historial de evaluaciones de tu cuenta y no se puede deshacer. Escribí ELIMINAR para confirmar.',
-    );
-
-    if (confirmation !== 'ELIMINAR') {
-      toast.info('Cancelado. Para confirmar el borrado, escribí ELIMINAR exactamente.');
-      return;
-    }
-
-    const deletedCount = await clearHistory();
-    if (deletedCount === null) {
-      toast.error('No pudimos eliminar el historial por ahora.');
-      return;
-    }
-
-    if (deletedCount === 0) {
-      toast.info('No encontramos evaluaciones para eliminar.');
-      return;
-    }
-
-    toast.success(`Historial eliminado: ${deletedCount} evaluación(es).`);
-  };
+  const evaluateButtonLabel = evaluando ? (
+    <>
+      <SpinnerIcon /> Evaluando candidatos…
+    </>
+  ) : (
+    'Evaluar y ordenar candidatos'
+  );
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <header className="space-y-1">
-        <Heading level={1}>Bolsa de talento</Heading>
-        <p className="text-body-sm text-fg-secondary max-w-3xl">
-          Compará candidatos de forma clara para RRHH. Cargás criterios, pegás CVs y obtenés un ranking con recomendaciones simples.
-        </p>
-      </header>
-
-      <section className="grid gap-4 xl:grid-cols-[1.05fr_1fr] items-start">
-        <CriteriaForm criterios={criterios} setCriterio={setCriterio} />
-        <EvaluationPanel
-          providers={providers}
-          selectedProvider={selectedProvider}
-          selectedModel={selectedModel}
-          loadingProviders={loadingProviders}
-          criterios={criterios}
-          onProviderSelect={(provider, firstModelId) => {
-            setSelectedProvider(provider);
-            setSelectedModel(firstModelId);
-          }}
-          onModelSelect={setSelectedModel}
-          setCriterio={setCriterio}
-        />
-      </section>
-
-      <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <Heading level={4} as="h2" className="text-fg-primary">Candidatos a comparar</Heading>
-            <p className="text-caption text-fg-tertiary">Pegá el resumen o CV de cada persona. Máximo 7000 caracteres por candidato.</p>
-          </div>
-          <button
-            onClick={addCandidate}
-            disabled={candidatos.length >= 25}
-            className="h-9 px-3 rounded-md border border-border bg-surface-card text-button-sm text-fg-secondary hover:bg-surface-sunken disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            + Agregar candidato manual
-          </button>
-        </div>
-
-        <DocumentPicker
-          documents={cvDocuments}
-          loading={loadingDocuments}
-          selectedIds={selectedDocumentIds}
-          onToggle={handleToggleDocument}
-          onAddSelected={handleAddFromDocuments}
-        />
-
-        <div className="grid gap-3 lg:grid-cols-2">
-          {candidatos.map((candidate, index) => (
-            <CandidateCard
-              key={candidate.id}
-              candidate={candidate}
-              index={index}
-              isRemoveDisabled={candidatos.length <= 2}
-              onRemove={removeCandidate}
-              onUpdate={updateCandidate}
-            />
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <button
-            onClick={handleEvaluate}
-            disabled={evaluando}
-            className="h-10 px-5 rounded-md bg-fg-primary text-fg-inverse text-button hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
-          >
-            {evaluando ? <><SpinnerIcon /> Evaluando candidatos…</> : 'Evaluar y ordenar candidatos'}
-          </button>
-          <p className="text-caption text-fg-tertiary">
-            Cada evaluación se guarda en historial para seguimiento del proceso.
+    <div className="animate-fade-in space-y-6 md:space-y-8">
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-overline text-overline-uppercase text-fg-tertiary mb-0.5">
+            RRHH
+          </p>
+          <Heading level={1}>Bolsa de talento</Heading>
+          <p className="text-body-sm text-fg-tertiary mt-0.5 max-w-3xl">
+            Compará candidatos de forma clara para RRHH. Cargás criterios, pegás CVs y obtenés un ranking con recomendaciones simples.
           </p>
         </div>
 
-        {error && (
-          <div className="rounded-md border border-danger-border bg-danger-bg px-3 py-2 text-body-sm text-danger-fg">
-            {error}
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4">
-        <div>
-          <Heading level={4} as="h2" className="text-fg-primary">Resultado actual</Heading>
-          <p className="text-caption text-fg-tertiary">Priorizamos la última corrida para decidir rápido, y debajo queda el historial.</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={resetForm}
+            className="h-9 px-3 rounded-md border border-border bg-surface-card text-button-sm text-fg-secondary hover:bg-surface-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]"
+          >
+            Limpiar formulario
+          </button>
         </div>
+      </header>
 
-        {!resultado ? (
-          <div className="rounded-md border border-dashed border-border bg-surface-sunken px-4 py-8 text-center text-body-sm text-fg-tertiary">
-            Cuando evalúes los candidatos, acá vas a ver el ranking actual con explicación y alertas.
+      {/* ── Error banner ─────────────────────────────────────────────────── */}
+      {evaluationError && (
+        <div
+          role="alert"
+          className="px-3 py-2 bg-danger-bg border border-danger-border rounded-md text-body-sm text-danger-fg flex items-center justify-between gap-3"
+        >
+          <span>{evaluationError}</span>
+          <button
+            type="button"
+            onClick={clearResult}
+            className="text-caption underline hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)] rounded-sm"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {/* ── Workspace: rail sticky (xl) + columna principal ──────────────── */}
+      <div className="grid gap-6 md:gap-8 xl:grid-cols-[minmax(0,420px)_1fr] xl:items-start">
+
+        {/* ── Rail: criterios + modo IA + CTA evaluar ─────────────────── */}
+        <aside
+          aria-label="Configuración de la evaluación"
+          className="space-y-4 md:space-y-6 xl:sticky xl:top-[calc(var(--header-height)+1rem)]"
+        >
+          <section aria-labelledby="talent-criteria-heading" className="space-y-4 md:space-y-6">
+            <h2 id="talent-criteria-heading" className="sr-only">Criterios y modo de evaluación</h2>
+            <CriteriaForm criterios={criterios} setCriterio={setCriterio} />
+            <EvaluationPanel
+              providers={providers}
+              selectedProvider={selectedProvider}
+              selectedModel={selectedModel}
+              loadingProviders={loadingProviders}
+              criterios={criterios}
+              onProviderSelect={selectProvider}
+              onModelSelect={selectModel}
+              setCriterio={setCriterio}
+            />
+          </section>
+
+          {/* CTA primaria — solo desktop. En mobile va abajo de Candidatos */}
+          <div className="hidden xl:flex flex-col gap-2 rounded-md border border-border bg-surface-card p-4">
+            <button
+              type="button"
+              onClick={evaluate}
+              disabled={evaluando}
+              className={PRIMARY_BUTTON_CLASS + ' w-full'}
+            >
+              {evaluateButtonLabel}
+            </button>
+            <p className="text-caption text-fg-tertiary">
+              Cada evaluación se guarda en historial para seguimiento del proceso.
+            </p>
           </div>
-        ) : (
-          <RankingResult
-            resultado={resultado}
-            updatingPinRunId={updatingPinRunId}
-            onTogglePinned={handleTogglePinned}
-          />
-        )}
-      </section>
+        </aside>
 
-      <HistorySection
-        historial={historial}
-        loadingHistorial={loadingHistorial}
-        clearingHistory={clearingHistory}
-        updatingPinRunId={updatingPinRunId}
-        onTogglePinned={handleTogglePinned}
-        onClearHistory={handleClearHistory}
-      />
+        {/* ── Columna principal: candidatos → resultado → historial ────── */}
+        <div className="space-y-6 md:space-y-8 min-w-0">
+
+          {/* ── Candidatos ─────────────────────────────────────────────── */}
+          <section
+            aria-labelledby="talent-candidates-heading"
+            className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <Heading id="talent-candidates-heading" level={4} as="h2" className="text-fg-primary">
+                  Candidatos a comparar
+                </Heading>
+                <p className="text-caption text-fg-tertiary mt-0.5">
+                  Pegá el resumen o CV de cada persona. Máximo 7000 caracteres por candidato.
+                </p>
+              </div>
+              <button
+                onClick={addCandidate}
+                disabled={candidatos.length >= 25}
+                className="h-9 px-3 rounded-md border border-border bg-surface-card text-button-sm text-fg-secondary hover:bg-surface-sunken disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus)]"
+              >
+                + Agregar candidato manual
+              </button>
+            </div>
+
+            <DocumentPicker
+              documents={cvDocuments}
+              loading={loadingDocuments}
+              selectedIds={selectedDocumentIds}
+              onToggle={toggleDocument}
+              onAddSelected={addFromDocuments}
+            />
+
+            <div className="grid gap-3 lg:grid-cols-1 2xl:grid-cols-2">
+              {candidatos.map((candidate, index) => (
+                <CandidateCard
+                  key={candidate.id}
+                  candidate={candidate}
+                  index={index}
+                  isRemoveDisabled={candidatos.length <= 2}
+                  onRemove={removeCandidate}
+                  onUpdate={updateCandidate}
+                />
+              ))}
+            </div>
+
+            {/* CTA primaria — solo mobile/tablet. En xl: vive en el rail */}
+            <div className="xl:hidden flex flex-wrap items-center gap-3 border-t border-border-subtle -mx-4 md:-mx-5 px-4 md:px-5 pt-4">
+              <button
+                type="button"
+                onClick={evaluate}
+                disabled={evaluando}
+                className={PRIMARY_BUTTON_CLASS}
+              >
+                {evaluateButtonLabel}
+              </button>
+              <p className="text-caption text-fg-tertiary">
+                Cada evaluación se guarda en historial.
+              </p>
+            </div>
+          </section>
+
+          {/* ── Resultado actual ───────────────────────────────────────── */}
+          <section
+            aria-labelledby="talent-result-heading"
+            className="rounded-md border border-border bg-surface-card p-4 md:p-5 space-y-4"
+          >
+            <div>
+              <Heading id="talent-result-heading" level={4} as="h2" className="text-fg-primary">
+                Resultado actual
+              </Heading>
+              <p className="text-caption text-fg-tertiary mt-0.5">
+                Priorizamos la última corrida para decidir rápido, y debajo queda el historial.
+              </p>
+            </div>
+
+            {!resultado ? (
+              <div className="rounded-md border border-dashed border-border bg-surface-sunken px-4 py-8 text-center text-body-sm text-fg-tertiary">
+                Cuando evalúes los candidatos, acá vas a ver el ranking actual con explicación y alertas.
+              </div>
+            ) : (
+              <RankingResult
+                resultado={resultado}
+                updatingPinRunId={updatingPinRunId}
+                onTogglePinned={togglePinned}
+              />
+            )}
+          </section>
+
+          {/* ── Historial ──────────────────────────────────────────────── */}
+          <HistorySection
+            historial={historial}
+            loadingHistorial={loadingHistorial}
+            clearingHistory={clearingHistory}
+            updatingPinRunId={updatingPinRunId}
+            onTogglePinned={togglePinned}
+            onClearHistory={clearHistory}
+          />
+        </div>
+      </div>
     </div>
   );
 }

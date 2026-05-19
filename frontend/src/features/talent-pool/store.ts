@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { talentPoolClient } from './client';
+import { talentPoolApi } from './api/talentPoolApi';
 import type {
   TalentPoolCandidate,
   TalentPoolCriteria,
@@ -159,6 +159,7 @@ type TalentPoolState = {
   togglePinned: (runId: string, isPinned: boolean) => Promise<boolean>;
   clearHistory: () => Promise<number | null>;
   clearResult: () => void;
+  resetForm: () => void;
 };
 
 export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
@@ -260,7 +261,7 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
     };
 
     try {
-      const result = await talentPoolClient.rank(payload);
+      const result = await talentPoolApi.rank(payload);
       set((state) => ({
         resultado: result,
         evaluando: false,
@@ -304,7 +305,7 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   loadHistory: async (limit = 20) => {
     set({ loadingHistorial: true });
     try {
-      const history = await talentPoolClient.listHistory(limit);
+      const history = await talentPoolApi.listHistory(limit);
       set({ historial: history, loadingHistorial: false });
     } catch {
       set({ loadingHistorial: false });
@@ -314,7 +315,7 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   togglePinned: async (runId, isPinned) => {
     set({ updatingPinRunId: runId });
     try {
-      const updated = await talentPoolClient.setPinned(runId, isPinned);
+      const updated = await talentPoolApi.setPinned(runId, isPinned);
       set((state) => {
         const nextHistory = state.historial
           .map((item) => (item.id === updated.id ? { ...item, isPinned: updated.isPinned } : item))
@@ -349,7 +350,7 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   clearHistory: async () => {
     set({ clearingHistory: true });
     try {
-      const result = await talentPoolClient.clearHistory();
+      const result = await talentPoolApi.clearHistory();
       set((state) => {
         const shouldClearCurrentResult = state.resultado
           ? state.historial.some((item) => item.id === state.resultado?.run.id)
@@ -369,4 +370,11 @@ export const useTalentPoolStore = create<TalentPoolState>((set, get) => ({
   },
 
   clearResult: () => set({ resultado: null, error: null }),
+
+  resetForm: () => set({
+    criterios: DEFAULT_CRITERIA,
+    candidatos: [createCandidate(), createCandidate()],
+    resultado: null,
+    error: null,
+  }),
 }));

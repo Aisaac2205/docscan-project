@@ -5,9 +5,9 @@ import type {
   TalentPoolRankPayload,
   TalentPoolRankResult,
   TalentPoolRunMeta,
-} from './types/talent-pool.types';
+} from '../types/talent-pool.types';
 
-export const talentPoolClient = {
+export const talentPoolApi = {
   async rank(payload: TalentPoolRankPayload): Promise<TalentPoolRankResult> {
     const res = await api.post<TalentPoolRankResult>('/api/talent-pool/rank', payload);
     return res.data;
