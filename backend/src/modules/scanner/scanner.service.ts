@@ -1,4 +1,5 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException, NotFoundException, ForbiddenException, OnModuleInit } from '@nestjs/common';
+import { DiscoverySource, Ownership, type ScannerConfig } from '@prisma/client';
 import { Readable } from 'stream';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
@@ -6,18 +7,33 @@ import { StorageService } from '../storage/storage.service';
 import { DocumentsService } from '../documents/documents.service';
 import { PrismaService } from '../../config/database.config';
 import { appConfig } from '../../config';
+import { SCANNER_DISCOVERY_PORT, type ScannerDiscoveryPort } from './discovery/scanner-discovery.port';
 import * as http from 'http';
 import * as https from 'https';
 
 @Injectable()
-export class ScannerService {
+export class ScannerService implements OnModuleInit {
   private readonly logger = new Logger(ScannerService.name);
 
   constructor(
     private readonly storageService: StorageService,
     private readonly documentsService: DocumentsService,
     private readonly prisma: PrismaService,
+    @Inject(SCANNER_DISCOVERY_PORT)
+    private readonly discovery: ScannerDiscoveryPort,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    // Env-driven default scanner is a SYSTEM-wide resource: it must be reconciled
+    // once at boot, not per-user on every getConfigs() call. Failure here is
+    // logged but never blocks startup — the UI keeps working without it.
+    try {
+      await this.syncDefaultEnvConfig();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Env scanner sync failed at boot: ${msg}`);
+    }
+  }
 
   /* ── Scanner configs ── */
 
@@ -25,62 +41,149 @@ export class ScannerService {
     return { enabled: appConfig.scanner.enabled };
   }
 
+  /**
+   * Returns user-owned configs plus every SYSTEM config (env-seeded or mDNS-discovered).
+   * Multi-tenant rule from the architecture decision: SYSTEM scanners are shared on a LAN.
+   */
   async getConfigs(userId: string) {
-    // Sync the env-driven default scanner (if configured) for this user before listing.
-    await this.syncDefaultConfigFromEnv(userId);
     return this.prisma.scannerConfig.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'asc' },
+      where: {
+        OR: [{ userId }, { ownership: Ownership.SYSTEM }],
+      },
+      orderBy: [{ ownership: 'asc' }, { createdAt: 'asc' }],
     });
   }
 
   /**
-   * If ESCL_DEFAULT_SCANNER_NAME + IP are set in env, upsert a matching config
-   * for this user. Lets a solo dev change the printer (IP/name/TLS) via .env
-   * without touching the UI. No-op when env vars are not set.
+   * Forces a fresh mDNS query and confirms reachability by hitting eSCL on
+   * every device the adapter currently knows about.
+   *
+   * The passive listener already upserts rows when announcements arrive, so by
+   * the time `refresh()` resolves the DB is in sync. We then ping each SYSTEM/MDNS
+   * row in parallel — mDNS only tells us "I exist", not "I answer HTTP". The
+   * scanner could be advertising while in sleep mode and the eSCL endpoint
+   * returns 503. We honor that distinction by updating `online` based on the
+   * ping result, not on the announcement.
+   *
+   * Returns the up-to-date list of SYSTEM/MDNS configs after the ping sweep.
    */
-  private async syncDefaultConfigFromEnv(userId: string): Promise<void> {
-    const { enabled, defaultName, defaultIp, defaultPort, defaultUseTls, defaultVerifyTls } =
-      appConfig.scanner;
-    if (!enabled) return;
-    if (!defaultName || !defaultIp) return;
+  async triggerDiscovery(): Promise<{ scanners: ScannerConfig[]; discoveryActive: boolean }> {
+    if (!appConfig.scanner.discoveryEnabled) {
+      // Adapter is Noop. Return whatever SYSTEM rows already exist (env-seeded)
+      // without lying that a discovery sweep happened.
+      const scanners = await this.prisma.scannerConfig.findMany({
+        where: { ownership: Ownership.SYSTEM },
+        orderBy: { createdAt: 'asc' },
+      });
+      return { scanners, discoveryActive: false };
+    }
 
-    const port = defaultPort ?? (defaultUseTls ? 443 : 80);
-    const existing = await this.prisma.scannerConfig.findFirst({
-      where: { userId, name: defaultName },
+    await this.discovery.refresh();
+
+    const rows = await this.prisma.scannerConfig.findMany({
+      where: { ownership: Ownership.SYSTEM, discoveredVia: DiscoverySource.MDNS },
+      orderBy: { createdAt: 'asc' },
     });
 
-    if (!existing) {
-      const created = await this.prisma.scannerConfig.create({
+    // Ping in parallel — N is bounded by devices on the LAN, realistically <20.
+    await Promise.allSettled(rows.map((cfg) => this.refreshOnlineStatus(cfg)));
+
+    const refreshed = await this.prisma.scannerConfig.findMany({
+      where: { ownership: Ownership.SYSTEM, discoveredVia: DiscoverySource.MDNS },
+      orderBy: { createdAt: 'asc' },
+    });
+    return { scanners: refreshed, discoveryActive: true };
+  }
+
+  /** Pings eSCL and writes the result. Never throws — caller uses allSettled. */
+  private async refreshOnlineStatus(cfg: ScannerConfig): Promise<void> {
+    const baseUrl = this.buildBaseUrl(cfg);
+    const agent = this.buildAgent(cfg.useTls, cfg.verifyTls);
+    const online = await this.httpGet(`${baseUrl}/eSCL/ScannerStatus`, agent)
+      .then(() => true)
+      .catch(() => false);
+    await this.prisma.scannerConfig.update({
+      where: { id: cfg.id },
+      data: online ? { online: true, lastSeenAt: new Date() } : { online: false },
+    });
+  }
+
+  /**
+   * If `ESCL_DEFAULT_SCANNER_NAME` + `_IP` are set, ensure exactly one SYSTEM
+   * config with `discoveredVia=ENV` exists. Idempotent. Runs once at boot.
+   *
+   * Migration safety: if a legacy USER-owned row matches the env name + IP
+   * (it was created before Phase 1 when env scanners were per-user), promote
+   * it in place instead of duplicating.
+   */
+  private async syncDefaultEnvConfig(): Promise<void> {
+    const { enabled, defaultName, defaultIp, defaultPort, defaultUseTls, defaultVerifyTls } =
+      appConfig.scanner;
+    if (!enabled || !defaultName || !defaultIp) return;
+
+    const port = defaultPort ?? (defaultUseTls ? 443 : 80);
+
+    const existing = await this.prisma.scannerConfig.findFirst({
+      where: { discoveredVia: DiscoverySource.ENV, name: defaultName },
+    });
+    if (existing) {
+      const drift =
+        existing.ip !== defaultIp ||
+        existing.port !== port ||
+        existing.useTls !== defaultUseTls ||
+        existing.verifyTls !== defaultVerifyTls;
+      if (!drift) return;
+      await this.prisma.scannerConfig.update({
+        where: { id: existing.id },
+        data: { ip: defaultIp, port, useTls: defaultUseTls, verifyTls: defaultVerifyTls },
+      });
+      this.logger.log(
+        `Env default scanner updated: id=${existing.id} ` +
+          `${existing.ip}:${existing.port} -> ${defaultIp}:${port} ` +
+          `tls=${defaultUseTls} verify=${defaultVerifyTls}`,
+      );
+      return;
+    }
+
+    const legacy = await this.prisma.scannerConfig.findFirst({
+      where: {
+        name: defaultName,
+        ip: defaultIp,
+        discoveredVia: DiscoverySource.MANUAL,
+        userId: { not: null },
+      },
+    });
+    if (legacy) {
+      const promoted = await this.prisma.scannerConfig.update({
+        where: { id: legacy.id },
         data: {
-          userId,
-          name: defaultName,
-          ip: defaultIp,
+          userId: null,
+          ownership: Ownership.SYSTEM,
+          discoveredVia: DiscoverySource.ENV,
           port,
           useTls: defaultUseTls,
           verifyTls: defaultVerifyTls,
         },
       });
-      this.logger.log(`Env default scanner created: id=${created.id} user=${userId} url=${this.buildBaseUrl(created)}`);
+      this.logger.log(
+        `Promoted legacy ScannerConfig ${promoted.id} to SYSTEM/ENV (was user ${legacy.userId})`,
+      );
       return;
     }
 
-    const drift =
-      existing.ip !== defaultIp ||
-      existing.port !== port ||
-      existing.useTls !== defaultUseTls ||
-      existing.verifyTls !== defaultVerifyTls;
-    if (!drift) return;
-
-    await this.prisma.scannerConfig.update({
-      where: { id: existing.id },
-      data: { ip: defaultIp, port, useTls: defaultUseTls, verifyTls: defaultVerifyTls },
+    const created = await this.prisma.scannerConfig.create({
+      data: {
+        userId: null,
+        ownership: Ownership.SYSTEM,
+        discoveredVia: DiscoverySource.ENV,
+        name: defaultName,
+        ip: defaultIp,
+        port,
+        useTls: defaultUseTls,
+        verifyTls: defaultVerifyTls,
+      },
     });
-    this.logger.log(
-      `Env default scanner updated: id=${existing.id} user=${userId} ` +
-        `${existing.ip}:${existing.port} -> ${defaultIp}:${port} ` +
-        `tls=${defaultUseTls} verify=${defaultVerifyTls}`,
-    );
+    this.logger.log(`Env default scanner created: id=${created.id} url=${this.buildBaseUrl(created)}`);
   }
 
   async createConfig(
@@ -120,15 +223,26 @@ export class ScannerService {
   async deleteConfig(id: string, userId: string) {
     const config = await this.prisma.scannerConfig.findUnique({ where: { id } });
     if (!config) throw new NotFoundException('Escáner no encontrado');
+    if (config.ownership === Ownership.SYSTEM) {
+      throw new ForbiddenException(
+        'Los escáneres del sistema (descubiertos automáticamente o configurados por entorno) no se pueden eliminar desde la UI.',
+      );
+    }
     if (config.userId !== userId) throw new ForbiddenException();
     await this.prisma.scannerConfig.delete({ where: { id } });
     this.logger.log(`ScannerConfig deleted: id=${id} user=${userId}`);
   }
 
+  /**
+   * SYSTEM configs are pingeable by any authenticated user (shared LAN resource).
+   * USER configs are only pingeable by their owner.
+   */
   async pingConfig(id: string, userId: string): Promise<{ online: boolean }> {
     const config = await this.prisma.scannerConfig.findUnique({ where: { id } });
     if (!config) throw new NotFoundException('Escáner no encontrado');
-    if (config.userId !== userId) throw new ForbiddenException();
+    if (config.ownership !== Ownership.SYSTEM && config.userId !== userId) {
+      throw new ForbiddenException();
+    }
 
     const baseUrl = this.buildBaseUrl(config);
     const agent = this.buildAgent(config.useTls, config.verifyTls);
@@ -139,13 +253,11 @@ export class ScannerService {
         return false;
       });
 
-    if (online) {
-      this.logger.debug(`Ping OK: ${baseUrl}`);
-      await this.prisma.scannerConfig.update({
-        where: { id },
-        data: { lastSeenAt: new Date() },
-      });
-    }
+    await this.prisma.scannerConfig.update({
+      where: { id },
+      data: online ? { online: true, lastSeenAt: new Date() } : { online: false },
+    });
+    if (online) this.logger.debug(`Ping OK: ${baseUrl}`);
 
     return { online };
   }

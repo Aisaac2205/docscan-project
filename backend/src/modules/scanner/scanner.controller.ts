@@ -43,6 +43,19 @@ export class ScannerController {
     return this.scannerService.getConfigs(user.id);
   }
 
+  /**
+   * Forces a fresh mDNS scan. Available to any authenticated user — SYSTEM
+   * scanners are LAN-shared and discovery is idempotent. No body required.
+   *
+   * Returns `{ scanners, discoveryActive }`. `discoveryActive=false` means
+   * `SCANNER_DISCOVERY_ENABLED` is off on the server; the list still includes
+   * any env-seeded SYSTEM scanner so the UI can render something useful.
+   */
+  @Post('discover')
+  async discover() {
+    return this.scannerService.triggerDiscovery();
+  }
+
   @Post('configs')
   async createConfig(
     @Body() body: CreateScannerConfigDto,

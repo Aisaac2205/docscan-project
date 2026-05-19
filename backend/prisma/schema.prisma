@@ -20,19 +20,36 @@ model User {
 }
 
 model ScannerConfig {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name       String
-  ip         String
-  port       Int       @default(80)
-  useTls     Boolean   @default(false)
-  verifyTls  Boolean   @default(true)
-  lastSeenAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String          @id @default(cuid())
+  userId        String?
+  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ownership     Ownership       @default(USER)
+  discoveredVia DiscoverySource @default(MANUAL)
+  name          String
+  ip            String
+  port          Int             @default(80)
+  useTls        Boolean         @default(false)
+  verifyTls     Boolean         @default(true)
+  uuid          String?         @unique
+  mdnsName      String?
+  online        Boolean         @default(false)
+  lastSeenAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([userId])
+  @@index([ownership])
+}
+
+enum Ownership {
+  USER
+  SYSTEM
+}
+
+enum DiscoverySource {
+  MANUAL
+  ENV
+  MDNS
 }
 
 model Person {

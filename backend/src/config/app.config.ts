@@ -58,5 +58,19 @@ export const appConfig = {
       : null,
     defaultUseTls: process.env.ESCL_DEFAULT_SCANNER_USE_TLS === 'true',
     defaultVerifyTls: process.env.ESCL_DEFAULT_SCANNER_VERIFY_TLS !== 'false',
+    /**
+     * mDNS auto-discovery for eSCL scanners on `_uscan._tcp`. Off by default:
+     * opt-in per deployment because it opens a UDP/5353 listener (firewall
+     * prompt on Windows) and is meaningless in cloud setups where the backend
+     * is not on the same LAN as the printers.
+     */
+    discoveryEnabled: process.env.SCANNER_DISCOVERY_ENABLED === 'true',
+    /**
+     * Force the mDNS browser to bind to a specific local interface (IPv4).
+     * Use when multi-NIC (VPN active, Docker bridge, WSL) makes the browser
+     * pick the wrong interface and silently see no devices. Leave empty to
+     * listen on all interfaces.
+     */
+    mdnsInterface: process.env.MDNS_INTERFACE || '',
   },
 };
