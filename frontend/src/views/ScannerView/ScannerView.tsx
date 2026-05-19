@@ -153,9 +153,11 @@ export function ScannerView() {
           saveVerifyTls={wifi.saveVerifyTls}
           onSaveVerifyTlsChange={wifi.setSaveVerifyTls}
           saving={wifi.saving}
+          discovering={wifi.discovering}
           onScanFromConfig={wifi.handleScanFromConfig}
           onSaveConfig={wifi.handleSaveConfig}
           onDeleteConfig={wifi.handleDeleteConfig}
+          onDiscover={wifi.handleDiscover}
         />
       )}
 

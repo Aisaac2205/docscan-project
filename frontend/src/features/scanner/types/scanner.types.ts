@@ -11,6 +11,9 @@ export interface ScanResult {
 
 export type WifiStatus = 'idle' | 'connecting' | 'scanning' | 'error';
 
+export type Ownership = 'USER' | 'SYSTEM';
+export type DiscoverySource = 'MANUAL' | 'ENV' | 'MDNS';
+
 export interface ScannerConfig {
   id: string;
   name: string;
@@ -18,8 +21,18 @@ export interface ScannerConfig {
   port: number;
   useTls: boolean;
   verifyTls: boolean;
+  ownership: Ownership;
+  discoveredVia: DiscoverySource;
+  online: boolean;
+  uuid: string | null;
+  mdnsName: string | null;
   lastSeenAt: string | null;
   createdAt: string;
+}
+
+export interface DiscoverResponse {
+  scanners: ScannerConfig[];
+  discoveryActive: boolean;
 }
 
 export interface CaptureResult {

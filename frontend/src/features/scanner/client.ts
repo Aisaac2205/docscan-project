@@ -1,5 +1,5 @@
 import { api } from '@/shared/api/client';
-import type { ScannerConfig } from './types/scanner.types';
+import type { ScannerConfig, DiscoverResponse } from './types/scanner.types';
 
 export interface NetworkScanOptions {
   ipAddress: string;
@@ -45,6 +45,11 @@ export const scannerClient = {
 
   async deleteConfig(id: string): Promise<void> {
     await api.delete(`/api/scanner/configs/${id}`);
+  },
+
+  async discover(): Promise<DiscoverResponse> {
+    const res = await api.post('/api/scanner/discover');
+    return res.data;
   },
 
   async pingConfig(id: string): Promise<{ online: boolean }> {

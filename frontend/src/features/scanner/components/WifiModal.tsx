@@ -8,6 +8,7 @@ import {
   ScanIcon,
   TrashIcon,
   ChevronDownIcon,
+  WifiIcon,
 } from '@/shared/ui/icons';
 import { Heading } from '@/shared/components/Layout';
 import type { WifiStatus, ScannerConfig } from '../types/scanner.types';
@@ -33,9 +34,21 @@ interface WifiModalProps {
   saveVerifyTls: boolean;
   onSaveVerifyTlsChange: (v: boolean) => void;
   saving: boolean;
+  discovering: boolean;
   onScanFromConfig: (config: ScannerConfig) => void;
   onSaveConfig: () => void;
   onDeleteConfig: (id: string) => void;
+  onDiscover: () => void;
+}
+
+function SourceBadge({ source }: { source: ScannerConfig['discoveredVia'] }) {
+  if (source === 'MANUAL') return null;
+  const label = source === 'MDNS' ? 'auto' : 'sistema';
+  return (
+    <span className="px-1.5 py-0.5 text-caption font-medium rounded bg-surface-card border border-border text-fg-tertiary">
+      {label}
+    </span>
+  );
 }
 
 function PingDot({ status }: { status: boolean | null | undefined }) {
@@ -82,8 +95,8 @@ export function WifiModal({
   savePort, onSavePortChange, effectivePort,
   saveUseTls, onSaveUseTlsChange,
   saveVerifyTls, onSaveVerifyTlsChange,
-  saving,
-  onScanFromConfig, onSaveConfig, onDeleteConfig,
+  saving, discovering,
+  onScanFromConfig, onSaveConfig, onDeleteConfig, onDiscover,
 }: WifiModalProps) {
   const isScanning = wifiStatus === 'scanning';
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -105,6 +118,17 @@ export function WifiModal({
 
         <div className="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
 
+          {/* Auto-discovery trigger. Backend tells us if it actually swept;
+              if it didn't (server flag off) the toast surfaces that fact. */}
+          <button
+            onClick={onDiscover}
+            disabled={discovering}
+            className="w-full h-10 flex items-center justify-center gap-2 border border-border rounded-md text-button-sm text-fg-secondary bg-surface-card hover:bg-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {discovering ? <SpinnerIcon /> : <WifiIcon size={14} />}
+            {discovering ? 'Buscando…' : 'Buscar escáneres en la red'}
+          </button>
+
           {/* Saved scanners */}
           {configs.length > 0 && (
             <div className="space-y-2">
@@ -118,7 +142,10 @@ export function WifiModal({
                 >
                   <PingDot status={pingStatus[config.id]} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-body-sm font-medium text-fg-primary truncate">{config.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-body-sm font-medium text-fg-primary truncate">{config.name}</p>
+                      <SourceBadge source={config.discoveredVia} />
+                    </div>
                     <p className="text-caption text-fg-tertiary font-mono">
                       {config.useTls ? 'https' : 'http'}://{config.ip}:{config.port}
                     </p>
@@ -132,12 +159,14 @@ export function WifiModal({
                       {isScanning ? <SpinnerIcon /> : <ScanIcon size={12} />}
                       Escanear
                     </button>
-                    <button
-                      onClick={() => onDeleteConfig(config.id)}
-                      className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg transition-colors"
-                    >
-                      <TrashIcon size={13} />
-                    </button>
+                    {config.ownership === 'USER' && (
+                      <button
+                        onClick={() => onDeleteConfig(config.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md text-fg-tertiary hover:text-danger-fg hover:bg-danger-bg transition-colors"
+                      >
+                        <TrashIcon size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

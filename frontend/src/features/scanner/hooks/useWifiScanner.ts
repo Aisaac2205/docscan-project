@@ -22,6 +22,7 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
   const [saveUseTls, setSaveUseTls] = useState(false);
   const [saveVerifyTls, setSaveVerifyTls] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [discovering, setDiscovering] = useState(false);
 
   // Smart default for port: 443 if TLS, 80 otherwise. User can override.
   const effectivePort = savePort ?? (saveUseTls ? 443 : 80);
@@ -171,6 +172,25 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     }
   };
 
+  const handleDiscover = async () => {
+    setDiscovering(true);
+    try {
+      const { discoveryActive } = await scannerClient.discover();
+      await loadConfigs();
+      if (discoveryActive) {
+        toast.success('Búsqueda completada');
+      } else {
+        // Backend has SCANNER_DISCOVERY_ENABLED=false. Endpoint still returned
+        // existing SYSTEM rows, but no real mDNS sweep happened. Tell the user.
+        toast.error('El descubrimiento automático está desactivado en el servidor');
+      }
+    } catch {
+      toast.error('No se pudieron buscar escáneres');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
   const handleDeleteConfig = async (id: string) => {
     try {
       await scannerClient.deleteConfig(id);
@@ -211,8 +231,10 @@ export function useWifiScanner(applyResult: (res: { documentId: string; url: str
     saveVerifyTls,
     setSaveVerifyTls,
     saving,
+    discovering,
     handleScanFromConfig,
     handleSaveConfig,
     handleDeleteConfig,
+    handleDiscover,
   };
 }
