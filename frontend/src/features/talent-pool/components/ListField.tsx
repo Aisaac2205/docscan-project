@@ -13,9 +13,15 @@ type ListFieldProps = {
   value: string[];
   onChange: (next: string[]) => void;
   placeholder: string;
+  /**
+   * Cuando es true, el label y helper internos no se renderizan.
+   * Útil cuando el componente vive dentro de un wrapper colapsable que ya
+   * muestra ese contexto en el summary.
+   */
+  hideHeader?: boolean;
 };
 
-export function ListField({ label, helper, value, onChange, placeholder }: ListFieldProps) {
+export function ListField({ label, helper, value, onChange, placeholder, hideHeader = false }: ListFieldProps) {
   const [draft, setDraft] = useState('');
 
   const addDraftItem = () => {
@@ -44,8 +50,12 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
 
   return (
     <div className="space-y-1.5">
-      <label className="text-overline text-overline-uppercase text-fg-tertiary">{label}</label>
-      <p className="text-caption text-fg-tertiary">{helper}</p>
+      {!hideHeader && (
+        <>
+          <label className="text-overline text-overline-uppercase text-fg-tertiary">{label}</label>
+          <p className="text-caption text-fg-tertiary">{helper}</p>
+        </>
+      )}
       <div className="flex gap-2">
         <input
           value={draft}
@@ -57,7 +67,7 @@ export function ListField({ label, helper, value, onChange, placeholder }: ListF
             }
           }}
           placeholder={placeholder}
-          className="w-full h-10 rounded-md border border-border bg-surface-card px-3 text-body-sm text-fg-primary placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
+          className="w-full h-10 rounded-md border border-border bg-surface-card px-3 text-body-sm text-fg-primary placeholder:text-caption placeholder:text-fg-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-border-focus)]"
         />
         <button
           type="button"
