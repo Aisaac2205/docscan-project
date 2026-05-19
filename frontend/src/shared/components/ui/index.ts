@@ -33,3 +33,37 @@ export { Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
 
 export { Dialog, DialogContent, DialogTrigger, DialogClose } from './Dialog';
+
+export { Sheet, SheetContent, SheetTrigger, SheetClose } from './Sheet';
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+} from './DropdownMenu';
+
+export {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from './Tooltip';
+
+export { Avatar } from './Avatar';
+
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+  PopoverClose,
+} from './Popover';
+
+export { Calendar } from './Calendar';
+
+export { Pagination } from './Pagination';
