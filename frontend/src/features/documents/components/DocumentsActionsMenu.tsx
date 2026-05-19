@@ -16,6 +16,9 @@ interface DocumentsActionsMenuProps {
   onDownload: () => void;
   onReassign: () => void;
   onDelete: () => void;
+  /** Cuando está presente, habilita "Extraer datos" (filas pending/error). */
+  onExtract?: () => void;
+  extracting?: boolean;
 }
 
 /**
@@ -28,6 +31,8 @@ export function DocumentsActionsMenu({
   onDownload,
   onReassign,
   onDelete,
+  onExtract,
+  extracting = false,
 }: DocumentsActionsMenuProps) {
   return (
     <DropdownMenu>
@@ -52,6 +57,14 @@ export function DocumentsActionsMenu({
         onClick={(e) => e.stopPropagation()}
       >
         <DropdownMenuItem onSelect={onView}>Ver</DropdownMenuItem>
+        {onExtract && (
+          <DropdownMenuItem
+            onSelect={onExtract}
+            disabled={extracting}
+          >
+            {extracting ? 'Extrayendo…' : 'Extraer datos'}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={onDownload}>Descargar</DropdownMenuItem>
         <DropdownMenuItem onSelect={onReassign}>Reasignar persona</DropdownMenuItem>
         <DropdownMenuSeparator />

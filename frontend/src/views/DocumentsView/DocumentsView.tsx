@@ -6,6 +6,7 @@ import { Heading } from '@/shared/components/Layout';
 import { Skeleton, TooltipProvider } from '@/shared/components/ui';
 import { toast } from '@/shared/ui/toast/store';
 import { documentsClient } from '@/features/documents/client';
+import { ocrClient } from '@/features/ocr/client';
 import { AssignPersonModal } from '@/features/documents/components/AssignPersonModal';
 import { DocumentsFilters } from '@/features/documents/components/DocumentsFilters';
 import { DocumentsMetricsRow } from '@/features/documents/components/DocumentsMetricsRow';
@@ -31,6 +32,7 @@ export function DocumentsView() {
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignTarget, setAssignTarget] = useState<Document | null>(null);
+  const [extractingId, setExtractingId] = useState<string | null>(null);
 
   const apiFilters = useMemo(() => toApiFilters(state), [state]);
 
@@ -70,6 +72,20 @@ export function DocumentsView() {
 
   const handleReassign = (doc: Document) => {
     setAssignTarget(doc);
+  };
+
+  const handleExtract = async (doc: Document) => {
+    if (extractingId) return;
+    setExtractingId(doc.id);
+    try {
+      await ocrClient.processDocument(doc.id);
+      toast.success('Datos extraídos correctamente.');
+      fetchList();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No pudimos extraer los datos.');
+    } finally {
+      setExtractingId(null);
+    }
   };
 
   const handleDelete = async (doc: Document) => {
@@ -124,6 +140,8 @@ export function DocumentsView() {
               onDownload={handleDownload}
               onReassign={handleReassign}
               onDelete={handleDelete}
+              onExtract={handleExtract}
+              extractingId={extractingId}
               emptyState={
                 <div className="flex flex-col items-center justify-center gap-2 py-12 rounded-lg border border-border-subtle bg-surface-card">
                   <p className="text-body-sm text-fg-secondary">

@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui'
 import { cn } from '@/shared/lib/cn';
 import type { Document } from '../types/document.types';
 import { formatLongDate, formatShortDate } from '../utils/formatters';
+import { getDisplayStatus } from '../utils/getDisplayStatus';
 import { ConfidenceText } from './ConfidenceText';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
 import { DocumentTypeTag } from './DocumentTypeTag';
@@ -23,6 +24,8 @@ interface DocumentsTableProps {
   onDownload: (doc: Document) => void;
   onReassign: (doc: Document) => void;
   onDelete: (doc: Document) => void;
+  onExtract: (doc: Document) => void;
+  extractingId?: string | null;
   emptyState?: ReactNode;
 }
 
@@ -33,6 +36,8 @@ export function DocumentsTable({
   onDownload,
   onReassign,
   onDelete,
+  onExtract,
+  extractingId,
   emptyState,
 }: DocumentsTableProps) {
   const columns: DataTableColumn<Document>[] = [
@@ -108,15 +113,21 @@ export function DocumentsTable({
       header: '',
       width: '3rem',
       align: 'right',
-      render: (doc) => (
-        <DocumentsActionsMenu
-          documentName={doc.originalName}
-          onView={() => onView(doc)}
-          onDownload={() => onDownload(doc)}
-          onReassign={() => onReassign(doc)}
-          onDelete={() => onDelete(doc)}
-        />
-      ),
+      render: (doc) => {
+        const display = getDisplayStatus(doc);
+        const canExtract = display === 'pending' || display === 'error';
+        return (
+          <DocumentsActionsMenu
+            documentName={doc.originalName}
+            onView={() => onView(doc)}
+            onDownload={() => onDownload(doc)}
+            onReassign={() => onReassign(doc)}
+            onDelete={() => onDelete(doc)}
+            onExtract={canExtract ? () => onExtract(doc) : undefined}
+            extracting={extractingId === doc.id}
+          />
+        );
+      },
     },
   ];
 
