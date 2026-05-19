@@ -48,11 +48,21 @@ function isMetaLeakString(v: unknown): boolean {
   return typeof v === 'string' && /^_[a-z]/i.test(v.trim());
 }
 
+/**
+ * Convierte un primitivo a string legible. Los booleanos `true`/`false` se
+ * presentan como "Sí"/"No" — el texto "false" es ilegible para usuarios
+ * finales y se ve roto en campos como "Tiene antecedentes".
+ */
+function primitiveToDisplay(value: string | number | boolean): string {
+  if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+  return String(value);
+}
+
 function classifyValue(value: unknown): FieldValue | null {
   if (isNullish(value)) return null;
 
   if (isPrimitive(value)) {
-    return { type: 'primitive', value: String(value) };
+    return { type: 'primitive', value: primitiveToDisplay(value) };
   }
 
   if (Array.isArray(value)) {
@@ -81,7 +91,7 @@ function classifyArray(value: unknown[]): FieldValue | null {
   if (items.length === 0) return null;
 
   if (isArrayOfPrimitives(items)) {
-    return { type: 'list', items: items.map(String) };
+    return { type: 'list', items: items.map(primitiveToDisplay) };
   }
 
   if (isArrayOfObjects(items)) {
