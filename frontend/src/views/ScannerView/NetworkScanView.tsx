@@ -18,8 +18,14 @@ export function NetworkScanView() {
   const [status, setStatus] = useState<ViewStatus>('scanning');
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  // Guard against React StrictMode double-mount firing the request twice.
+  // Tracks the latest attempt the effect actually fired for. The promise then/catch
+  // compare their captured `myAttempt` against this — stale resolves get skipped.
+  // Also doubles as the StrictMode double-mount guard: if `firedFor.current === attempt`
+  // on a re-run, the second mount skips firing.
   const firedFor = useRef<number | null>(null);
+  // Set by the explicit Cancel button. A ref (not effect-local) so it survives
+  // the StrictMode fake unmount/remount cycle that nukes per-closure variables.
+  const cancelledRef = useRef(false);
 
   // No pending request → user landed here directly. Send them back.
   useEffect(() => {
@@ -33,12 +39,15 @@ export function NetworkScanView() {
     if (!pendingRequest) return;
     if (firedFor.current === attempt) return;
     firedFor.current = attempt;
+    cancelledRef.current = false;
 
-    let cancelled = false;
+    const myAttempt = attempt;
     const personId = useScannerStore.getState().targetPersonId ?? undefined;
 
     setStatus('scanning');
     setError(null);
+
+    const isStale = () => firedFor.current !== myAttempt || cancelledRef.current;
 
     scannerClient
       .captureFromNetwork({
@@ -49,23 +58,24 @@ export function NetworkScanView() {
         personId,
       })
       .then((res) => {
-        if (cancelled) return;
+        if (isStale()) return;
+        // We hand off to the document detail page directly. pendingNetworkResult
+        // is kept for the rare fallback case where the user navigates back to
+        // /scan instead — ScannerView drains it via consumePendingNetworkResult.
         setPendingResult(res);
         setPendingScan(null);
         setStatus('success');
         toast.success(`Documento escaneado desde ${pendingRequest.label}`);
         // Brief pause so the user perceives the success state before the route swap.
         window.setTimeout(() => {
-          if (!cancelled) router.replace('/scan');
+          if (!isStale()) router.replace(`/documents/${res.documentId}`);
         }, 600);
       })
       .catch((err: unknown) => {
-        if (cancelled) return;
+        if (isStale()) return;
         setStatus('error');
         setError(err instanceof Error ? err.message : 'No se pudo conectar al escáner');
       });
-
-    return () => { cancelled = true; };
   }, [pendingRequest, attempt, router, setPendingResult, setPendingScan]);
 
   if (!pendingRequest) return null;
@@ -75,6 +85,7 @@ export function NetworkScanView() {
   };
 
   const handleCancel = () => {
+    cancelledRef.current = true;
     setPendingScan(null);
     router.replace('/scan');
   };

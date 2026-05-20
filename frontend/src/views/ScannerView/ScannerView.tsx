@@ -24,6 +24,7 @@ export function ScannerView() {
   const searchParams = useSearchParams();
   const personIdFromUrl = searchParams.get('personId');
   const { scanning, error, cameraError, targetPersonId, targetPersonName, setTargetPerson } = useScannerStore();
+  const consumePendingNetworkResult = useScannerStore((s) => s.consumePendingNetworkResult);
 
   // Sincroniza la persona desde la URL al store la primera vez que cambia el query param.
   useEffect(() => {
@@ -60,6 +61,21 @@ export function ScannerView() {
   const camera = useCameraCapture(applyResult);
   const wifi = useWifiScanner(applyResult);
   const handlePrint = () => printDocument(previewUrl, ocrResult);
+
+  // Drain the network-scan handoff from the store on mount: NetworkScanView
+  // stashes the result in `pendingNetworkResult` and navigates back here.
+  // Without this consumer, the preview would never appear after a wifi scan.
+  // Ref guard prevents the StrictMode double-mount from re-applying the same
+  // result (consume already returns null on the second call, but the ref
+  // makes the intent explicit).
+  const drainedRef = useRef(false);
+  useEffect(() => {
+    if (drainedRef.current) return;
+    drainedRef.current = true;
+    const pending = consumePendingNetworkResult();
+    if (pending) applyResult(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cuando aparece un documento nuevo, llevar al usuario a la zona de extracción
   // para que no tenga que scrollear manualmente. Solo se dispara cuando previewUrl

@@ -20,14 +20,6 @@ export class DocumentCreatedListener {
   @OnEvent(DOCUMENT_CREATED, { async: true })
   async handle(event: DocumentCreatedEvent): Promise<void> {
     const { documentId, userId, source } = event;
-
-    // Scanner flows ('scanner-camera', 'scanner-network') exigen extracción
-    // explícita desde la UI. Auto-OCR solo aplica a uploads directos al inbox.
-    if (source !== 'upload') {
-      this.logger.log(`Auto-OCR skipped documentId=${documentId} source=${source}`);
-      return;
-    }
-
     const startedAt = Date.now();
     this.logger.log(`Auto-OCR start documentId=${documentId} source=${source}`);
 
