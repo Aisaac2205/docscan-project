@@ -59,16 +59,16 @@ export function NetworkScanView() {
       })
       .then((res) => {
         if (isStale()) return;
-        // We hand off to the document detail page directly. pendingNetworkResult
-        // is kept for the rare fallback case where the user navigates back to
-        // /scan instead — ScannerView drains it via consumePendingNetworkResult.
+        // Hand off via the store: ScannerView mounts and drains pendingNetworkResult
+        // through applyResult, opening the same ResultPanel the camera/drop-zone
+        // flows use. Lets the user pick extraction mode + provider instead of
+        // jumping straight to /documents/<id>.
         setPendingResult(res);
         setPendingScan(null);
         setStatus('success');
         toast.success(`Documento escaneado desde ${pendingRequest.label}`);
-        // Brief pause so the user perceives the success state before the route swap.
         window.setTimeout(() => {
-          if (!isStale()) router.replace(`/documents/${res.documentId}`);
+          if (!isStale()) router.replace('/scan');
         }, 600);
       })
       .catch((err: unknown) => {
@@ -167,7 +167,7 @@ export function NetworkScanView() {
 
         {status === 'success' && (
           <p className="mt-8 text-body text-success-fg font-medium">
-            Listo. Te llevamos al resultado…
+            Listo. Volviendo al panel para extraer datos…
           </p>
         )}
       </div>
