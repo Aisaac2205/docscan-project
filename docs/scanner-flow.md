@@ -24,8 +24,7 @@ Cada `ScannerConfig` tiene **dueño** (`ownership`) y **origen** (`discoveredVia
 | `ownership` | `discoveredVia` | Quién lo creó | Quién lo ve | Quién lo borra |
 | --- | --- | --- | --- | --- |
 | `USER` | `MANUAL` | Usuario via `POST /configs` | Solo su dueño | Solo su dueño |
-| `SYSTEM` | `ENV` | El backend, leyendo `ESCL_DEFAULT_SCANNER_*` | Cualquier usuario autenticado | Nadie desde la UI (es de la instancia) |
-| `SYSTEM` | `MDNS` | El listener de discovery al ver un anuncio `_uscan._tcp` | Cualquier usuario autenticado | Nadie desde la UI (soft offline solamente) |
+| `SYSTEM` | `MDNS` | El listener de discovery al ver un anuncio `_uscan._tcp` / `_uscans._tcp` | Cualquier usuario autenticado | Nadie desde la UI (soft offline solamente) |
 
 La regla detrás es simple: si el escáner está físicamente en la LAN del backend, es un recurso compartido de la instancia. Modelarlo por usuario duplicaría el mismo equipo físico para cada cuenta.
 
@@ -108,7 +107,7 @@ Soft-only. Un escáner que desaparece de la red queda en DB con `online=false` y
 3. **Ping eSCL en paralelo** (`Promise.allSettled`) — mDNS solo dice "estoy en la red", no garantiza que HTTP responda (sleep, 503). Confirma reachability real.
 4. Devuelve `{ scanners, discoveryActive: true }`.
 
-Si `SCANNER_DISCOVERY_ENABLED=false`, el endpoint sigue respondiendo: devuelve los SYSTEM/ENV existentes con `discoveryActive: false`. Esto simplifica el frontend (un solo flujo, no dos).
+Si `SCANNER_DISCOVERY_ENABLED=false`, el endpoint sigue respondiendo: devuelve los SYSTEM existentes con `discoveryActive: false`. Esto simplifica el frontend (un solo flujo, no dos).
 
 ---
 
@@ -132,7 +131,7 @@ Si `SCANNER_DISCOVERY_ENABLED=false`, el endpoint sigue respondiendo: devuelve l
   - El escáner está en una VLAN distinta del backend.
   - El WiFi tiene client isolation activado (común en redes de invitados).
 
-En esos casos, el flujo manual (`POST /configs`) o por env queda como salida.
+En esos casos, el flujo manual (`POST /configs`) queda como salida.
 
 ---
 
@@ -141,13 +140,6 @@ En esos casos, el flujo manual (`POST /configs`) o por env queda como salida.
 ```bash
 # Master switch del feature scanner (true por default)
 SCANNER_ENABLED=true
-
-# Escáner por defecto a nivel instancia (opcional). Si está, se crea como SYSTEM/ENV al boot.
-ESCL_DEFAULT_SCANNER_NAME=EPSON L4360
-ESCL_DEFAULT_SCANNER_IP=192.168.1.100
-ESCL_DEFAULT_SCANNER_PORT=443
-ESCL_DEFAULT_SCANNER_USE_TLS=true
-ESCL_DEFAULT_SCANNER_VERIFY_TLS=false
 
 # Auto-descubrimiento mDNS (opt-in: abre UDP/5353)
 SCANNER_DISCOVERY_ENABLED=false

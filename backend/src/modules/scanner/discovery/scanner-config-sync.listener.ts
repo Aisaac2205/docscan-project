@@ -31,39 +31,41 @@ export class ScannerConfigSyncListener {
   async onDiscovered(payload: ScannerDiscoveredPayload): Promise<void> {
     const { scanner } = payload;
     try {
-      const existing = await this.prisma.scannerConfig.findUnique({
+      // findUnique is for log differentiation only — the upsert below is the
+      // race-safe write. Two near-simultaneous announcements (e.g. _uscan._tcp
+      // and _uscans._tcp arriving back-to-back) used to crash on the unique
+      // constraint when both handlers did findUnique→null→create.
+      const existedBefore = await this.prisma.scannerConfig.findUnique({
         where: { uuid: scanner.uuid },
+        select: { id: true },
       });
 
-      if (existing) {
-        // The adapter is authoritative for the transport tuple (ip, port,
-        // useTls). They move together as a coherent unit — DHCP renews flip
-        // ip; a firmware switching from `_uscan` to `_uscans` flips port AND
-        // useTls. Refreshing only part of the tuple yields an inconsistent
-        // row (e.g. useTls=false + port=443) where ping fails forever.
-        //
-        // Name stays user-controlled (no UI to edit it yet, but we plan to).
-        // verifyTls is left alone because mDNS carries no signal about cert
-        // validity — defaults to true; users override per row when needed.
-        await this.prisma.scannerConfig.update({
-          where: { id: existing.id },
-          data: {
-            ip: scanner.ip,
-            port: scanner.port,
-            useTls: scanner.useTls,
-            mdnsName: scanner.mdnsName,
-            online: true,
-            lastSeenAt: scanner.observedAt,
-          },
-        });
-        this.logger.debug(
-          `Refreshed discovered scanner ${existing.id}: ${scanner.useTls ? 'https' : 'http'}://${scanner.ip}:${scanner.port}`,
-        );
-        return;
-      }
-
-      const created = await this.prisma.scannerConfig.create({
-        data: {
+      // The adapter is authoritative for the transport tuple (ip, port,
+      // useTls). They move together as a coherent unit — DHCP renews flip
+      // ip; a firmware switching from `_uscan` to `_uscans` flips port AND
+      // useTls. Refreshing only part of the tuple yields an inconsistent
+      // row (e.g. useTls=false + port=443) where ping fails forever.
+      //
+      // verifyTls is forced to false on both create AND update for mDNS
+      // rows: discovery is LAN-only by definition, and consumer printers
+      // virtually always ship with self-signed certs. Validating those
+      // breaks ping/scan out-of-the-box for no real security gain (the
+      // trust boundary is the LAN, not the cert chain). Users who need
+      // strict validation can create a MANUAL config instead.
+      //
+      // Name stays user-controlled (no UI to edit it yet, but we plan to).
+      const synced = await this.prisma.scannerConfig.upsert({
+        where: { uuid: scanner.uuid },
+        update: {
+          ip: scanner.ip,
+          port: scanner.port,
+          useTls: scanner.useTls,
+          verifyTls: false,
+          mdnsName: scanner.mdnsName,
+          online: true,
+          lastSeenAt: scanner.observedAt,
+        },
+        create: {
           userId: null,
           ownership: Ownership.SYSTEM,
           discoveredVia: DiscoverySource.MDNS,
@@ -73,14 +75,21 @@ export class ScannerConfigSyncListener {
           ip: scanner.ip,
           port: scanner.port,
           useTls: scanner.useTls,
-          verifyTls: true,
+          verifyTls: false,
           online: true,
           lastSeenAt: scanner.observedAt,
         },
       });
-      this.logger.log(
-        `Registered discovered scanner: id=${created.id} uuid=${scanner.uuid} ${scanner.ip}:${scanner.port}`,
-      );
+
+      if (existedBefore) {
+        this.logger.debug(
+          `Refreshed discovered scanner ${synced.id}: ${scanner.useTls ? 'https' : 'http'}://${scanner.ip}:${scanner.port}`,
+        );
+      } else {
+        this.logger.log(
+          `Registered discovered scanner: id=${synced.id} uuid=${scanner.uuid} ${scanner.ip}:${scanner.port}`,
+        );
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`Failed to persist discovered scanner ${scanner.uuid}: ${msg}`);

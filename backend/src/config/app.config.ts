@@ -40,29 +40,13 @@ export const appConfig = {
     default: { ttl: 60_000, limit: isDev ? 300 : 100 },
     ai: { ttl: 60_000, limit: isDev ? 30 : 10 },
   },
-  /**
-   * Default eSCL scanner. If `name` AND `ip` are both set, the backend will
-   * upsert a matching ScannerConfig for every user on each getConfigs() call.
-   * Leave empty in production / multi-user setups.
-   *
-   * `enabled` is the master switch: when false, the env-driven sync is skipped
-   * and the frontend stops polling pings. Lets you keep IPs in .env as
-   * reference while the physical scanner is unavailable.
-   */
   scanner: {
     enabled: process.env.SCANNER_ENABLED !== 'false',
-    defaultName: process.env.ESCL_DEFAULT_SCANNER_NAME || '',
-    defaultIp: process.env.ESCL_DEFAULT_SCANNER_IP || '',
-    defaultPort: process.env.ESCL_DEFAULT_SCANNER_PORT
-      ? parseInt(process.env.ESCL_DEFAULT_SCANNER_PORT, 10)
-      : null,
-    defaultUseTls: process.env.ESCL_DEFAULT_SCANNER_USE_TLS === 'true',
-    defaultVerifyTls: process.env.ESCL_DEFAULT_SCANNER_VERIFY_TLS !== 'false',
     /**
-     * mDNS auto-discovery for eSCL scanners on `_uscan._tcp`. Off by default:
-     * opt-in per deployment because it opens a UDP/5353 listener (firewall
-     * prompt on Windows) and is meaningless in cloud setups where the backend
-     * is not on the same LAN as the printers.
+     * mDNS auto-discovery for eSCL scanners on `_uscan._tcp` / `_uscans._tcp`.
+     * Off by default: opt-in per deployment because it opens a UDP/5353 listener
+     * (firewall prompt on Windows) and is meaningless in cloud setups where the
+     * backend is not on the same LAN as the printers.
      */
     discoveryEnabled: process.env.SCANNER_DISCOVERY_ENABLED === 'true',
     /**

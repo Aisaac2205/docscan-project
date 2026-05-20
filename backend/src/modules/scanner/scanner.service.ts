@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger, BadRequestException, NotFoundException, ForbiddenException, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { DiscoverySource, Ownership, type ScannerConfig } from '@prisma/client';
 import { Readable } from 'stream';
 import { writeFile, mkdir, unlink } from 'fs/promises';
@@ -12,7 +12,7 @@ import * as http from 'http';
 import * as https from 'https';
 
 @Injectable()
-export class ScannerService implements OnModuleInit {
+export class ScannerService {
   private readonly logger = new Logger(ScannerService.name);
 
   constructor(
@@ -23,18 +23,6 @@ export class ScannerService implements OnModuleInit {
     private readonly discovery: ScannerDiscoveryPort,
   ) {}
 
-  async onModuleInit(): Promise<void> {
-    // Env-driven default scanner is a SYSTEM-wide resource: it must be reconciled
-    // once at boot, not per-user on every getConfigs() call. Failure here is
-    // logged but never blocks startup — the UI keeps working without it.
-    try {
-      await this.syncDefaultEnvConfig();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Env scanner sync failed at boot: ${msg}`);
-    }
-  }
-
   /* ── Scanner configs ── */
 
   getFeatureState(): { enabled: boolean } {
@@ -42,7 +30,7 @@ export class ScannerService implements OnModuleInit {
   }
 
   /**
-   * Returns user-owned configs plus every SYSTEM config (env-seeded or mDNS-discovered).
+   * Returns user-owned configs plus every SYSTEM config (mDNS-discovered).
    * Multi-tenant rule from the architecture decision: SYSTEM scanners are shared on a LAN.
    */
   async getConfigs(userId: string) {
@@ -69,8 +57,8 @@ export class ScannerService implements OnModuleInit {
    */
   async triggerDiscovery(): Promise<{ scanners: ScannerConfig[]; discoveryActive: boolean }> {
     if (!appConfig.scanner.discoveryEnabled) {
-      // Adapter is Noop. Return whatever SYSTEM rows already exist (env-seeded)
-      // without lying that a discovery sweep happened.
+      // Adapter is Noop. Return whatever SYSTEM rows already exist without
+      // lying that a discovery sweep happened.
       const scanners = await this.prisma.scannerConfig.findMany({
         where: { ownership: Ownership.SYSTEM },
         orderBy: { createdAt: 'asc' },
@@ -106,84 +94,6 @@ export class ScannerService implements OnModuleInit {
       where: { id: cfg.id },
       data: online ? { online: true, lastSeenAt: new Date() } : { online: false },
     });
-  }
-
-  /**
-   * If `ESCL_DEFAULT_SCANNER_NAME` + `_IP` are set, ensure exactly one SYSTEM
-   * config with `discoveredVia=ENV` exists. Idempotent. Runs once at boot.
-   *
-   * Migration safety: if a legacy USER-owned row matches the env name + IP
-   * (it was created before Phase 1 when env scanners were per-user), promote
-   * it in place instead of duplicating.
-   */
-  private async syncDefaultEnvConfig(): Promise<void> {
-    const { enabled, defaultName, defaultIp, defaultPort, defaultUseTls, defaultVerifyTls } =
-      appConfig.scanner;
-    if (!enabled || !defaultName || !defaultIp) return;
-
-    const port = defaultPort ?? (defaultUseTls ? 443 : 80);
-
-    const existing = await this.prisma.scannerConfig.findFirst({
-      where: { discoveredVia: DiscoverySource.ENV, name: defaultName },
-    });
-    if (existing) {
-      const drift =
-        existing.ip !== defaultIp ||
-        existing.port !== port ||
-        existing.useTls !== defaultUseTls ||
-        existing.verifyTls !== defaultVerifyTls;
-      if (!drift) return;
-      await this.prisma.scannerConfig.update({
-        where: { id: existing.id },
-        data: { ip: defaultIp, port, useTls: defaultUseTls, verifyTls: defaultVerifyTls },
-      });
-      this.logger.log(
-        `Env default scanner updated: id=${existing.id} ` +
-          `${existing.ip}:${existing.port} -> ${defaultIp}:${port} ` +
-          `tls=${defaultUseTls} verify=${defaultVerifyTls}`,
-      );
-      return;
-    }
-
-    const legacy = await this.prisma.scannerConfig.findFirst({
-      where: {
-        name: defaultName,
-        ip: defaultIp,
-        discoveredVia: DiscoverySource.MANUAL,
-        userId: { not: null },
-      },
-    });
-    if (legacy) {
-      const promoted = await this.prisma.scannerConfig.update({
-        where: { id: legacy.id },
-        data: {
-          userId: null,
-          ownership: Ownership.SYSTEM,
-          discoveredVia: DiscoverySource.ENV,
-          port,
-          useTls: defaultUseTls,
-          verifyTls: defaultVerifyTls,
-        },
-      });
-      this.logger.log(
-        `Promoted legacy ScannerConfig ${promoted.id} to SYSTEM/ENV (was user ${legacy.userId})`,
-      );
-      return;
-    }
-
-    const created = await this.prisma.scannerConfig.create({
-      data: {
-        userId: null,
-        ownership: Ownership.SYSTEM,
-        discoveredVia: DiscoverySource.ENV,
-        name: defaultName,
-        ip: defaultIp,
-        port,
-        useTls: defaultUseTls,
-        verifyTls: defaultVerifyTls,
-      },
-    });
-    this.logger.log(`Env default scanner created: id=${created.id} url=${this.buildBaseUrl(created)}`);
   }
 
   async createConfig(
@@ -368,12 +278,31 @@ export class ScannerService implements OnModuleInit {
 
     // 3. Retrieve scanned document. EPSON L4360 cold-start warmup + scan at 300 DPI
     //    can push past 30 s on first request after idle, so 60 s gives headroom.
+    //
+    // Some firmware (notably EPSON L4360) accepts POST /ScanJobs over HTTP but
+    // returns a Location header pointing to HTTPS. The polling agent must match
+    // the location's real scheme — if useTls=false but jobLocation is https,
+    // we need an HTTPS agent that doesn't verify (LAN self-signed cert).
     const scheme = useTls ? 'https' : 'http';
     const docUrl = jobLocation.startsWith('http')
       ? `${jobLocation}/NextDocument`
       : `${scheme}://${ipAddress}:${port}${jobLocation}/NextDocument`;
+    const jobUrlAbsolute = jobLocation.startsWith('http')
+      ? jobLocation
+      : `${scheme}://${ipAddress}:${port}${jobLocation}`;
 
-    const imageBuffer = await this.pollForDocument(docUrl, 60, agent).catch((err: Error) => {
+    const locationIsHttps = jobUrlAbsolute.startsWith('https://');
+    const transportSwitched = locationIsHttps && !useTls;
+    if (transportSwitched) {
+      this.logger.warn(
+        `Scanner ${ipAddress}:${port} returned HTTPS Location over HTTP request — switching polling to HTTPS with cert verification disabled (LAN trust)`,
+      );
+    }
+    const pollingAgent = transportSwitched
+      ? new https.Agent({ rejectUnauthorized: false })
+      : agent;
+
+    const imageBuffer = await this.pollForDocument(docUrl, 60, pollingAgent).catch((err: Error) => {
       this.logger.error(`Poll timeout for ${docUrl}: ${err.message}`, err.stack);
       throw new BadRequestException(
         'El escáner tardó demasiado en responder. Verificá que haya papel en el vidrio y volvé a intentar.',
@@ -381,10 +310,7 @@ export class ScannerService implements OnModuleInit {
     });
 
     // 3b. Release the job on the scanner (eSCL DELETE) — best-effort.
-    const jobUrlAbsolute = jobLocation.startsWith('http')
-      ? jobLocation
-      : `${scheme}://${ipAddress}:${port}${jobLocation}`;
-    this.httpDelete(jobUrlAbsolute, agent).catch((err: Error) => {
+    this.httpDelete(jobUrlAbsolute, pollingAgent).catch((err: Error) => {
       this.logger.warn(`Failed to DELETE scan job ${jobUrlAbsolute}: ${err.message}`);
     });
 
