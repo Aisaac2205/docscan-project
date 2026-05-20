@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import { useDocumentStore } from '@/features/documents/store';
 import { ExtractedDataModal } from '@/features/documents/components/ExtractedDataModal';
-import { EyeIcon, TrashIcon, FileIcon, PdfIcon } from '@/shared/ui/icons';
+import { EyeIcon, TrashIcon, FileIcon, PdfIcon, OcrIcon } from '@/shared/ui/icons';
 import { Badge, type BadgeVariant } from '@/shared/components/ui';
 import type { Document } from '@/features/documents/types/document.types';
+import type { CaptureResult } from '../types/scanner.types';
 
 function relativeDate(dateStr: string): string {
   const now = new Date();
@@ -60,7 +61,11 @@ function DataIcon({ className = '', size = 13 }: { className?: string; size?: nu
   );
 }
 
-export function RecentScansFeed() {
+interface RecentScansFeedProps {
+  onProcess?: (result: CaptureResult) => void;
+}
+
+export function RecentScansFeed({ onProcess }: RecentScansFeedProps = {}) {
   const { documents, deleteDocument } = useDocumentStore();
   const [modalDoc, setModalDoc] = useState<Document | null>(null);
 
@@ -127,6 +132,24 @@ export function RecentScansFeed() {
             </div>
 
             <div className="flex items-center gap-0.5 flex-shrink-0">
+              {onProcess && (doc.status === 'pending' || doc.status === 'failed') && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onProcess({
+                      documentId: doc.id,
+                      url: doc.filePath,
+                      originalName: doc.originalName,
+                    })
+                  }
+                  className="h-7 px-2 flex items-center gap-1 text-caption font-medium text-fg-secondary hover:text-fg-primary hover:bg-surface-sunken rounded-md transition-colors"
+                  title={doc.status === 'failed' ? 'Reintentar OCR' : 'Procesar con OCR'}
+                >
+                  <OcrIcon size={12} />
+                  {doc.status === 'failed' ? 'Reintentar' : 'Procesar'}
+                </button>
+              )}
+
               <a
                 href={doc.filePath}
                 target="_blank"

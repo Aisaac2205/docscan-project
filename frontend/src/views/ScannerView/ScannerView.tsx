@@ -270,7 +270,7 @@ export function ScannerView() {
       {/* Recent scans feed — siempre al final: contenido secundario,
           jamás debe empujar el flujo activo de captura hacia abajo. */}
       <div className="mt-8">
-        <RecentScansFeed />
+        <RecentScansFeed onProcess={applyResult} />
       </div>
     </div>
   );
